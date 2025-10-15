@@ -1,0 +1,100 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.login {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("~/public/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  .card {
+    font-family: "Bahnschrift", sans-serif;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    background-color: #1c151e;
+    border-radius: 15px;
+    padding: 20px;
+    .form-wrapper {
+      padding-left: 20px;
+      padding-right: 20px;
+      h1 {
+        color: white;
+        margin-bottom: 20px;
+        font-size: 42px;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          h2 {
+            color: white;
+            margin: 0;
+            font-size: 18px;
+          }
+
+          input {
+            border-radius: 5px;
+            border: none;
+          }
+          .forgot-wrapper {
+            display: flex;
+            justify-content: flex-end;
+
+            span {
+              color: white;
+              font-size: 12px;
+              cursor: pointer;
+            }
+          }
+        }
+
+        .login-button-wrapper {
+          display: flex;
+          justify-content: center;
+          button {
+            font-family: "Bahnschrift", sans-serif;
+            width: 75%;
+            border: none;
+            border-radius: 5px;
+            background-color: #53257d;
+            color: white;
+            font-size: 30px;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+
+    span {
+      color: white;
+      align-self: flex-end;
+      font-size: 11px;
+    }
+    > button {
+      font-family: "Bahnschrift", sans-serif;
+      width: 25%;
+      border: none;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 25px;
+      background-color: #53257d;
+      color: white;
+      align-self: flex-end;
+    }
+  }
+}
