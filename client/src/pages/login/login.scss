@@ -20,81 +20,168 @@ body {
     font-family: "Bahnschrift", sans-serif;
     width: 50%;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    gap: 10px;
     background-color: #1c151e;
     border-radius: 15px;
     padding: 20px;
-    .form-wrapper {
-      padding-left: 20px;
-      padding-right: 20px;
-      h1 {
-        color: white;
-        margin-bottom: 20px;
-        font-size: 42px;
-      }
-      form {
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
 
-        .field {
+    .left {
+      flex: 6 1 60%;
+      display: flex;
+      flex-direction: column;
+
+      .form-wrapper {
+        padding-left: 20px;
+        padding-right: 20px;
+        h1 {
+          color: white;
+          margin-bottom: 20px;
+          font-size: 42px;
+        }
+        form {
           display: flex;
           flex-direction: column;
-          gap: 5px;
-          h2 {
-            color: white;
-            margin: 0;
-            font-size: 18px;
-          }
+          gap: 30px;
 
-          input {
-            border-radius: 5px;
-            border: none;
-          }
-          .forgot-wrapper {
+          .field {
             display: flex;
-            justify-content: flex-end;
-
-            span {
+            flex-direction: column;
+            gap: 5px;
+            h2 {
               color: white;
-              font-size: 12px;
+              margin: 0;
+              font-size: 18px;
+            }
+
+            input {
+              border-radius: 5px;
+              border: none;
+              height: 30px;
+              width: 100%;
+            }
+            .forgot-wrapper {
+              width: 100%;
+              display: flex;
+              justify-content: flex-end;
+              margin-top: 4px;
+
+              span {
+                color: white;
+                font-size: 12px;
+                cursor: pointer;
+                transition: color 150ms ease;
+                &:hover {
+                  color: #53257d;
+                }
+              }
+            }
+          }
+
+          .login-button-wrapper {
+            display: flex;
+            margin-top: -20px;
+            justify-content: center;
+            .button-link {
+              font-size: 30px;
+              padding: 6px 30px;
+              display: inline-block;
+              text-align: center;
+              text-decoration: none;
+              font-family: "Bahnschrift", sans-serif;
+              border-radius: 25px;
+              background-color: #53257d;
+              color: white;
+              font-weight: bold;
               cursor: pointer;
+
+              transition: background-color 150ms ease;
+
+              &:hover {
+                background-color: #6b2da8;
+              }
             }
           }
         }
+      }
 
-        .login-button-wrapper {
+      .register-wrapper {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+        margin-left: 8px;
+
+        .register-inner {
           display: flex;
-          justify-content: center;
-          button {
+          flex-direction: column;
+          align-items: center;
+          width: 25%;
+
+          span {
+            color: white;
+            font-size: 11px;
+          }
+          .button-link {
+            font-size: 11px;
+            padding: 6px 12px;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
             font-family: "Bahnschrift", sans-serif;
-            width: 75%;
-            border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             background-color: #53257d;
             color: white;
-            font-size: 30px;
+            width: auto;
             font-weight: bold;
+            cursor: pointer;
+
+            transition: background-color 150ms ease;
+
+            &:hover {
+              background-color: #6b2da8;
+            }
           }
         }
       }
     }
 
-    span {
-      color: white;
-      align-self: flex-end;
-      font-size: 11px;
+    .right {
+      flex: 4 1 40%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      img {
+        width: 250px;
+        height: auto;
+        object-fit: contain;
+        display: block;
+      }
     }
-    > button {
-      font-family: "Bahnschrift", sans-serif;
-      width: 25%;
-      border: none;
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 25px;
-      background-color: #53257d;
-      color: white;
-      align-self: flex-end;
+  }
+
+  @media (max-width: 768px) {
+    .card {
+      width: 92%;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px;
+
+      .left,
+      .right {
+        flex: none;
+        width: 100%;
+      }
+
+      .right {
+        order: -1;
+      }
+
+      .left > button {
+        width: 40%;
+      }
     }
   }
 }
