@@ -110,7 +110,7 @@ body {
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
-        align-items: flex-start;
+        align-items: flex-end;
         margin-left: 8px;
 
         .register-inner {
@@ -121,17 +121,17 @@ body {
 
           span {
             color: white;
-            font-size: 11px;
+            font-size: 10px;
           }
           .button-link {
-            font-size: 11px;
-            padding: 6px 12px;
+            font-size: 10px;
+            padding: 4px 10px;
             display: inline-block;
             text-align: center;
             text-decoration: none;
             font-family: "Bahnschrift", sans-serif;
             border-radius: 25px;
-            background-color: #53257d;
+            background-color: #52257d82;
             color: white;
             width: auto;
             font-weight: bold;
@@ -158,29 +158,6 @@ body {
         height: auto;
         object-fit: contain;
         display: block;
-      }
-    }
-  }
-
-  @media (max-width: 768px) {
-    .card {
-      width: 92%;
-      flex-direction: column;
-      gap: 12px;
-      padding: 18px;
-
-      .left,
-      .right {
-        flex: none;
-        width: 100%;
-      }
-
-      .right {
-        order: -1;
-      }
-
-      .left > button {
-        width: 40%;
       }
     }
   }
