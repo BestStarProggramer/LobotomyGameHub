@@ -11,6 +11,7 @@ import Navbar from "./components/navbar/Navbar.jsx";
 import Home from "./pages/home/Home.jsx";
 import Profile from "./pages/profile/Profile.jsx";
 import NotFound from "./pages/notfound/NotFound.jsx";
+import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 
 function App() {
   const currentUser = false; // Заглушка для проверки авторизации пользователя
@@ -41,6 +42,10 @@ function App() {
       ],
     },
 
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
+    },
     {
       path: "*",
       element: <NotFound />,

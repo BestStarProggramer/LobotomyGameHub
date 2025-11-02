@@ -17,7 +17,9 @@ const Login = () => {
                 <h2>Пароль</h2>
                 <input type="password" />
                 <div className="forgot-wrapper">
-                  <span>Не помню пароль</span>
+                  <Link to="/forgot-password" className="forgot-link">
+	  	    Не помню пароль
+	  	  </Link>
                 </div>
               </div>
               <div className="login-button-wrapper">
