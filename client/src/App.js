@@ -38,13 +38,14 @@ function App() {
           path: "/profile/:id",
           element: <Profile />,
         },
-
-	{
-	  path: "*",
-	  element: <NotFound />,
-	}
       ],
     },
+
+    {
+      path: "*",
+      element: <NotFound />,
+    },
+
     {
       path: "/login",
       element: <Login />,
