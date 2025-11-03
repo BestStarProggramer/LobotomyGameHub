@@ -3,10 +3,7 @@ import "./forgotPassword.scss";
 
 const ForgotPassword = () => {
   return (
-    <div
-      className="forgotPassword"
-      style={{ backgroundImage: `url("/img/background.png")` }}
-    >
+    <div className="forgotPassword">
       <div className="card">
         <div className="left">
           <div className="content-wrapper">

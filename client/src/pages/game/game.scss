@@ -7,167 +7,188 @@ body {
 }
 
 .game {
-  background-color: #1b161d;
+  background-image: url("~/public/img/background.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 20px;
-
-  .container {
-    width: 90%;
-    max-width: 1200px;
+  .page_wrapper {
+    border-radius: 12px;
+    margin-top: 30px;
+    background-color: #1c151e;
     display: flex;
+    align-items: center;
     flex-direction: column;
-    gap: 0;
-  }
-
-  .banner {
-    width: 100%;
-    border-radius: 15px 15px 0 0;
-    overflow: hidden;
-
-    img {
+    width: 80%;
+    .general_info {
       width: 100%;
-      height: 300px;
-      object-fit: cover;
-      display: block;
-    }
-  }
-
-  .main {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .info {
-    display: flex;
-    gap: 20px;
-    background-color: rgba(28, 21, 30, 0.9);
-    border-radius: 0;
-    padding: 20px 20px 10px 20px;
-
-    .left {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      flex: 2;
-
-      .logo {
-        width: 150px;
-        height: 150px;
-        object-fit: cover;
-        border-radius: 10px;
-      }
-
-      .rating {
+      .banner {
         display: flex;
+        width: 100%;
+        height: 400px;
+        justify-content: center;
         align-items: center;
-        gap: 5px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-
-        .star {
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
-
-    .right {
-      flex: 8;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: flex-start;
-
-      h1 {
-        color: #ffffff;
-        margin: 0 0 10px 0;
-        font-size: 42px;
-        font-weight: bold;
-        align-self: flex-start;
-      }
-
-      .description {
-        background-color: rgba(42, 37, 51, 0.9);
-        padding: 15px;
-        border-radius: 10px;
-        max-width: 100%;
-        box-sizing: border-box;
-
-        p {
-          margin: 0;
-          color: #ffffff;
-          font-size: 18px;
-          line-height: 1.5;
-        }
-      }
-    }
-  }
-
-  .bottom {
-    display: flex;
-    gap: 20px;
-    background-color: rgba(28, 21, 30, 0.9);
-    border-radius: 0 0 15px 15px;
-    padding: 20px;
-    align-items: stretch;
-
-    .video {
-      width: 30%;
-      aspect-ratio: 16 / 9;
-      border-radius: 10px;
-      overflow: hidden;
-
-      video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-    }
-
-    .actions {
-      width: 70%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      justify-content: space-between;
-
-      .button {
-        width: 100%;
-        flex: 1;
-        font-size: 22px;
-        font-weight: bold;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: background-color 150ms ease;
-      }
-
-      .primary {
-        background-color: #53257d;
-        color: white;
-
-        &:hover {
-          background-color: #6b2da8;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        overflow: hidden;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       }
 
-      .secondary {
-        background-color: #130f14;
-        color: white;
-        border: 2px solid #53257d;
+      .info {
+        padding: 0px 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-direction: row;
+          .left {
+            width: 33%;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            .poster_wrapper {
+              width: 100%;
+              height: 350px;
+              border-radius: 50px;
+              margin-top: -150px;
+              overflow: hidden;
+              img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
+              .rating {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-direction: row;
+                span {
+                  color: white;
+                  font-size: 12px;
+                }
+                .star {
+                  width: auto;
+                }
+              }
+            }
 
-        &:hover {
-          background-color: #1c151e;
+            .right {
+              display: flex;
+              flex-direction: column;
+              h1 {
+                color: white;
+                font-weight: bold;
+                font-size: 16px;
+              }
+
+              .description {
+                background-color: #2a2533;
+                border-radius: 10px;
+                p {
+                  color: white;
+                  font-size: 14px;
+                  padding: 10px;
+                }
+              }
+            }
+          }
+
+          .bottom {
+            .left {
+              .trailer {
+                video {
+                  width: 400px;
+                  height: auto;
+                  border-radius: 15px;
+                }
+              }
+            }
+
+            .right {
+              .article_wrapper {
+                .article {
+                  .top {
+                    h1 {
+                    }
+
+                    .author {
+                      img {
+                      }
+
+                      span {
+                      }
+                    }
+                  }
+
+                  .bottom {
+                    p {
+                    }
+
+                    .read_more {
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .reviews_section {
+          .top {
+            h1 {
+            }
+
+            .button_review {
+              p {
+              }
+            }
+          }
+
+          .bottom {
+            .review {
+              .top {
+                .author {
+                  img {
+                  }
+
+                  span {
+                  }
+                }
+
+                .rating {
+                  .date {
+                    p {
+                    }
+                  }
+
+                  .value {
+                    .star {
+                    }
+
+                    span {
+                    }
+                  }
+                }
+              }
+
+              .bottom {
+                p {
+                }
+              }
+            }
+          }
         }
       }
     }

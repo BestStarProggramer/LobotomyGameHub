@@ -3,10 +3,7 @@ import "./notFound.scss";
 
 const NotFound = () => {
   return (
-    <div
-      className="notfound"
-      style={{ backgroundImage: `url("/img/background.png")` }}
-    >
+    <div className="notfound">
       <div className="card">
         <div className="left">
           <div className="content-wrapper">

@@ -1,9 +1,9 @@
 import {
-	BrowserRouter,
-	createBrowserRouter,
-	RouterProvider,
-	Route,
-	Outlet,
+  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
+  Route,
+  Outlet,
 } from "react-router-dom";
 import Login from "./pages/login/Login.jsx";
 import Register from "./pages/register/Register.jsx";
@@ -15,63 +15,63 @@ import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 
 function App() {
-	const currentUser = false; // Заглушка для проверки авторизации пользователя
+  const currentUser = false; // Заглушка для проверки авторизации пользователя
 
-	const Layout = () => {
-		return (
-			<div>
-				<Navbar />
-				<Outlet />
-			</div>
-		);
-	};
+  const Layout = () => {
+    return (
+      <div>
+        <Navbar />
+        <Outlet />
+      </div>
+    );
+  };
 
-	const router = createBrowserRouter([
-		{
-			path: "/",
-			element: <Layout />,
-			children: [
-				{
-					path: "/",
-					element: <Home />,
-				},
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Layout />,
+      children: [
+        {
+          path: "/",
+          element: <Home />,
+        },
 
-				{
-					path: "/profile/:id",
-					element: <Profile />,
-				},
+        {
+          path: "/profile/:UserId",
+          element: <Profile />,
+        },
 
-				{
-					path: "/game",
-					element: <Game />,
-				},
-			],
-		},
+        {
+          path: "/games/:GameId",
+          element: <Game />,
+        },
+      ],
+    },
 
-		{
-			path: "/forgot-password",
-			element: <ForgotPassword />,
-		},
-		{
-			path: "*",
-			element: <NotFound />,
-		},
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
+    },
+    {
+      path: "*",
+      element: <NotFound />,
+    },
 
-		{
-			path: "/login",
-			element: <Login />,
-		},
-		{
-			path: "/register",
-			element: <Register />,
-		},
-	]);
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+  ]);
 
-	return (
-		<div>
-			<RouterProvider router={router} />
-		</div>
-	);
+  return (
+    <div>
+      <RouterProvider router={router} />
+    </div>
+  );
 }
 
 export default App;
