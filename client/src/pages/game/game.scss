@@ -7,167 +7,272 @@ body {
 }
 
 .game {
-  background-color: #1b161d;
+  background-image: url("~/public/img/background.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  padding: 20px;
-
-  .container {
-    width: 90%;
-    max-width: 1200px;
+  .page_wrapper {
+    border-radius: 12px;
+    margin-top: 30px;
+    background-color: #1c151e;
     display: flex;
+    align-items: center;
     flex-direction: column;
-    gap: 0;
-  }
+    width: 80%;
 
-  .banner {
-    width: 100%;
-    border-radius: 15px 15px 0 0;
-    overflow: hidden;
-
-    img {
+    .banner {
+      display: flex;
       width: 100%;
-      height: 300px;
-      object-fit: cover;
-      display: block;
-    }
-  }
-
-  .main {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .info {
-    display: flex;
-    gap: 20px;
-    background-color: rgba(28, 21, 30, 0.9);
-    border-radius: 0;
-    padding: 20px 20px 10px 20px;
-
-    .left {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      flex: 2;
-
-      .logo {
-        width: 150px;
-        height: 150px;
-        object-fit: cover;
-        border-radius: 10px;
-      }
-
-      .rating {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-
-        .star {
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
-
-    .right {
-      flex: 8;
-      display: flex;
-      flex-direction: column;
+      height: 400px;
       justify-content: center;
-      align-items: flex-start;
-
-      h1 {
-        color: #ffffff;
-        margin: 0 0 10px 0;
-        font-size: 42px;
-        font-weight: bold;
-        align-self: flex-start;
-      }
-
-      .description {
-        background-color: rgba(42, 37, 51, 0.9);
-        padding: 15px;
-        border-radius: 10px;
-        max-width: 100%;
-        box-sizing: border-box;
-
-        p {
-          margin: 0;
-          color: #ffffff;
-          font-size: 18px;
-          line-height: 1.5;
-        }
-      }
-    }
-  }
-
-  .bottom {
-    display: flex;
-    gap: 20px;
-    background-color: rgba(28, 21, 30, 0.9);
-    border-radius: 0 0 15px 15px;
-    padding: 20px;
-    align-items: stretch;
-
-    .video {
-      width: 30%;
-      aspect-ratio: 16 / 9;
-      border-radius: 10px;
+      align-items: center;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
       overflow: hidden;
-
-      video {
+      img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        display: block;
       }
     }
 
-    .actions {
-      width: 70%;
+    .info {
+      padding: 0px 30px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      justify-content: space-between;
-
-      .button {
+      align-items: center;
+      justify-content: center;
+      gap: 25px;
+      width: auto;
+      .top {
         width: 100%;
-        flex: 1;
-        font-size: 22px;
-        font-weight: bold;
-        border: none;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: background-color 150ms ease;
-      }
+        gap: 20px;
+        display: flex;
+        flex-direction: row;
+        .left {
+          margin-top: -150px;
+          position: relative;
+          width: fit-content;
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          .poster_wrapper {
+            width: 100%;
+            height: 350px;
+            border-radius: 50px;
+            overflow: hidden;
+            img {
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+          .rating {
+            left: 60%;
+            top: 310px;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: row;
+            gap: 5px;
+            span {
+              color: white;
+              font-size: 30px;
+              font-weight: 450;
+            }
+            .star {
+              margin-top: -5px;
+              color: white;
+              font-size: 40px;
+            }
+          }
+        }
 
-      .primary {
-        background-color: #53257d;
-        color: white;
+        .right {
+          width: fit-content;
+          display: flex;
+          flex-direction: column;
+          h1 {
+            margin-bottom: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 40px;
+          }
 
-        &:hover {
-          background-color: #6b2da8;
+          .description {
+            background-color: #2a2533;
+            border-radius: 10px;
+            padding: 0px 14px;
+            p {
+              color: white;
+              font-size: 20px;
+            }
+          }
         }
       }
 
-      .secondary {
-        background-color: #130f14;
-        color: white;
-        border: 2px solid #53257d;
+      .bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
 
-        &:hover {
-          background-color: #1c151e;
+        h2 {
+          margin: 0;
+          color: white;
+          font-weight: bold;
+          font-size: 28px;
+        }
+        .sections {
+          display: flex;
+          justify-content: space-between;
+          align-items: stretch;
+          .left {
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+
+            video {
+              width: 720px;
+              height: auto;
+              border-radius: 15px;
+            }
+          }
+
+          .right {
+            position: relative;
+            z-index: 1;
+            left: -20px;
+            display: flex;
+            flex-direction: column;
+            .articles_wrapper {
+              height: 100%;
+              padding: 10px;
+              padding-left: 40px;
+              border-radius: 0 15px 15px 0;
+              background-color: #2a2533;
+
+              .article {
+                display: flex;
+                flex-direction: column;
+
+                gap: 20px;
+
+                .top {
+                  padding-top: 10px;
+                  display: flex;
+                  align-items: start;
+                  justify-content: space-between;
+                  h1 {
+                    margin: 0;
+                    color: white;
+                    font-size: 30px;
+                  }
+
+                  .author {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    span {
+                      color: white;
+                      font-size: 14px;
+                    }
+                    img {
+                      width: 40px;
+                      object-fit: cover;
+                      border-radius: 50%;
+                    }
+                  }
+                }
+
+                .bottom {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 25px;
+
+                  p {
+                    color: white;
+                    font-size: 16px;
+                  }
+
+                  .read_more {
+                    align-self: flex-end;
+                    text-decoration: none;
+                    cursor: pointer;
+                    transition: color 150ms ease;
+                    background-color: #6b2da8;
+                    &:hover {
+                      background-color: #53257d;
+                    }
+                    border-radius: 10px;
+                    padding: 5px 15px;
+
+                    p {
+                      color: white;
+                      margin: 0;
+                      font-size: 14px;
+                      font-weight: bold;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .reviews_section {
+      padding: 0px 30px;
+      .top {
+        h1 {
+        }
+
+        .button_review {
+          p {
+          }
+        }
+      }
+
+      .bottom {
+        .review {
+          .top {
+            .author {
+              img {
+              }
+
+              span {
+              }
+            }
+
+            .rating {
+              .date {
+                p {
+                }
+              }
+
+              .value {
+                .star {
+                }
+
+                span {
+                }
+              }
+            }
+          }
+
+          .bottom {
+            p {
+            }
+          }
         }
       }
     }
