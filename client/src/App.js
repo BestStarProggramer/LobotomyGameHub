@@ -5,6 +5,8 @@ import {
   Route,
   Outlet,
 } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "./context/authContext";
 import Login from "./pages/login/Login.jsx";
 import Register from "./pages/register/Register.jsx";
 import Navbar from "./components/navbar/Navbar.jsx";
@@ -15,7 +17,7 @@ import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 
 function App() {
-  const currentUser = false; // Заглушка для проверки авторизации пользователя
+  const { currentUser } = useContext(AuthContext);
 
   const Layout = () => {
     return (
@@ -26,10 +28,24 @@ function App() {
     );
   };
 
+  const ProtectedRoute = ({ children }) => {
+    // По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
+    // так что оставлю его пока в закомментированном виде
+
+    // if (!currentUser) {
+    //   return <Login />;
+    // }
+    return children;
+  };
+
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <Layout />,
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
       children: [
         {
           path: "/",

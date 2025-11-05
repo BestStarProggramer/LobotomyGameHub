@@ -1,7 +1,11 @@
 import "./navbar.scss";
 import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../../context/authContext";
 
 const NavBar = () => {
+  const { currentUser } = useContext(AuthContext);
+
   return (
     <div className="navbar">
       <div className="left">
@@ -25,9 +29,9 @@ const NavBar = () => {
       </div>
 
       <div className="right">
-        <span>5Hnet5K</span>
-        {/* Заглушка, потом будем с бекенда ник загружать */}
-        <img src="/img/profilePic.jpg" alt="Аватар профиля" />
+        <span>{currentUser.username}</span>
+        {/* Заглушка, потом будем с бекенда ник и профиль загружать */}
+        <img src={currentUser.avatar_url} alt="Аватар профиля" />
       </div>
     </div>
   );
