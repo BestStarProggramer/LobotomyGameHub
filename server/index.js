@@ -1,5 +1,5 @@
 import express from "express";
-import { Pool} from "pg";
+import { Pool } from "pg";
 import dotenv from "dotenv";
 import cors from "cors";
 import bcrypt from "bcrypt";
@@ -25,4 +25,8 @@ app.use(
 // --- ROOT ---
 app.get("/", (req, res) => {
   res.json({ message: "LobotomyGameHub API is running!" });
+});
+// --- START SERVER ---
+app.listen(3001, () => {
+  console.log("Server is running on port 3001");
 });
