@@ -5,7 +5,7 @@ import StarIcon from "@mui/icons-material/Star";
 const Game = () => {
   return (
     <div className="game">
-      <div className="page_wrapper">
+      <div className="game_wrapper">
         <div className="banner">
           <img src="/img/game_banner.jpg" alt="Баннер игры" />
         </div>
@@ -72,27 +72,26 @@ const Game = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="reviews_section">
-          <div className="top">
-            <h1>Отзывы</h1>
-            <Link to="/games/:gameId/reviews" className="button_reviews">
-              <p>На страницу с отзывами</p>
-            </Link>
-          </div>
+      <div className="reviews_section">
+        <div className="top">
+          <h1>Отзывы</h1>
+          <Link to="/games/:gameId/reviews" className="button_reviews">
+            <p>На страницу с отзывами →</p>
+          </Link>
+        </div>
 
-          <div className="bottom">
-            <div className="review">
-              <div className="top">
+        <div className="bottom">
+          <div className="review">
+            <div className="upper">
+              <div className="left_side">
                 <div className="author">
-                  <img src="/img/profilePic" alt="аватар" />
+                  <img src="/img/profilePic.jpg" alt="аватар" />
                   <span>5Hnet5K</span>
                 </div>
 
                 <div className="rating">
-                  <div className="date">
-                    <p>03.11.2025</p>
-                  </div>
                   <div className="value">
                     <StarIcon className="star" />
                     <span>4.3</span>
@@ -100,15 +99,19 @@ const Game = () => {
                 </div>
               </div>
 
-              <div className="bottom">
-                <p>
-                  Бла бла бла мне лень придумывать текст обзора поэтому Lorem
-                  ipsum dolor sit amet consectetur adipisicing elit. Impedit,
-                  minima repellendus. Reiciendis, vero tenetur. Modi quam saepe
-                  et tempora assumenda, molestias deleniti quia, incidunt
-                  ratione ut in maxime? Impedit, unde!
-                </p>
+              <div className="date">
+                <p>03.11.2025</p>
               </div>
+            </div>
+
+            <div className="bottom_text">
+              <p>
+                Бла бла бла мне лень придумывать текст обзора поэтому Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Impedit,
+                minima repellendus. Reiciendis, vero tenetur. Modi quam saepe et
+                tempora assumenda, molestias deleniti quia, incidunt ratione ut
+                in maxime? Impedit, unde!
+              </p>
             </div>
           </div>
         </div>
