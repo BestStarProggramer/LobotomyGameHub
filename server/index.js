@@ -26,4 +26,3 @@ app.use(
 app.get("/", (req, res) => {
   res.json({ message: "LobotomyGameHub API is running!" });
 });
-npm install dotenv
