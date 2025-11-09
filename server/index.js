@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config"; // Загрузка переменных окружения
 import { query } from "./db.js"; // Импорт функции для выполнения запросов к БД
+import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 8800; // Используем порт из .env или 8800
@@ -17,6 +18,10 @@ app.use(
 
 // Парсер для входящих запросов в формате JSON
 app.use(express.json());
+
+//подключение роутера регистрации
+app.use("/api/auth", authRouter);
+
 
 // --- 2. API-маршрут здоровья (Health Check) ---
 app.get("/api/health", async (req, res) => {
