@@ -1,4 +1,3 @@
-// client/src/pages/home/home.scss
 .home {
   background-image: url("~/public/img/background.png");
   background-size: cover;
@@ -116,6 +115,7 @@
     }
   }
 
+  .recently-added-section,
   .new-releases-section,
   .recommended-section {
     .games-grid {
@@ -179,6 +179,7 @@
       }
     }
 
+    .recently-added-section,
     .new-releases-section,
     .recommended-section {
       .games-grid {

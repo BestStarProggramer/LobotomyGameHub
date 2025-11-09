@@ -68,6 +68,35 @@ const Home = () => {
 		},
 	];
 
+	// Заглушки для недавно добавленных
+	const recentlyAddedGames = [
+		{
+			id: 12,
+			title: "Elden Ring: Shadow",
+			imageUrl: "/img/game_poster.jpg",
+		},
+		{
+			id: 13,
+			title: "Stellar Blade",
+			imageUrl: "/img/game_poster.jpg",
+		},
+		{
+			id: 14,
+			title: "Final Fantasy VII Rebirth",
+			imageUrl: "/img/game_poster.jpg",
+		},
+		{
+			id: 15,
+			title: "Like a Dragon: Infinite Wealth",
+			imageUrl: "/img/game_poster.jpg",
+		},
+		{
+			id: 16,
+			title: "Persona 3 Reload",
+			imageUrl: "/img/game_poster.jpg",
+		},
+	];
+
 	return (
 		<div className="home">
 			<div className="container">
@@ -134,6 +163,40 @@ const Home = () => {
 								</Link>
 							</div>
 						</div>
+					</div>
+				</section>
+
+				{/* Блок "Недавно добавленные" */}
+				<section className="recently-added-section">
+					<h2>Недавно добавленные</h2>
+					<div className="games-grid">
+						{recentlyAddedGames.map(
+							(game) => (
+								<Link
+									key={
+										game.id
+									}
+									to={`/games/${game.id}`}
+									className="game-card"
+								>
+									<div className="game-poster-small">
+										<img
+											src={
+												game.imageUrl
+											}
+											alt={
+												game.title
+											}
+										/>
+									</div>
+									<h3>
+										{
+											game.title
+										}
+									</h3>
+								</Link>
+							)
+						)}
 					</div>
 				</section>
 
