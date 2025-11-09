@@ -16,7 +16,7 @@
 
   section {
     margin-bottom: 50px;
-    
+
     h2 {
       color: white;
       font-size: 32px;
@@ -40,19 +40,19 @@
         display: flex;
         align-items: center;
         flex-direction: column;
-        
+
         .poster_wrapper {
           width: 100%;
           height: 350px;
           border-radius: 50px;
           overflow: hidden;
-          
+
           img {
             height: 100%;
             object-fit: cover;
           }
         }
-        
+
         .rating {
           left: 60%;
           top: 310px;
@@ -62,13 +62,13 @@
           justify-content: space-between;
           flex-direction: row;
           gap: 5px;
-          
+
           span {
             color: white;
             font-size: 30px;
             font-weight: 450;
           }
-          
+
           .star {
             margin-top: -5px;
             color: white;
@@ -82,7 +82,7 @@
         width: fit-content;
         display: flex;
         flex-direction: column;
-        
+
         h1 {
           margin-bottom: 10px;
           color: white;
@@ -94,7 +94,7 @@
           background-color: #1c151e;
           border-radius: 10px;
           padding: 0px 14px;
-          
+
           p {
             color: white;
             font-size: 20px;
@@ -107,11 +107,13 @@
           margin: 20px 0;
 
           .genre-tag {
-            background-color: #53257d;
+            background-color: transparent;
+            border: 2px solid white;
             color: white;
-            padding: 5px 15px;
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: bold;
           }
         }
 
@@ -185,18 +187,18 @@
     .trending-section {
       .trending-game {
         flex-direction: column;
-        
+
         .left {
           width: 100%;
-          
+
           .poster_wrapper {
             height: 300px;
-            
+
             img {
               width: 100%;
             }
           }
-          
+
           .rating {
             left: 50%;
             top: 260px;
