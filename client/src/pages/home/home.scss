@@ -1,0 +1,220 @@
+// client/src/pages/home/home.scss
+.home {
+  background-image: url("~/public/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 20px 0;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  section {
+    margin-bottom: 50px;
+
+    h2 {
+      color: white;
+      font-size: 32px;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+  }
+
+  .trending-section {
+    .trending-game {
+      display: flex;
+      gap: 30px;
+      background-color: #130f14;
+      border-radius: 15px;
+      padding: 30px;
+      align-items: flex-start;
+
+      .left {
+        position: relative;
+        width: fit-content;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+
+        .poster_wrapper {
+          width: 100%;
+          height: 350px;
+          border-radius: 50px;
+          overflow: hidden;
+
+          img {
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .rating {
+          left: 60%;
+          top: 310px;
+          position: absolute;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-direction: row;
+          gap: 5px;
+
+          span {
+            color: white;
+            font-size: 30px;
+            font-weight: 450;
+          }
+
+          .star {
+            margin-top: -5px;
+            color: white;
+            font-size: 40px;
+          }
+        }
+      }
+
+      .right {
+        padding: 0px 10px;
+        width: fit-content;
+        display: flex;
+        flex-direction: column;
+
+        h1 {
+          margin-bottom: 10px;
+          color: white;
+          font-weight: bold;
+          font-size: 40px;
+        }
+
+        .description {
+          background-color: #1c151e;
+          border-radius: 10px;
+          padding: 0px 14px;
+
+          p {
+            color: white;
+            font-size: 20px;
+          }
+        }
+
+        .genres {
+          display: flex;
+          gap: 10px;
+          margin: 20px 0;
+
+          .genre-tag {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+          }
+        }
+
+        .game-button {
+          background-color: #53257d;
+          color: white;
+          padding: 12px 25px;
+          border-radius: 25px;
+          text-decoration: none;
+          font-weight: bold;
+          transition: background-color 150ms ease;
+          width: fit-content;
+
+          &:hover {
+            background-color: #6b2da8;
+          }
+        }
+      }
+    }
+  }
+
+  .recently-added-section,
+  .new-releases-section,
+  .recommended-section {
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 25px;
+
+      .game-card {
+        text-decoration: none;
+        background-color: #130f14;
+        border-radius: 10px;
+        padding: 15px;
+        transition: transform 150ms ease;
+
+        &:hover {
+          transform: translateY(-5px);
+        }
+
+        .game-poster-small {
+          width: 100%;
+          height: 250px;
+          margin-bottom: 15px;
+          border-radius: 8px;
+          overflow: hidden;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        h3 {
+          color: white;
+          font-size: 16px;
+          margin: 0;
+          text-align: center;
+          font-weight: normal;
+          line-height: 1.3;
+        }
+      }
+    }
+  }
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 768px) {
+  .home {
+    .trending-section {
+      .trending-game {
+        flex-direction: column;
+
+        .left {
+          width: 100%;
+
+          .poster_wrapper {
+            height: 300px;
+
+            img {
+              width: 100%;
+            }
+          }
+
+          .rating {
+            left: 50%;
+            top: 260px;
+            transform: translateX(-50%);
+          }
+        }
+      }
+    }
+
+    .recently-added-section,
+    .new-releases-section,
+    .recommended-section {
+      .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+    }
+  }
+}
