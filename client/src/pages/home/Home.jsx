@@ -1,3 +1,4 @@
+// client/src/pages/home/Home.jsx
 import "./home.scss";
 import { Link } from "react-router-dom";
 import StarIcon from "@mui/icons-material/Star";
@@ -104,27 +105,39 @@ const Home = () => {
 				<section className="trending-section">
 					<h2>Сейчас в тренде</h2>
 					<div className="trending-game">
-						<div className="game-poster">
-							<img
-								src={
-									trendingGame.imageUrl
-								}
-								alt={
-									trendingGame.title
-								}
-							/>
+						<div className="left">
+							<div className="poster_wrapper">
+								<img
+									src={
+										trendingGame.imageUrl
+									}
+									alt={
+										trendingGame.title
+									}
+								/>
+							</div>
+							<div className="rating">
+								<span>
+									{
+										trendingGame.rating
+									}
+								</span>
+								<StarIcon className="star" />
+							</div>
 						</div>
-						<div className="game-info">
+						<div className="right">
 							<h1>
 								{
 									trendingGame.title
 								}
 							</h1>
-							<p>
-								{
-									trendingGame.description
-								}
-							</p>
+							<div className="description">
+								<p>
+									{
+										trendingGame.description
+									}
+								</p>
+							</div>
 							<div className="genres">
 								{trendingGame.genres.map(
 									(
@@ -144,24 +157,13 @@ const Home = () => {
 									)
 								)}
 							</div>
-							<div className="rating-section">
-								<div className="rating">
-									<span className="rating-value">
-										{
-											trendingGame.rating
-										}
-									</span>
-									<StarIcon className="star-icon" />
-								</div>
-								<Link
-									to={`/games/${trendingGame.id}`}
-									className="game-button"
-								>
-									Открыть
-									страницу
-									игры
-								</Link>
-							</div>
+							<Link
+								to={`/games/${trendingGame.id}`}
+								className="game-button"
+							>
+								Открыть страницу
+								игры
+							</Link>
 						</div>
 					</div>
 				</section>
