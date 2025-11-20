@@ -1,9 +1,9 @@
 import {
-  BrowserRouter,
-  createBrowserRouter,
-  RouterProvider,
-  Route,
-  Outlet,
+	BrowserRouter,
+	createBrowserRouter,
+	RouterProvider,
+	Route,
+	Outlet,
 } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext";
@@ -15,79 +15,84 @@ import Profile from "./pages/profile/Profile.jsx";
 import NotFound from "./pages/notfound/NotFound.jsx";
 import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
+import Games from "./pages/games/Games.jsx";
 
 function App() {
-  const { currentUser } = useContext(AuthContext);
+	const { currentUser } = useContext(AuthContext);
 
-  const Layout = () => {
-    return (
-      <div>
-        <Navbar />
-        <Outlet />
-      </div>
-    );
-  };
+	const Layout = () => {
+		return (
+			<div>
+				<Navbar />
+				<Outlet />
+			</div>
+		);
+	};
 
-  const ProtectedRoute = ({ children }) => {
-    // По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
-    // так что оставлю его пока в закомментированном виде
+	const ProtectedRoute = ({ children }) => {
+		// По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
+		// так что оставлю его пока в закомментированном виде
 
-    // if (!currentUser) {
-    //   return <Login />;
-    // }
-    return children;
-  };
+		// if (!currentUser) {
+		//   return <Login />;
+		// }
+		return children;
+	};
 
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: (
-        <ProtectedRoute>
-          <Layout />
-        </ProtectedRoute>
-      ),
-      children: [
-        {
-          path: "/",
-          element: <Home />,
-        },
+	const router = createBrowserRouter([
+		{
+			path: "/",
+			element: (
+				<ProtectedRoute>
+					<Layout />
+				</ProtectedRoute>
+			),
+			children: [
+				{
+					path: "/",
+					element: <Home />,
+				},
+				{
+					path: "/games",
+					element: <Games />,
+				},
 
-        {
-          path: "/profile/:UserId",
-          element: <Profile />,
-        },
+				{
+					path: "/profile/:UserId",
+					element: <Profile />,
+				},
 
-        {
-          path: "/games/:GameId",
-          element: <Game />,
-        },
-      ],
-    },
+				{
+					path: "/games/:GameId",
+					element: <Game />,
+				},
+			],
+		},
 
-    {
-      path: "/forgot-password",
-      element: <ForgotPassword />,
-    },
-    {
-      path: "*",
-      element: <NotFound />,
-    },
+		{
+			path: "/forgot-password",
+			element: <ForgotPassword />,
+		},
+		{
+			path: "*",
+			element: <NotFound />,
+		},
 
-    {
-      path: "/login",
-      element: <Login />,
-    },
-    {
-      path: "/register",
-      element: <Register />,
-    },
-  ]);
+		{
+			path: "/login",
+			element: <Login />,
+		},
+		{
+			path: "/register",
+			element: <Register />,
+		},
+	]);
 
-  return (
-    <div>
-      <RouterProvider router={router} />
-    </div>
-  );
+	return (
+		<div>
+			<RouterProvider router={router} />
+		</div>
+	);
 }
 
 export default App;
