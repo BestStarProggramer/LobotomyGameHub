@@ -1,12 +1,31 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./login.scss";
 import { AuthContext } from "../../context/authContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 
 const Login = () => {
+  const [inputs, setInputs] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const navigate = useNavigate();
+  const [err, setErr] = useState(null);
   const { login } = useContext(AuthContext);
-  const handleLogin = () => {
-    login();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await login(inputs);
+      navigate("/");
+    } catch (err) {
+      setErr(err.response.data);
+    }
   };
 
   return (
@@ -17,12 +36,16 @@ const Login = () => {
             <h1>Вход</h1>
             <form>
               <div className="field">
-                <h2>Логин</h2>
-                <input type="text" />
+                <h2>Email</h2>
+                <input type="email" name="email" onChange={handleChange} />
               </div>
               <div className="field">
                 <h2>Пароль</h2>
-                <input type="password" />
+                <input
+                  type="password"
+                  name="password"
+                  onChange={handleChange}
+                />
                 <div className="forgot-wrapper">
                   <Link to="/forgot-password" className="forgot-link">
                     Не помню пароль
@@ -30,9 +53,20 @@ const Login = () => {
                 </div>
               </div>
               <div className="login-button-wrapper">
-                <Link to="/" className="button-link" onClick={handleLogin}>
+                {err && (
+                  <div className="error-message">
+                    {typeof err === "string"
+                      ? err
+                      : err.error || "Ошибка регистрации"}
+                  </div>
+                )}
+                <button
+                  className="button-link"
+                  onClick={handleLogin}
+                  type="button"
+                >
                   Войти
-                </Link>
+                </button>
               </div>
             </form>
           </div>

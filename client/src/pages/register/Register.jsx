@@ -5,19 +5,18 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const navigate = useNavigate();
-
   const [inputs, setInputs] = useState({
     username: "",
     email: "",
     password: "",
   });
 
-  const [err, setErr] = useState(null);
-
   const handleChange = (e) => {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  const navigate = useNavigate();
+  const [err, setErr] = useState(null);
 
   const handleClick = async (e) => {
     e.preventDefault();
