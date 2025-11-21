@@ -8,18 +8,16 @@ export const AuthContextProvider = ({ children }) => {
     JSON.parse(localStorage.getItem("user")) || null
   );
 
-  const login = () => {
-    // Сделать надо попозже
-    setCurrentUser({
-      id: 1,
-      username: "5Hnet5K",
-      email: "3sheepcanfly3@gmail.com",
-      password_hash: "iwoejdoiqo",
-      role: "admin",
-      bio: "lorem ipsum dorem.......",
-      avatar_url: "/img/profilePic.jpg",
-      created_at: "2024-06-01T12:00:00Z",
-    });
+  const login = async (inputs) => {
+    const res = await axios.post(
+      "http://localhost:8800/api/auth/login",
+      inputs,
+      {
+        withCredentials: true,
+      }
+    );
+
+    setCurrentUser(res.data.user);
   };
 
   useEffect(() => {
