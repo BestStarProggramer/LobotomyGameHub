@@ -54,7 +54,18 @@ const Register = () => {
                 />
               </div>
               <div className="register-button-wrapper">
-                <button className="button-link" onClick={handleClick}>
+                {err && (
+                  <div className="error-message">
+                    {typeof err === "string"
+                      ? err
+                      : err.error || "Ошибка регистрации"}
+                  </div>
+                )}
+                <button
+                  className="button-link"
+                  onClick={handleClick}
+                  type="button"
+                >
                   Зарегистрироваться
                 </button>
               </div>
