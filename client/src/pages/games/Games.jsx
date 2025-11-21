@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import GameBlock from "../../components/gameblock/GameBlock";
 import "./games.scss";
 
 const MOCK_GAMES = Array.from({ length: 100 }, (_, i) => ({
@@ -9,7 +9,7 @@ const MOCK_GAMES = Array.from({ length: 100 }, (_, i) => ({
 	imageUrl: "/img/game_poster.jpg",
 }));
 
-const LIMIT = 12;
+const GAMES_PER_BLOCK = 5;
 
 const mockFetchGames = (offset, searchTerm, filters) => {
 	return new Promise((resolve) => {
@@ -28,7 +28,7 @@ const mockFetchGames = (offset, searchTerm, filters) => {
 
 			const gamesSlice = filteredGames.slice(
 				offset,
-				offset + LIMIT
+				offset + GAMES_PER_BLOCK
 			);
 
 			resolve({
@@ -43,7 +43,7 @@ const mockFetchGames = (offset, searchTerm, filters) => {
 };
 
 const Games = () => {
-	const [games, setGames] = useState([]);
+	const [gameBlocks, setGameBlocks] = useState([]);
 	const [offset, setOffset] = useState(0);
 	const [hasMore, setHasMore] = useState(true);
 	const [searchTerm, setSearchTerm] = useState("");
@@ -63,12 +63,25 @@ const Games = () => {
 						{}
 					);
 
-				setGames((prevGames) =>
-					reset
-						? newGames
-						: [...prevGames, ...newGames]
-				);
-				setOffset(currentOffset + newGames.length);
+				if (newGames.length > 0) {
+					const newBlock = {
+						id: Date.now() + Math.random(), // уникальный ID
+						games: newGames,
+					};
+
+					setGameBlocks((prevBlocks) =>
+						reset
+							? [newBlock]
+							: [
+									...prevBlocks,
+									newBlock,
+								]
+					);
+					setOffset(
+						currentOffset + newGames.length
+					);
+				}
+
 				setHasMore(newHasMore);
 			} catch (error) {
 				console.error(
@@ -84,11 +97,11 @@ const Games = () => {
 	);
 
 	useEffect(() => {
-		setGames([]);
+		setGameBlocks([]);
 		setOffset(0);
 		setHasMore(true);
 		fetchGames(0, true);
-	}, [searchTerm, fetchGames]);
+	}, [searchTerm]);
 
 	const loadMore = () => {
 		if (!isLoading && hasMore) {
@@ -102,6 +115,7 @@ const Games = () => {
 				<h1 className="gamesPage__title">
 					Каталог игр
 				</h1>
+
 				<div className="gamesPage__controls">
 					<div className="searchBox">
 						<input
@@ -139,6 +153,7 @@ const Games = () => {
 						<FilterListIcon />
 					</button>
 				</div>
+
 				{isFilterOpen && (
 					<div className="filterModal">
 						<div className="filterModal__content">
@@ -161,44 +176,28 @@ const Games = () => {
 						</div>
 					</div>
 				)}
-				<div className="gameGrid">
-					{games.map((game) => (
-						<div
-							className="game-card"
-							key={game.id}
-						>
-							<Link
-								to={`/games/${game.id}`}
-							>
-								<div className="game-poster-small">
-									<img
-										src={
-											game.imageUrl
-										}
-										alt={
-											game.title
-										}
-									/>
-								</div>
-								<h3>
-									{
-										game.title
-									}
-								</h3>
-							</Link>
-						</div>
+
+				<div className="games-blocks-container">
+					{gameBlocks.map((block) => (
+						<GameBlock
+							key={block.id}
+							games={block.games}
+						/>
 					))}
 				</div>
-				{isLoading && games.length === 0 && (
+
+				{isLoading && gameBlocks.length === 0 && (
 					<p className="loadingIndicator">
-						Загрузка первой страницы...
+						Загрузка игр...
 					</p>
 				)}
-				{isLoading && games.length > 0 && (
+
+				{isLoading && gameBlocks.length > 0 && (
 					<p className="loadingIndicator">
-						Загрузка новых игр...
+						Загрузка следующих игр...
 					</p>
 				)}
+
 				{hasMore && (
 					<div
 						ref={(element) => {
@@ -234,12 +233,14 @@ const Games = () => {
 						}}
 					/>
 				)}
-				{!hasMore && games.length > 0 && (
+
+				{!hasMore && gameBlocks.length > 0 && (
 					<p className="endMessage">
 						Все игры загружены!
 					</p>
 				)}
-				{games.length === 0 && !isLoading && (
+
+				{gameBlocks.length === 0 && !isLoading && (
 					<p className="endMessage">
 						Игр по вашему запросу не
 						найдено.
