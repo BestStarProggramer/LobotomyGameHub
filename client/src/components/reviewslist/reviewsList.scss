@@ -1,0 +1,15 @@
+.reviews-list-wrapper {
+  // Стиль блока .reviews_section из game.scss
+  //border-radius: 12px;
+  //background-color: #130f14;
+  //display: flex;
+  //flex-direction: column;
+  width: 100%;
+  //padding: 30px; // Общий паддинг для содержимого
+
+  .reviews-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
