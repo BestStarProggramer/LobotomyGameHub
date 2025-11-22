@@ -6,10 +6,28 @@ import PersonIcon from "@mui/icons-material/Person";
 import ArticleIcon from "@mui/icons-material/Article";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const NavBar = () => {
   const { currentUser, logout } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const [err, setErr] = useState(null);
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.post("http://localhost:8800/api/auth/logout", null, {
+        withCredentials: true,
+      });
+      logout();
+      navigate("/login");
+    } catch (err) {
+      setErr(err.response?.data || "Что-то пошло не так");
+    }
+  };
 
   return (
     <div className="navbar">
@@ -56,7 +74,7 @@ const NavBar = () => {
               <SettingsIcon className="icon" />
               <span>Настройки</span>
             </Link>
-            <div className="option-link logout" onClick={logout}>
+            <div className="option-link logout" onClick={handleClick}>
               <LogoutIcon className="icon" />
               <span>Выйти</span>
             </div>
