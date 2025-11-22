@@ -1,9 +1,9 @@
 import {
-	BrowserRouter,
-	createBrowserRouter,
-	RouterProvider,
-	Route,
-	Outlet,
+  BrowserRouter,
+  createBrowserRouter,
+  RouterProvider,
+  Route,
+  Outlet,
 } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./context/authContext";
@@ -16,83 +16,88 @@ import NotFound from "./pages/notfound/NotFound.jsx";
 import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 import Games from "./pages/games/Games.jsx";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
-	const { currentUser } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext);
 
-	const Layout = () => {
-		return (
-			<div>
-				<Navbar />
-				<Outlet />
-			</div>
-		);
-	};
+  const queryClient = new QueryClient();
 
-	const ProtectedRoute = ({ children }) => {
-		// По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
-		// так что оставлю его пока в закомментированном виде
+  const Layout = () => {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div>
+          <Navbar />
+          <Outlet />
+        </div>
+      </QueryClientProvider>
+    );
+  };
 
-		// if (!currentUser) {
-		//   return <Login />;
-		// }
-		return children;
-	};
+  const ProtectedRoute = ({ children }) => {
+    // По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
+    // так что оставлю его пока в закомментированном виде
 
-	const router = createBrowserRouter([
-		{
-			path: "/",
-			element: (
-				<ProtectedRoute>
-					<Layout />
-				</ProtectedRoute>
-			),
-			children: [
-				{
-					path: "/",
-					element: <Home />,
-				},
-				{
-					path: "/games",
-					element: <Games />,
-				},
+    // if (!currentUser) {
+    //   return <Login />;
+    // }
+    return children;
+  };
 
-				{
-					path: "/profile/:UserId",
-					element: <Profile />,
-				},
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: (
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      ),
+      children: [
+        {
+          path: "/",
+          element: <Home />,
+        },
+        {
+          path: "/games",
+          element: <Games />,
+        },
 
-				{
-					path: "/games/:GameId",
-					element: <Game />,
-				},
-			],
-		},
+        {
+          path: "/profile/:UserId",
+          element: <Profile />,
+        },
 
-		{
-			path: "/forgot-password",
-			element: <ForgotPassword />,
-		},
-		{
-			path: "*",
-			element: <NotFound />,
-		},
+        {
+          path: "/games/:GameId",
+          element: <Game />,
+        },
+      ],
+    },
 
-		{
-			path: "/login",
-			element: <Login />,
-		},
-		{
-			path: "/register",
-			element: <Register />,
-		},
-	]);
+    {
+      path: "/forgot-password",
+      element: <ForgotPassword />,
+    },
+    {
+      path: "*",
+      element: <NotFound />,
+    },
 
-	return (
-		<div>
-			<RouterProvider router={router} />
-		</div>
-	);
+    {
+      path: "/login",
+      element: <Login />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+  ]);
+
+  return (
+    <div>
+      <RouterProvider router={router} />
+    </div>
+  );
 }
 
 export default App;
