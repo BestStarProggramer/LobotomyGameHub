@@ -16,6 +16,7 @@ import NotFound from "./pages/notfound/NotFound.jsx";
 import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 import Games from "./pages/games/Games.jsx";
+import Reviews from "./pages/reviews/Reviews.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -70,6 +71,11 @@ function App() {
         {
           path: "/games/:GameId",
           element: <Game />,
+        },
+
+        {
+          path: "/games/:GameId/reviews",
+          element: <Reviews />,
         },
       ],
     },
