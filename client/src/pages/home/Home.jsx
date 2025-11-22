@@ -3,7 +3,7 @@ import MainGameCard from "../../components/maingamecard/MainGameCard";
 import GameBlock from "../../components/gameblock/GameBlock";
 
 const Home = () => {
-	// Заглушки данных для трендовой игры
+	// Заглушка для трендовой игры
 	const trendingGame = {
 		id: 1,
 		title: "Silent Hill f",
@@ -14,7 +14,7 @@ const Home = () => {
 		imageUrl: "/img/game_poster.jpg",
 	};
 
-	// Заглушки для блоков игр
+	// Заглушки данных для списков
 	const recentlyAddedGames = [
 		{
 			id: 12,
@@ -43,7 +43,7 @@ const Home = () => {
 		},
 	];
 
-	const newGames = [
+	const popularGames = [
 		{
 			id: 2,
 			title: "Dying Light: The Beast",
@@ -64,11 +64,7 @@ const Home = () => {
 			title: "Hollow Knight: Silksong",
 			imageUrl: "/img/game_poster.jpg",
 		},
-		{
-			id: 6,
-			title: "Ght",
-			imageUrl: "/img/game_poster.jpg",
-		},
+		{ id: 6, title: "Ght", imageUrl: "/img/game_poster.jpg" },
 	];
 
 	const recommendedGames = [
@@ -89,7 +85,7 @@ const Home = () => {
 		},
 		{
 			id: 10,
-			title: "Длинное название чтобы показать перенос",
+			title: "Длинное название",
 			imageUrl: "/img/game_poster.jpg",
 		},
 		{
@@ -108,16 +104,17 @@ const Home = () => {
 					<MainGameCard game={trendingGame} />
 				</section>
 
-				{/* Блоки игр с использованием компонентов */}
-				<GameBlock
-					title="Недавно добавленные"
-					games={recentlyAddedGames}
-				/>
-				<GameBlock title="Новинки" games={newGames} />
-				<GameBlock
-					title="Рекомендуем"
-					games={recommendedGames}
-				/>
+				{/* Остальные блоки */}
+				<h2 className="section-title">
+					Недавно добавленные
+				</h2>
+				<GameBlock games={recentlyAddedGames} />
+
+				<h2 className="section-title">Популярные</h2>
+				<GameBlock games={popularGames} />
+
+				<h2 className="section-title">Рекомендуемые</h2>
+				<GameBlock games={recommendedGames} />
 			</div>
 		</div>
 	);
