@@ -6,6 +6,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import ArticleIcon from "@mui/icons-material/Article";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -28,6 +29,9 @@ const NavBar = () => {
       setErr(err.response?.data || "Что-то пошло не так");
     }
   };
+
+  const userAvatar = currentUser?.avatar_url || "/img/default-avatar.jpg";
+  const userName = currentUser?.username || "Гость";
 
   return (
     <div className="navbar">
@@ -53,31 +57,42 @@ const NavBar = () => {
 
       <div className="right">
         <div className="user" onClick={() => setOpen(!open)}>
-          <span>{currentUser.username}</span>
-          <img src={currentUser.avatar_url} alt="Аватар профиля" />
+          <span>{userName}</span>
+          <img src={userAvatar} alt="Аватар профиля" />
         </div>
 
         {open && (
           <div className="options">
-            <Link to={`/profile/${currentUser.id}`} className="option-link">
-              <PersonIcon className="icon" />
-              <span>Профиль</span>
-            </Link>
-            <Link
-              to={`/profile/${currentUser.id}/reviews`}
-              className="option-link"
-            >
-              <ArticleIcon className="icon" />
-              <span>Мои обзоры</span>
-            </Link>
-            <Link to="/settings" className="option-link">
-              <SettingsIcon className="icon" />
-              <span>Настройки</span>
-            </Link>
-            <div className="option-link logout" onClick={handleClick}>
-              <LogoutIcon className="icon" />
-              <span>Выйти</span>
-            </div>
+            {currentUser ? (
+              // меню для авторизованного пользователя
+              <>
+                <Link to={`/profile/${currentUser.id}`} className="option-link">
+                  <PersonIcon className="icon" />
+                  <span>Профиль</span>
+                </Link>
+                <Link
+                  to={`/profile/${currentUser.id}/reviews`}
+                  className="option-link"
+                >
+                  <ArticleIcon className="icon" />
+                  <span>Мои обзоры</span>
+                </Link>
+                <Link to="/settings" className="option-link">
+                  <SettingsIcon className="icon" />
+                  <span>Настройки</span>
+                </Link>
+                <div className="option-link logout" onClick={handleClick}>
+                  <LogoutIcon className="icon" />
+                  <span>Выйти</span>
+                </div>
+              </>
+            ) : (
+              // меню для гостя: только кнопка входа
+              <Link to="/login" className="option-link">
+                <LoginIcon className="icon" />
+                <span>Вход</span>
+              </Link>
+            )}
           </div>
         )}
       </div>
