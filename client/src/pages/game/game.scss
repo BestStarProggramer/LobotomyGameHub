@@ -16,6 +16,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   .game_wrapper {
     border-radius: 12px;
     margin-top: 30px;
@@ -34,6 +35,7 @@ body {
       border-top-left-radius: 12px;
       border-top-right-radius: 12px;
       overflow: hidden;
+
       img {
         width: 100%;
         height: 100%;
@@ -49,11 +51,13 @@ body {
       justify-content: center;
       gap: 25px;
       width: auto;
+
       .top {
         width: 100%;
         gap: 20px;
         display: flex;
         flex-direction: row;
+
         .left {
           margin-top: -150px;
           position: relative;
@@ -61,16 +65,19 @@ body {
           display: flex;
           align-items: center;
           flex-direction: column;
+
           .poster_wrapper {
             width: 100%;
             height: 350px;
             border-radius: 50px;
             overflow: hidden;
+
             img {
               height: 100%;
               object-fit: cover;
             }
           }
+
           .rating {
             left: 60%;
             top: 310px;
@@ -80,11 +87,13 @@ body {
             justify-content: space-between;
             flex-direction: row;
             gap: 5px;
+
             span {
               color: white;
               font-size: 30px;
               font-weight: 450;
             }
+
             .star {
               margin-top: -5px;
               color: white;
@@ -98,6 +107,7 @@ body {
           width: fit-content;
           display: flex;
           flex-direction: column;
+
           h1 {
             margin-bottom: 10px;
             color: white;
@@ -109,6 +119,7 @@ body {
             background-color: #1c151e;
             border-radius: 10px;
             padding: 0px 14px;
+
             p {
               color: white;
               font-size: 20px;
@@ -128,10 +139,12 @@ body {
           font-weight: bold;
           font-size: 28px;
         }
+
         .sections {
           display: flex;
           justify-content: space-between;
           align-items: stretch;
+
           .left {
             z-index: 2;
             display: flex;
@@ -152,6 +165,7 @@ body {
             left: -20px;
             display: flex;
             flex-direction: column;
+
             .articles_wrapper {
               height: 100%;
               padding: 10px;
@@ -162,7 +176,6 @@ body {
               .article {
                 display: flex;
                 flex-direction: column;
-
                 gap: 20px;
 
                 .top {
@@ -170,6 +183,7 @@ body {
                   display: flex;
                   align-items: start;
                   justify-content: space-between;
+
                   h1 {
                     margin: 0;
                     color: white;
@@ -186,6 +200,7 @@ body {
                       color: white;
                       font-size: 14px;
                     }
+
                     img {
                       width: 40px;
                       object-fit: cover;
@@ -210,9 +225,11 @@ body {
                     cursor: pointer;
                     transition: color 150ms ease;
                     background-color: #6b2da8;
+
                     &:hover {
                       background-color: #53257d;
                     }
+
                     border-radius: 10px;
                     padding: 5px 15px;
 
@@ -232,49 +249,9 @@ body {
     }
   }
 
-  .reviews_section {
-    border-radius: 12px;
-    margin-top: 30px;
-    background-color: #130f14;
-    display: flex;
-    flex-direction: column;
+  /* Контейнер для ReviewsBlock - только для отступов */
+  .reviews-container {
     width: 80%;
-    padding-bottom: 30px;
-    .top {
-      padding: 5px 30px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      h1 {
-        color: white;
-        font-size: 28px;
-        font-weight: bold;
-      }
-
-      .button_reviews {
-        background-color: #6b2da8;
-        border-radius: 12px;
-        padding: 10px 15px;
-        cursor: pointer;
-        transition: background-color 150ms ease;
-        &:hover {
-          background-color: #53257d;
-        }
-        text-decoration: none;
-        p {
-          color: white;
-          margin: 0;
-          font-size: 14px;
-          font-weight: bold;
-        }
-      }
-    }
-
-    .bottom {
-      display: flex;
-      flex-direction: column;
-      padding: 0px 30px;
-    }
+    margin-top: 30px;
   }
 }
