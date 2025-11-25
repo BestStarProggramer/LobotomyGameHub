@@ -17,6 +17,7 @@ import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 import Games from "./pages/games/Games.jsx";
 import Reviews from "./pages/reviews/Reviews.jsx";
+import Publications from "./pages/publications/Publications.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -61,6 +62,11 @@ function App() {
         {
           path: "/games",
           element: <Games />,
+        },
+
+        {
+          path: "/publications",
+          element: <Publications />,
         },
 
         {

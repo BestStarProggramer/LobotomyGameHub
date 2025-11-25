@@ -1,0 +1,93 @@
+html,
+body {
+  font-family: "Bahnschrift", sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.publications-page {
+  background-image: url("~/public/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 20px 0;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+
+    .publications-section {
+      border-radius: 12px;
+      background-color: #130f14;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      padding-bottom: 30px;
+
+      .section-title {
+        color: white;
+        text-align: center;
+        font-size: 2.5rem;
+        margin: 30px 0 20px 0;
+        font-weight: bold;
+      }
+
+      .top {
+        padding: 5px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+
+        .tabs {
+          display: flex;
+          gap: 20px;
+
+          .tab {
+            background-color: transparent;
+            border: 2px solid #53257d;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 150ms ease;
+
+            &:hover {
+              background-color: #53257d;
+              transform: translateY(-2px);
+            }
+
+            &.active {
+              background-color: #53257d;
+              border-color: #6b2da8;
+            }
+          }
+        }
+      }
+
+      .bottom {
+        padding: 0 30px;
+
+        .publications-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 25px;
+
+          @media (max-width: 1024px) {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          @media (max-width: 768px) {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    }
+  }
+}
