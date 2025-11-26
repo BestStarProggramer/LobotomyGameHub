@@ -20,7 +20,7 @@ client/.env
 # --------------------------
 /dist
 /build
-/backend/build
+/server/build
 /client/build
 
 # --------------------------
@@ -56,3 +56,5 @@ uploads/
 *.swo
 *.swn
 *.bak
+server/localhost.cert
+server/localhost.key

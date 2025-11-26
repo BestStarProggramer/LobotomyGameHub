@@ -4,9 +4,14 @@ import "dotenv/config"; // Загрузка переменных окружен�
 import { query } from "./db.js"; // Импорт функции для выполнения запросов к БД
 import authRouter from "./routes/auth.js";
 import cookieParser from "cookie-parser";
+import https from "https";
+import fs from "fs";
 
 const app = express();
 const PORT = process.env.PORT || 8800; // Используем порт из .env или 8800
+
+const key = fs.readFileSync("./localhost.key");
+const cert = fs.readFileSync("./localhost.cert");
 
 // --- 1. Настройка Middleware ---
 // Разрешаем Cross-Origin Resource Sharing (CORS) для фронтенда
@@ -57,6 +62,8 @@ app.get("/api/health", async (req, res) => {
 });
 
 // --- 3. Запуск сервера ---
-app.listen(PORT, () => {
-  console.log(`[Server] Backend server is running on http://localhost:${PORT}`);
+https.createServer({ key, cert }, app).listen(PORT, () => {
+  console.log(
+    `[Server] HTTPS backend server is running on https://localhost:${PORT}`
+  );
 });
