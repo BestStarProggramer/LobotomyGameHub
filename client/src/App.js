@@ -18,6 +18,7 @@ import Game from "./pages/game/Game.jsx";
 import Games from "./pages/games/Games.jsx";
 import Reviews from "./pages/reviews/Reviews.jsx";
 import Publications from "./pages/publications/Publications.jsx";
+import PublicationPage from "./pages/publication/PublicationPage.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -67,6 +68,11 @@ function App() {
         {
           path: "/publications",
           element: <Publications />,
+        },
+
+        {
+          path: "/publications/:publicationId",
+          element: <PublicationPage />,
         },
 
         {
