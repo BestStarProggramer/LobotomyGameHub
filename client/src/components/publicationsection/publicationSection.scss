@@ -1,0 +1,112 @@
+.publication-section {
+  border-radius: 12px;
+  background-color: #130f14;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 30px;
+  margin-bottom: 30px;
+
+  .publication-header {
+    margin-bottom: 30px;
+
+    .meta-stats {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 20px;
+
+      .date {
+        color: #a0a0a0;
+        font-size: 14px;
+      }
+
+      .stat {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #a0a0a0;
+
+        .stat-icon {
+          font-size: 18px;
+        }
+
+        span {
+          font-size: 14px;
+        }
+      }
+    }
+
+    .publication-title {
+      color: white;
+      font-size: 2.5rem;
+      margin: 0 0 20px 0;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      img {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      span {
+        color: white;
+        font-size: 16px;
+      }
+    }
+  }
+
+  .publication-content {
+    .content-text {
+      color: white;
+      font-size: 18px;
+      line-height: 1.6;
+
+      h3 {
+        color: white;
+        margin: 25px 0 15px 0;
+        font-size: 22px;
+      }
+
+      p {
+        margin: 0 0 15px 0;
+        color: white;
+      }
+
+      h1,
+      h2,
+      h4,
+      h5,
+      h6 {
+        color: white;
+      }
+
+      strong,
+      b {
+        color: white;
+      }
+
+      em,
+      i {
+        color: white;
+      }
+
+      ul,
+      ol {
+        color: white;
+      }
+
+      li {
+        color: white;
+      }
+    }
+  }
+}
