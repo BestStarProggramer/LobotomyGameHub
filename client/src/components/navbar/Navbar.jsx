@@ -42,16 +42,12 @@ const NavBar = () => {
       </div>
 
       <div className="middle">
-        <Link to="/articles" className="textlink">
-          <span>Статьи</span>
-        </Link>
-
         <Link to="/games" className="textlink">
-          <span>Игры</span>
+          <span>Каталог игр</span>
         </Link>
 
-        <Link to="/news" className="textlink">
-          <span>Новости</span>
+        <Link to="/publications" className="textlink">
+          <span>Публикации</span>
         </Link>
       </div>
 
