@@ -1,0 +1,101 @@
+.comment-block {
+  border-radius: 12px;
+  background-color: #130f14;
+  padding: 30px;
+  width: 100%;
+  margin-top: 30px;
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 25px;
+
+    .comment-icon {
+      color: #53257d;
+      font-size: 28px;
+    }
+
+    h2 {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0;
+    }
+  }
+
+  .comment-form {
+    margin-bottom: 30px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    textarea {
+      width: 100%;
+      background-color: #1c151e;
+      border: 1px solid #53257d;
+      border-radius: 8px;
+      padding: 15px;
+      color: white;
+      font-size: 14px;
+      font-family: "Bahnschrift", sans-serif;
+      resize: vertical;
+      box-sizing: border-box;
+
+      &:focus {
+        outline: none;
+        border-color: #6b2da8;
+      }
+
+      &::placeholder {
+        color: #a0a0a0;
+      }
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+      width: 100%;
+
+      .submit-btn {
+        background-color: #53257d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 150ms ease;
+
+        &:hover {
+          background-color: #6b2da8;
+        }
+      }
+
+      .cancel-btn {
+        background-color: transparent;
+        color: #a0a0a0;
+        border: 1px solid #a0a0a0;
+        border-radius: 6px;
+        padding: 8px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 150ms ease;
+
+        &:hover {
+          background-color: #2a2533;
+          color: white;
+        }
+      }
+    }
+  }
+
+  .comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+}
