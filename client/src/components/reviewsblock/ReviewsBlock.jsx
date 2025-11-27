@@ -1,29 +1,52 @@
 import "./reviewsBlock.scss";
 import { Link } from "react-router-dom";
 import ReviewsList from "../reviewslist/ReviewsList";
+import ReviewInput from "../reviewinput/ReviewInput";
+import { useState } from "react";
 
-/**
- * Компонент, отображающий секцию отзывов с фоном, заголовком и кнопкой.
- * Стиль скопирован с Game.jsx.
- * * @param {Array} reviews - Массив объектов отзывов для отображения.
- * @param {string} buttonText - Текст на кнопке.
- * @param {string} buttonLink - Ссылка для кнопки.
- */
-const ReviewsBlock = ({ reviews, buttonText, buttonLink }) => {
+const ReviewsBlock = ({
+  reviews,
+  buttonText,
+  buttonLink,
+  showReviewInput = false,
+}) => {
+  const [localReviews, setLocalReviews] = useState(reviews);
+
+  const handleReviewSubmit = (reviewData) => {
+    const newReview = {
+      id: Date.now(),
+      username: "CurrentUser",
+      avatar: "/img/default-avatar.jpg",
+      rating: reviewData.rating,
+      date: new Date().toLocaleDateString("ru-RU"),
+      content: reviewData.content,
+    };
+
+    setLocalReviews((prevReviews) => [newReview, ...prevReviews]);
+  };
+
   return (
     <div className="reviews_section">
       <div className="top">
         <h1>Отзывы</h1>
-
-        {/* Кнопка с настраиваемым текстом и ссылкой */}
-        <Link to={buttonLink} className="button_reviews">
-          <p>{buttonText}</p>
-        </Link>
+        {/* Кнопка будет, если передать buttonText и buttonLink */}
+        {buttonText && buttonLink && (
+          <Link to={buttonLink} className="button_reviews">
+            <p>{buttonText}</p>
+          </Link>
+        )}
       </div>
-
+      {/* Можно передать false и формы ввода не будет */}
+      {showReviewInput && (
+        <div className="review-input-container">
+          <ReviewInput
+            onSubmit={handleReviewSubmit}
+            onCancel={() => console.log("Отмена")}
+          />
+        </div>
+      )}
       <div className="bottom">
-        {/* Используем ReviewsList для отображения массива отзывов */}
-        <ReviewsList reviews={reviews} />
+        <ReviewsList reviews={localReviews} />
       </div>
     </div>
   );
