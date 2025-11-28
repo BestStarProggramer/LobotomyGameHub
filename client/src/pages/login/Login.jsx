@@ -24,7 +24,13 @@ const Login = () => {
       await login(inputs);
       navigate("/");
     } catch (err) {
-      setErr(err.response.data);
+      if (err.response && err.response.data) {
+        setErr(err.response.data);
+      } else if (err.message) {
+        setErr(err.message);
+      } else {
+        setErr("Произошла неизвестная ошибка");
+      }
     }
   };
 
