@@ -1,8 +1,12 @@
 import "./reviews.scss";
 import MainGameCard from "../../components/maingamecard/MainGameCard";
 import ReviewsBlock from "../../components/reviewsblock/ReviewsBlock";
+import { AuthContext } from "../../context/authContext";
+import { useContext } from "react";
 
 const Reviews = () => {
+  const { currentUser } = useContext(AuthContext);
+
   const gameData = {
     id: 1,
     title: "Silent Hill f",
@@ -68,7 +72,10 @@ const Reviews = () => {
           <MainGameCard game={gameData} />
         </section>
 
-        <ReviewsBlock reviews={reviewsList} showReviewInput={true} />
+        <ReviewsBlock
+          reviews={reviewsList}
+          showReviewInput={currentUser != null}
+        />
       </div>
     </div>
   );

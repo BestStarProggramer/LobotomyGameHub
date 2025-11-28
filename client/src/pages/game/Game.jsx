@@ -2,8 +2,12 @@ import "./game.scss";
 import { Link } from "react-router-dom";
 import StarIcon from "@mui/icons-material/Star";
 import ReviewsBlock from "../../components/reviewsblock/ReviewsBlock";
+import { AuthContext } from "../../context/authContext";
+import { useContext } from "react";
 
 const Game = () => {
+  const { currentUser } = useContext(AuthContext);
+
   const reviewsList = [
     {
       id: 1,
@@ -112,7 +116,7 @@ const Game = () => {
           reviews={reviewsList}
           buttonText="На страницу с отзывами →"
           buttonLink={`/games/${gameId}/reviews`}
-          showReviewInput={true}
+          showReviewInput={currentUser != null}
         />
       </div>
     </div>
