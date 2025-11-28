@@ -1,8 +1,12 @@
 import "./publicationPage.scss";
+import { useContext } from "react";
 import PublicationSection from "../../components/publicationsection/PublicationSection";
 import CommentBlock from "../../components/commentblock/CommentBlock";
+import { AuthContext } from "../../context/authContext";
 
 const PublicationPage = () => {
+  const { currentUser } = useContext(AuthContext);
+
   const publicationData = {
     id: 1,
     type: "article",

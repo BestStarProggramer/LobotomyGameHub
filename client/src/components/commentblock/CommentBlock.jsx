@@ -1,12 +1,19 @@
 import "./commentBlock.scss";
-import { useState } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import CommentIcon from "@mui/icons-material/Comment";
 import Comment from "../comment/Comment";
+import CommentInput from "../commentinput/CommentInput";
+import { AuthContext } from "../../context/authContext";
 
 const CommentBlock = ({ comments: initialComments, publicationId }) => {
   const [comments, setComments] = useState(initialComments);
-  const [newComment, setNewComment] = useState("");
-  const [isWriting, setIsWriting] = useState(false);
+  const { currentUser } = useContext(AuthContext);
+
+  const currentUserRef = useRef(currentUser);
+
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
   const formatDate = (date) => {
     return date.toLocaleString("ru-RU", {
@@ -18,26 +25,27 @@ const CommentBlock = ({ comments: initialComments, publicationId }) => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
+  const handleCommentSubmit = (commentData) => {
+    const user = currentUserRef.current;
+
+    if (!user) {
+      console.error("Пользователь не авторизован");
+      return;
+    }
 
     const comment = {
       id: Date.now(),
-      username: "CurrentUser",
-      avatar: "/img/default-avatar.jpg",
+      username: user.username,
+      avatar: user.avatar_url || "/img/default-avatar.jpg",
       date: formatDate(new Date()),
-      content: newComment,
+      content: commentData.content,
     };
 
     setComments([...comments, comment]);
-    setNewComment("");
-    setIsWriting(false);
   };
 
-  const handleCancel = () => {
-    setNewComment("");
-    setIsWriting(false);
+  const handleCommentCancel = () => {
+    // Логика отмены
   };
 
   return (
@@ -47,27 +55,12 @@ const CommentBlock = ({ comments: initialComments, publicationId }) => {
         <h2>Комментарии ({comments.length})</h2>
       </div>
 
-      <form className="comment-form" onSubmit={handleSubmit}>
-        <textarea
-          value={newComment}
-          onChange={(e) => {
-            setNewComment(e.target.value);
-            if (!isWriting) setIsWriting(true);
-          }}
-          placeholder="Напишите комментарий..."
-          rows="4"
+      {currentUser && (
+        <CommentInput
+          onSubmit={handleCommentSubmit}
+          onCancel={handleCommentCancel}
         />
-        {isWriting && (
-          <div className="comment-actions">
-            <button type="submit" className="submit-btn">
-              Отправить
-            </button>
-            <button type="button" className="cancel-btn" onClick={handleCancel}>
-              Отмена
-            </button>
-          </div>
-        )}
-      </form>
+      )}
 
       <div className="comments-list">
         {comments.map((comment) => (
