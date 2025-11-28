@@ -2,7 +2,8 @@ import "./reviewsBlock.scss";
 import { Link } from "react-router-dom";
 import ReviewsList from "../reviewslist/ReviewsList";
 import ReviewInput from "../reviewinput/ReviewInput";
-import { useState } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
+import { AuthContext } from "../../context/authContext";
 
 const ReviewsBlock = ({
   reviews,
@@ -11,12 +12,26 @@ const ReviewsBlock = ({
   showReviewInput = false,
 }) => {
   const [localReviews, setLocalReviews] = useState(reviews);
+  const { currentUser } = useContext(AuthContext);
+
+  const currentUserRef = useRef(currentUser);
+
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
   const handleReviewSubmit = (reviewData) => {
+    const user = currentUserRef.current;
+
+    if (!user) {
+      console.error("Пользователь не авторизован");
+      return;
+    }
+
     const newReview = {
       id: Date.now(),
-      username: "CurrentUser",
-      avatar: "/img/default-avatar.jpg",
+      username: user.username,
+      avatar: user.avatar_url || "/img/default-avatar.jpg",
       rating: reviewData.rating,
       date: new Date().toLocaleDateString("ru-RU"),
       content: reviewData.content,
