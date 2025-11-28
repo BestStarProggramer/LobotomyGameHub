@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS games (
   release_date DATE,
   rating NUMERIC(2,1),
   poster_url TEXT,
+  cover_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
