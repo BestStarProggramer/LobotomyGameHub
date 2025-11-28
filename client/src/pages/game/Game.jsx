@@ -116,7 +116,7 @@ const Game = () => {
           reviews={reviewsList}
           buttonText="На страницу с отзывами →"
           buttonLink={`/games/${gameId}/reviews`}
-          showReviewInput={currentUser != null}
+          showReviewInput={currentUser}
         />
       </div>
     </div>

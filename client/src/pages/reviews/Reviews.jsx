@@ -72,10 +72,7 @@ const Reviews = () => {
           <MainGameCard game={gameData} />
         </section>
 
-        <ReviewsBlock
-          reviews={reviewsList}
-          showReviewInput={currentUser != null}
-        />
+        <ReviewsBlock reviews={reviewsList} showReviewInput={currentUser} />
       </div>
     </div>
   );
