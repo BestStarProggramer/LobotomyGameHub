@@ -5,34 +5,34 @@ import "./games.scss";
 import axios from "axios";
 import { fetchGamesList, fetchGameDetailsBySlug } from "../../utils/rawg.js";
 
-// const MOCK_GAMES = Array.from({ length: 100 }, (_, i) => ({
-//   id: i + 1,
-//   title: `Игра #${i + 1}: Cyber-Adventure - The Fallen City`,
-//   imageUrl: "/img/game_poster.jpg",
-// }));
+const MOCK_GAMES = Array.from({ length: 100 }, (_, i) => ({
+  id: i + 1,
+  title: `Игра #${i + 1}: Cyber-Adventure - The Fallen City`,
+  imageUrl: "/img/game_poster.jpg",
+}));
 
-// const mockFetchGames = (offset, searchTerm, filters) => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       let filteredGames = MOCK_GAMES;
+const mockFetchGames = (offset, searchTerm, filters) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      let filteredGames = MOCK_GAMES;
 
-//       if (searchTerm) {
-//         const lowerSearchTerm = searchTerm.toLowerCase();
-//         filteredGames = filteredGames.filter((game) =>
-//           game.title.toLowerCase().includes(lowerSearchTerm)
-//         );
-//       }
+      if (searchTerm) {
+        const lowerSearchTerm = searchTerm.toLowerCase();
+        filteredGames = filteredGames.filter((game) =>
+          game.title.toLowerCase().includes(lowerSearchTerm)
+        );
+      }
 
-//       const gamesSlice = filteredGames.slice(offset, offset + GAMES_PER_BLOCK);
+      const gamesSlice = filteredGames.slice(offset, offset + GAMES_PER_BLOCK);
 
-//       resolve({
-//         games: gamesSlice,
-//         totalCount: filteredGames.length,
-//         hasMore: offset + gamesSlice.length < filteredGames.length,
-//       });
-//     }, 800);
-//   });
-// };
+      resolve({
+        games: gamesSlice,
+        totalCount: filteredGames.length,
+        hasMore: offset + gamesSlice.length < filteredGames.length,
+      });
+    }, 800);
+  });
+};
 
 const GAMES_PER_BLOCK = 5;
 const API_KEY = process.env.API_KEY;
