@@ -62,8 +62,13 @@ app.get("/api/health", async (req, res) => {
 });
 
 // --- 3. Запуск сервера ---
-https.createServer({ key, cert }, app).listen(PORT, () => {
+// https.createServer({ key, cert }, app).listen(PORT, () => {
+//   console.log(
+//     `[Server] HTTPS backend server is running on https://localhost:${PORT}`
+//   );
+// });
+app.listen(PORT, () => {
   console.log(
-    `[Server] HTTPS backend server is running on https://localhost:${PORT}`
+    `[Server] HTTP backend server is running on http://localhost:${PORT}`
   );
 });
