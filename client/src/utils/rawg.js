@@ -8,9 +8,10 @@ export async function fetchGamesList(page = 1, page_size = 20, search = "") {
   if (search) params.search = search;
 
   const res = await axios.get(`${RAWG_BASE}/games`, { params });
-  const results = res.data.results || [];
 
-  return results.map((g) => ({
+  const data = res.data;
+
+  const games = (data.results || []).map((g) => ({
     title: g.name,
     slug: g.slug,
     background_image: g.background_image || null,
@@ -18,6 +19,13 @@ export async function fetchGamesList(page = 1, page_size = 20, search = "") {
       .map((s) => s.image)
       .filter(Boolean),
   }));
+
+  return {
+    count: data.count,
+    next: data.next,
+    previous: data.previous,
+    results: games,
+  };
 }
 
 export async function fetchGameDetailsBySlug(slug) {
