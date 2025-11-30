@@ -3,15 +3,18 @@ services:
     image: postgres:15
     container_name: lobotomy_postgres
     restart: always
-    environment:
-      POSTGRES_DB: lobotomy_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    env_file:
+      - ./server/.env
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./server/schema3.sql:/docker-entrypoint-initdb.d/schema3.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${PGUSER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./server
@@ -21,8 +24,12 @@ services:
       - ./server/.env
     ports:
       - "8800:8800"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   frontend:
     build: ./client
@@ -30,8 +37,12 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
     depends_on:
       - backend
 
 volumes:
   pgdata:
+
