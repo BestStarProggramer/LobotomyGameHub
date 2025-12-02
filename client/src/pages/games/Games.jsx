@@ -1,75 +1,54 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import GameBlock from "../../components/gameblock/GameBlock";
 import "./games.scss";
-import axios from "axios";
-import { fetchGamesList, fetchGameDetailsBySlug } from "../../utils/rawg.js";
-
-const MOCK_GAMES = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  title: `Игра #${i + 1}: Cyber-Adventure - The Fallen City`,
-  imageUrl: "/img/game_poster.jpg",
-}));
-
-const mockFetchGames = (offset, searchTerm, filters) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let filteredGames = MOCK_GAMES;
-
-      if (searchTerm) {
-        const lowerSearchTerm = searchTerm.toLowerCase();
-        filteredGames = filteredGames.filter((game) =>
-          game.title.toLowerCase().includes(lowerSearchTerm)
-        );
-      }
-
-      const gamesSlice = filteredGames.slice(offset, offset + GAMES_PER_BLOCK);
-
-      resolve({
-        games: gamesSlice,
-        totalCount: filteredGames.length,
-        hasMore: offset + gamesSlice.length < filteredGames.length,
-      });
-    }, 800);
-  });
-};
+import { fetchGamesList, chunkArray } from "../../utils/rawg.js";
 
 const GAMES_PER_BLOCK = 5;
-const API_KEY = process.env.API_KEY;
 
 const Games = () => {
-  const [gameBlocks, setGameBlocks] = useState([]);
-  const [offset, setOffset] = useState(0);
+  const [gameBlocks, setGameBlocks] = useState([]); // [{id, games: [...]}, ...]
   const [hasMore, setHasMore] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
+
+  const sentinelRef = useRef(null);
 
   const fetchGames = useCallback(
-    async (currentOffset, reset = false) => {
-      if (!hasMore && !reset) return;
+    async (pageNumber = 1, reset = false) => {
+      if (!reset && !hasMore) return;
 
       setIsLoading(true);
       try {
-        const { games: newGames, hasMore: newHasMore } = await mockFetchGames(
-          currentOffset,
-          searchTerm,
-          {}
-        );
+        const data = await fetchGamesList(pageNumber, 100, searchTerm);
 
-        if (newGames.length > 0) {
-          const newBlock = {
-            id: Date.now() + Math.random(), // уникальный ID
-            games: newGames,
-          };
+        const newGamesFlat = data.results.flat();
 
-          setGameBlocks((prevBlocks) =>
-            reset ? [newBlock] : [...prevBlocks, newBlock]
+        setGameBlocks((prevBlocks) => {
+          const existingSlugs = new Set(
+            prevBlocks.flatMap((block) => block.games.map((g) => g.slug))
           );
-          setOffset(currentOffset + newGames.length);
-        }
 
-        setHasMore(newHasMore);
+          const filteredGames = newGamesFlat.filter(
+            (game) => !existingSlugs.has(game.slug)
+          );
+
+          const newBlocks = chunkArray(filteredGames, 5).map((gamesArray) => ({
+            id: Date.now() + Math.random(),
+            games: gamesArray,
+          }));
+
+          if (reset) {
+            return newBlocks;
+          } else {
+            return [...prevBlocks, ...newBlocks];
+          }
+        });
+
+        setPage(pageNumber + 1);
+        setHasMore(Boolean(data.next));
       } catch (error) {
         console.error("Ошибка при загрузке игр:", error);
         setHasMore(false);
@@ -82,16 +61,33 @@ const Games = () => {
 
   useEffect(() => {
     setGameBlocks([]);
-    setOffset(0);
+    setPage(1);
     setHasMore(true);
-    fetchGames(0, true);
+    fetchGames(1, true);
   }, [searchTerm]);
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!isLoading && hasMore) {
-      fetchGames(offset);
+      fetchGames(page);
     }
-  };
+  }, [isLoading, hasMore, fetchGames, page]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { root: null, rootMargin: "200px", threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore, isLoading, hasMore]);
 
   return (
     <div className="gamesPage home">
@@ -149,23 +145,13 @@ const Games = () => {
         {isLoading && gameBlocks.length === 0 && (
           <p className="loadingIndicator">Загрузка игр...</p>
         )}
-
         {isLoading && gameBlocks.length > 0 && (
           <p className="loadingIndicator">Загрузка следующих игр...</p>
         )}
 
         {hasMore && (
           <div
-            ref={(element) => {
-              if (!element || isLoading) return;
-              const observer = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting) {
-                  loadMore();
-                }
-              });
-              observer.observe(element);
-              return () => observer.unobserve(element);
-            }}
+            ref={sentinelRef}
             style={{
               height: "20px",
               margin: "10px 0",

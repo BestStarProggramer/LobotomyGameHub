@@ -2,29 +2,36 @@ import axios from "axios";
 
 const RAWG_KEY = process.env.API_KEY;
 const RAWG_BASE = "https://api.rawg.io/api";
+const RAWG_PROXY = "http://localhost:8800/api/rawg";
+
+export function chunkArray(arr, size = 5) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+}
 
 export async function fetchGamesList(page = 1, page_size = 20, search = "") {
-  const params = { key: RAWG_KEY, page, page_size };
+  const params = { page, page_size };
   if (search) params.search = search;
 
-  const res = await axios.get(`${RAWG_BASE}/games`, { params });
-
+  const res = await axios.get(`${RAWG_PROXY}/games`, { params });
   const data = res.data;
 
-  const games = (data.results || []).map((g) => ({
+  const gamesFlat = (data.results || []).map((g) => ({
     title: g.name,
     slug: g.slug,
     background_image: g.background_image || null,
-    screenshots: (g.short_screenshots || [])
-      .map((s) => s.image)
-      .filter(Boolean),
   }));
+
+  const gamesChunked = chunkArray(gamesFlat, 5);
 
   return {
     count: data.count,
     next: data.next,
     previous: data.previous,
-    results: games,
+    results: gamesChunked,
   };
 }
 
