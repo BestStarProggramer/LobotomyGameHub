@@ -13,7 +13,7 @@ export async function fetchGamesList(page = 1, page_size = 20, search = "") {
 
   const games = (data.results || []).map((g) => ({
     title: g.name,
-    id: g.id,
+    slug: g.slug,
     background_image: g.background_image || null,
     screenshots: (g.short_screenshots || [])
       .map((s) => s.image)
