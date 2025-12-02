@@ -22,7 +22,7 @@ const Games = () => {
 
       setIsLoading(true);
       try {
-        const data = await fetchGamesList(pageNumber, 100, searchTerm);
+        const data = await fetchGamesList(pageNumber, 30, searchTerm);
 
         const newGamesFlat = data.results.flat();
 

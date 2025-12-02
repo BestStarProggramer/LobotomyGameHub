@@ -8,7 +8,11 @@ const GameCard = ({ game }) => {
     <div className="game-card">
       <Link to={`/games/${slug}`}>
         <div className="game-poster-small">
-          <img src={background_image || "/img/default.jpg"} alt={title} />
+          <img
+            loading="lazy"
+            src={background_image || "/img/default.jpg"}
+            alt={title}
+          />
         </div>
         <h3>{title}</h3>
       </Link>
