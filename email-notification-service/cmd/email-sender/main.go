@@ -4,6 +4,7 @@ import (
 	"email-notification-service/internal/broker"
 	"email-notification-service/internal/config"
 	"email-notification-service/internal/handler"
+	"email-notification-service/internal/service"
 	"log"
 )
 
@@ -16,8 +17,11 @@ func main() {
 	}
 
 	log.Println("Конфигурация успешно загружена.")
+	log.Printf("Брокер: %s, Очередь: %s, Таймаут: %s", cfg.BrokerURL, cfg.QueueName, cfg.EmailTimeout)
 
-	messageHandler := handler.NewStubHandler()
+	emailService := service.NewEmailService()
+
+	messageHandler := handler.NewHandler(emailService)
 
 	consumer, err := broker.NewConsumer(cfg.BrokerURL, cfg.QueueName, messageHandler)
 	if err != nil {
