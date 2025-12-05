@@ -1,11 +1,8 @@
 package mail
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"net/smtp"
 )
 
 type Client interface {
@@ -13,64 +10,38 @@ type Client interface {
 }
 
 type Config struct {
-	APIKey string
+	Host string
+	Port string
+	Username string
+	Password string
 	SenderEmail string
-	HTTPClient *http.Client
 }
 
-type SendGridClient struct {
+type SMTPClient struct {
 	cfg Config
-	baseURL string
 }
 
-func NewSendGridClient(cfg Config) *SendGridClient {
-	return &SendGridClient{
-		cfg: cfg,
-		baseURL: "https://api.sendgrid.com/v3/mail/send",
-	}
+func NewSMTPClient(cfg Config) *SMTPClient {
+	return &SMTPClient{cfg: cfg}
 }
 
-func (c *SendGridClient) Send(recipientEmail, subject, body string) error {
-	payload := map[string]interface{}{
-		"personalizations": []map[string]interface{}{
-			{
-				"to": []map[string]string{
-					{"email": recipientEmail},
-				},
-				"subject": subject,
-			},
-		},
-		"from": map[string]string{
-			"email": c.cfg.SenderEmail,
-		},
-		"content": []map[string]string{
-			{"type": "text/plain", "value": body},
-		},
-	}
+func (c *SMTPClient) Send(recipientEmail, subject, body string) error {
+	addr := c.cfg.Host + ":" + c.cfg.Port
+	
+	auth := smtp.PlainAuth("", c.cfg.Username, c.cfg.Password, c.cfg.Host)
 
-	jsonPayload, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
+	msg := []byte(fmt.Sprintf(
+		"To: %s\r\n"+
+		"From: %s\r\n"+
+		"Subject: %s\r\n"+
+		"Content-Type: text/plain; charset=utf-8\r\n"+
+		"\r\n"+
+		"%s\r\n",
+		recipientEmail,
+		c.cfg.SenderEmail,
+		subject,
+		body,
+	))
 
-	req, err := http.NewRequest(http.MethodPost, c.baseURL, bytes.NewReader(jsonPayload))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.cfg.APIKey))
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.cfg.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("mail provider failed with status %d: %s", resp.StatusCode, string(respBody))
-	}
-
-	return nil
+	return smtp.SendMail(addr, auth, c.cfg.SenderEmail, []string{recipientEmail}, msg)
 }

@@ -23,7 +23,7 @@ func (s *EmailServiceImpl) SendWelcome(msg model.Message) error {
 		return nil
 	}
 
-	subject := "Добро пожаловать в наш сервис!"
+	subject := "Добро пожаловать на наш сайт!"
 	body := fmt.Sprintf("Здравствуйте, %s!\nСпасибо за регистрацию. Мы рады видеть вас.", username)
 
 	if err := s.mailClient.Send(msg.RecipientEmail, subject, body); err != nil {
