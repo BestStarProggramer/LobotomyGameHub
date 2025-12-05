@@ -2,7 +2,7 @@ package broker
 
 import (
 	"log"
-
+	"context"
 	"github.com/streadway/amqp"
 )
 
@@ -11,11 +11,12 @@ type MessageHandler interface {
 }
 
 type Consumer struct {
-	Conn        *amqp.Connection
-	url         string
-	queueName   string
-	handler     MessageHandler
+	Conn *amqp.Connection
+	url string
+	queueName string
+	handler MessageHandler
 	reconnectCh chan *amqp.Error
+	ch *amqp.Channel
 }
 
 func NewConsumer(url, queueName string, h MessageHandler) (*Consumer, error) {
@@ -25,26 +26,32 @@ func NewConsumer(url, queueName string, h MessageHandler) (*Consumer, error) {
 	}
 
 	consumer := &Consumer{
-		Conn:        conn,
-		url:         url,
-		queueName:   queueName,
-		handler:     h,
-		reconnectCh: make(chan *amqp.Error),
+		Conn: conn,
+		url: url,
+		queueName: queueName,
+		handler: h,
+		reconnectCh: conn.NotifyClose(make(chan *amqp.Error)),
 	}
-
-	consumer.reconnectCh = conn.NotifyClose(make(chan *amqp.Error))
 
 	return consumer, nil
 }
 
-func (c *Consumer) Run() error {
-	log.Printf("INFO: Запуск потребителя для очереди: %s", c.queueName)
+func (c *Consumer) Stop() error {
+	log.Println("INFO: Остановка Consumer. Закрытие канала брокера...")
+	if c.ch != nil {
+		return c.ch.Close()
+	}
+	return nil
+}
 
+func (c *Consumer) Run(ctx context.Context) error {
+	log.Printf("INFO: Запуск потребителя для очереди: %s", c.queueName)
+	
 	ch, err := c.Conn.Channel()
 	if err != nil {
 		return err
 	}
-	defer ch.Close()
+	c.ch = ch
 
 	_, err = ch.QueueDeclare(
 		c.queueName,
@@ -55,18 +62,20 @@ func (c *Consumer) Run() error {
 		nil,
 	)
 	if err != nil {
+		ch.Close()
 		return err
 	}
-
+	
 	err = ch.Qos(
 		5,
 		0,
 		false,
 	)
 	if err != nil {
+		ch.Close()
 		return err
 	}
-
+	
 	msgs, err := ch.Consume(
 		c.queueName,
 		"",
@@ -77,15 +86,22 @@ func (c *Consumer) Run() error {
 		nil,
 	)
 	if err != nil {
+		ch.Close()
 		return err
 	}
-
-	for d := range msgs {
-		go c.handleMessage(d)
+	
+	for {
+		select {
+		case <-ctx.Done():
+			return c.Stop()
+		case d, ok := <-msgs:
+			if !ok {
+				log.Println("WARNING: Канал доставки сообщений закрыт.")
+				return nil
+			}
+			go c.handleMessage(d)
+		}
 	}
-
-	log.Println("WARNING: Канал брокера закрыт.")
-	return nil
 }
 
 func (c *Consumer) handleMessage(d amqp.Delivery) {
@@ -93,7 +109,7 @@ func (c *Consumer) handleMessage(d amqp.Delivery) {
 
 	if err != nil {
 		log.Printf("ERROR: Ошибка обработки сообщения: %v", err)
-
+		
 		if err := d.Nack(false, true); err != nil {
 			log.Printf("ERROR: Не удалось отправить NACK: %v", err)
 		}
