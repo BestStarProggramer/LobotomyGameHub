@@ -5,7 +5,9 @@ import (
 	"email-notification-service/internal/config"
 	"email-notification-service/internal/handler"
 	"email-notification-service/internal/service"
+	"email-notification-service/pkg/provider/mail"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -19,7 +21,18 @@ func main() {
 	log.Println("Конфигурация успешно загружена.")
 	log.Printf("Брокер: %s, Очередь: %s, Таймаут: %s", cfg.BrokerURL, cfg.QueueName, cfg.EmailTimeout)
 
-	emailService := service.NewEmailService()
+	httpClient := &http.Client{
+		Timeout: cfg.EmailTimeout,
+	}
+
+	mailCfg := mail.Config{
+		APIKey:      cfg.MailAPIKey,
+		SenderEmail: cfg.SenderEmail,
+		HTTPClient:  httpClient,
+	}
+	mailClient := mail.NewSendGridClient(mailCfg)
+
+	emailService := service.NewEmailService(mailClient)
 
 	messageHandler := handler.NewHandler(emailService)
 
