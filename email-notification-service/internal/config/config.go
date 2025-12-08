@@ -21,13 +21,17 @@ type Config struct {
 func Load() (*Config, error) {
 	cfg := &Config{
 		BrokerURL:    os.Getenv("BROKER_URL"),
-		QueueName:    "email_notifications",
+		QueueName:    os.Getenv("QUEUE_NAME"),
 		SenderEmail:  os.Getenv("SENDER_EMAIL"),
 
 		SMTPHost:     os.Getenv("SMTP_HOST"),
 		SMTPPort:     os.Getenv("SMTP_PORT"),
 		SMTPUsername: os.Getenv("SMTP_USERNAME"),
 		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+	}
+
+	if cfg.QueueName == "" {
+		cfg.QueueName = "email_notifications"
 	}
 
 	timeoutStr := os.Getenv("EMAIL_TIMEOUT")

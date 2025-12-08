@@ -18,6 +18,10 @@ import (
 func main() {
 	log.Println("Запуск микросервиса Email-уведомлений...")
 
+	if err := config.LoadEnv(); err != nil {
+		log.Fatalf("FATAL: Не удалось загрузить .env файл: %v", err)
+	}
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("FATAL: Не удалось загрузить конфигурацию. Запуск невозможен: %v", err)
