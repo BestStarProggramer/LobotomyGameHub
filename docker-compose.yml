@@ -42,7 +42,31 @@ services:
       - /app/node_modules
     depends_on:
       - backend
+  
+  email-sender:
+    build:
+      context: ./email-notification-service
+      dockerfile: Dockerfile
+    container_name: email_notification_service
+    restart: always
+    env_file:
+      - ./email-notification-service/.env
+    depends_on:
+      rabbitmq:
+        condition: 'service_healthy'
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_broker
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
 volumes:
   pgdata:
 
