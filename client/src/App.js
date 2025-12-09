@@ -14,6 +14,7 @@ import Home from "./pages/home/Home.jsx";
 import Profile from "./pages/profile/Profile.jsx";
 import NotFound from "./pages/notfound/NotFound.jsx";
 import ForgotPassword from "./pages/forgotpassword/ForgotPassword.jsx";
+import ResetPassword from "./pages/resetpassword/ResetPassword.jsx";
 import Game from "./pages/game/Game.jsx";
 import Games from "./pages/games/Games.jsx";
 import Reviews from "./pages/reviews/Reviews.jsx";
@@ -95,6 +96,10 @@ function App() {
     {
       path: "/forgot-password",
       element: <ForgotPassword />,
+    },
+    {
+      path: "/reset-password",
+      element: <ResetPassword />,
     },
     {
       path: "*",

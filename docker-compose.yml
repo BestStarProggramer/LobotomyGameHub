@@ -11,8 +11,9 @@ services:
       - pgdata:/var/lib/postgresql/data
       - ./server/schema3.sql:/docker-entrypoint-initdb.d/schema3.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${PGUSER}"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lobotomy_db"]
       interval: 10s
+      start_period: 30s
       timeout: 5s
       retries: 5
 

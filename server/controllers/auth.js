@@ -2,7 +2,9 @@ import { pool, query } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { publishEmailNotification } from "../rabbitmq.js";
+import crypto from "crypto";
 
+// Регистрация
 export const register = async (req, res) => {
   console.log("REGISTER BODY:", req.body);
   try {
@@ -62,6 +64,7 @@ export const register = async (req, res) => {
   }
 };
 
+// Вход
 export const login = async (req, res) => {
   try {
     let { username, email, password } = req.body ?? {};
@@ -96,8 +99,8 @@ export const login = async (req, res) => {
     // Генерация JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET, // Берём из .env
-      { expiresIn: process.env.JWT_EXPIRES || "7d" } // Время жизни токена
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES || "7d" }
     );
 
     return res
@@ -121,6 +124,7 @@ export const login = async (req, res) => {
   }
 };
 
+// Выход
 export const logout = (req, res) => {
   res
     .clearCookie("accessToken", {
@@ -129,4 +133,122 @@ export const logout = (req, res) => {
     })
     .status(200)
     .json("logout successful");
+};
+
+// Забыли пароль - отправка кода на почту
+export const forgotPassword = async (req, res) => {
+  try {
+    let { email } = req.body ?? {};
+
+    if (!email) {
+      return res.status(400).json({ error: "Email обязателен" });
+    }
+
+    email = String(email).trim().toLowerCase();
+
+    // Проверяем существование пользователя
+    const { rows } = await query(
+      "SELECT id, username, email FROM users WHERE email = $1 LIMIT 1",
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    const user = rows[0];
+
+    // Генерируем 6-значный код
+    const recoveryCode = crypto.randomInt(100000, 999999).toString();
+
+    // Устанавливаем срок действия кода (15 минут)
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    // Сохраняем код в базу данных
+    await query(
+      `INSERT INTO password_reset_codes (user_id, code, expires_at)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id)
+       DO UPDATE SET code = $2, expires_at = $3, created_at = NOW()`,
+      [user.id, recoveryCode, expiresAt]
+    );
+
+    // Отправляем код на почту через RabbitMQ
+    publishEmailNotification("RESET_PASSWORD", user.email, {
+      username: user.username,
+      recovery_code: recoveryCode,
+    });
+
+    return res.status(200).json({
+      message: "Код для сброса пароля отправлен на почту",
+    });
+  } catch (err) {
+    console.error("[auth/forgot-password] error:", err.message);
+    return res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+// Сброс пароля с проверкой кода
+export const resetPassword = async (req, res) => {
+  try {
+    let { email, code, newPassword } = req.body ?? {};
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ error: "Все поля обязательны" });
+    }
+
+    email = String(email).trim().toLowerCase();
+    code = String(code).trim();
+
+    if (newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Пароль должен быть не короче 6 символов" });
+    }
+
+    // Находим пользователя
+    const { rows: userRows } = await query(
+      "SELECT id FROM users WHERE email = $1 LIMIT 1",
+      [email]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    const userId = userRows[0].id;
+
+    // Проверяем код и срок действия
+    const { rows: codeRows } = await query(
+      `SELECT code, expires_at FROM password_reset_codes
+       WHERE user_id = $1 AND code = $2 AND expires_at > NOW()
+       LIMIT 1`,
+      [userId, code]
+    );
+
+    if (codeRows.length === 0) {
+      return res.status(400).json({ error: "Неверный или истёкший код" });
+    }
+
+    // Хэшируем новый пароль
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Обновляем пароль
+    await query("UPDATE users SET password_hash = $1 WHERE id = $2", [
+      passwordHash,
+      userId,
+    ]);
+
+    // Удаляем использованный код
+    await query("DELETE FROM password_reset_codes WHERE user_id = $1", [
+      userId,
+    ]);
+
+    return res.status(200).json({
+      message: "Пароль успешно изменён",
+    });
+  } catch (err) {
+    console.error("[auth/reset-password] error:", err.message);
+    return res.status(500).json({ error: "Ошибка сервера" });
+  }
 };
