@@ -17,6 +17,20 @@ func NewEmailService(mc mail.Client) *EmailServiceImpl {
 	}
 }
 
+func (s *EmailServiceImpl) ProcessMessage(msg model.Message) error {
+    switch msg.Type {
+    case "WELCOME":
+        return s.SendWelcome(msg)
+
+    case "RESET_PASSWORD":
+        return s.SendResetPassword(msg)
+
+    default:
+        log.Printf("WARNING: Получен неизвестный тип сообщения: %s", msg.Type)
+        return fmt.Errorf("неизвестный тип сообщения: %s", msg.Type)
+    }
+}
+
 func (s *EmailServiceImpl) SendWelcome(msg model.Message) error {
 	username, ok := msg.Data["username"].(string)
 	if !ok {

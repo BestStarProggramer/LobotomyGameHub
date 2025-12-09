@@ -1,6 +1,7 @@
 import { pool, query } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { publishEmailNotification } from "../rabbitmq.js";
 
 export const register = async (req, res) => {
   console.log("REGISTER BODY:", req.body);
@@ -43,6 +44,10 @@ export const register = async (req, res) => {
       `;
     const { rows } = await query(sql, [username, email, passwordHash]);
     const user = rows[0];
+
+    publishEmailNotification("WELCOME", user.email, {
+      username: user.username,
+    });
 
     return res.status(201).json({
       message: "Пользователь зарегистрирован",
