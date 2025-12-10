@@ -1,0 +1,140 @@
+html,
+body {
+  font-family: "Bahnschrift", sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.profile-header {
+  background-color: #1c151e;
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin-bottom: 30px;
+
+  &__avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  &__avatar {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #53257d;
+  }
+
+  &__role {
+    background-color: #53257d;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    h1 {
+      color: white;
+      font-size: 32px;
+      margin: 0;
+      font-weight: bold;
+    }
+  }
+
+  &__icon {
+    width: 50px;
+    height: 50px;
+    background-color: #53257d;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__username {
+    color: white;
+    font-size: 36px;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  &__bio {
+    color: white;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 10px;
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #a0a0a0;
+
+    svg {
+      font-size: 20px;
+    }
+
+    span {
+      font-size: 16px;
+    }
+  }
+
+  &__genres {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__genres-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-size: 16px;
+  }
+
+  &__heart-icon {
+    color: #53257d;
+    font-size: 20px;
+  }
+
+  &__genres-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  &__genre-tag {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+  }
+}
