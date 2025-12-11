@@ -1,0 +1,102 @@
+.edit-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  &__content {
+    background-color: #1c151e;
+    border-radius: 12px;
+    padding: 30px;
+    width: 500px;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__title {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    background-color: #2a2533;
+    border: 1px solid #53257d;
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: white;
+    font-size: 16px;
+    font-family: "Bahnschrift", sans-serif;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #6b2da8;
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 120px;
+  }
+
+  &__char-count {
+    color: #a0a0a0;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  &__error {
+    color: #ff4d4f;
+    font-size: 14px;
+    padding: 8px 12px;
+    background-color: rgba(255, 77, 79, 0.1);
+    border-radius: 6px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+  }
+
+  &__button {
+    padding: 10px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 150ms ease;
+
+    &--save {
+      background-color: #53257d;
+      color: white;
+
+      &:hover {
+        background-color: #6b2da8;
+      }
+    }
+
+    &--cancel {
+      background-color: transparent;
+      border: 2px solid #a0a0a0;
+      color: white;
+
+      &:hover {
+        background-color: #2a2533;
+      }
+    }
+  }
+}

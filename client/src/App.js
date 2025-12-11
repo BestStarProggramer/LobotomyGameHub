@@ -20,6 +20,7 @@ import Games from "./pages/games/Games.jsx";
 import Reviews from "./pages/reviews/Reviews.jsx";
 import Publications from "./pages/publications/Publications.jsx";
 import PublicationPage from "./pages/publication/PublicationPage.jsx";
+import Settings from "./pages/settings/Settings.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -79,6 +80,11 @@ function App() {
         {
           path: "/profile/:UserId",
           element: <Profile />,
+        },
+
+        {
+          path: "/settings/:UserId",
+          element: <Settings />,
         },
 
         {
