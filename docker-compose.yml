@@ -17,6 +17,20 @@ services:
       timeout: 5s
       retries: 5
 
+  genres-loader:
+    build: ./server
+    container_name: lobotomy_genres_loader
+    command: ["node", "loadGenres.jsx"]
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   backend:
     build: ./server
     container_name: lobotomy_backend
@@ -43,7 +57,7 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-  
+
   email-sender:
     build:
       context: ./email-notification-service
@@ -54,7 +68,7 @@ services:
       - ./email-notification-service/.env
     depends_on:
       rabbitmq:
-        condition: 'service_healthy'
+        condition: "service_healthy"
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -70,4 +84,3 @@ services:
       retries: 3
 volumes:
   pgdata:
-
