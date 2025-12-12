@@ -1,5 +1,5 @@
 import "./settings.scss";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../../context/authContext";
 import EditModal from "../../components/editmodal/EditModal";
 import GenresModal from "../../components/genresmodal/GenresModal";
@@ -8,6 +8,12 @@ import { useNavigate } from "react-router-dom";
 const Settings = () => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!currentUser) {
+      navigate("/login");
+    }
+  }, [currentUser, navigate]);
 
   const [userData, setUserData] = useState({
     username: currentUser?.username || "Гость",
@@ -57,6 +63,10 @@ const Settings = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <div className="settings">
