@@ -41,7 +41,7 @@ const Editor = forwardRef(
       const toolbarOptions = [
         [{ size: [] }],
         ["bold", "italic", "underline", "strike"],
-        [{ color: [] }, { background: [] }],
+        [{ color: [] }, { background: [] }, { align: [] }],
         [{ header: 1 }, { header: 2 }, "blockquote"],
         [{ list: "ordered" }, { list: "bullet" }],
         ["link", "image", "video"],
