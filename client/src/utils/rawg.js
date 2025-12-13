@@ -1,7 +1,6 @@
 import axios from "axios";
 
 const RAWG_KEY = process.env.API_KEY;
-const RAWG_BASE = "https://api.rawg.io/api";
 const RAWG_PROXY = "http://localhost:8800/api/rawg";
 
 export function chunkArray(arr, size = 5) {
@@ -37,10 +36,7 @@ export async function fetchGamesList(page = 1, page_size = 20, search = "") {
 
 export async function fetchGameDetailsBySlug(slug) {
   const res = await axios.get(
-    `${RAWG_BASE}/games/${encodeURIComponent(slug)}`,
-    {
-      params: { key: RAWG_KEY },
-    }
+    `${RAWG_PROXY}/games/${encodeURIComponent(slug)}`
   );
   const g = res.data;
 
@@ -54,4 +50,14 @@ export async function fetchGameDetailsBySlug(slug) {
     developers: (g.developers || []).map((x) => x.name),
     description: g.description_raw || g.description || "",
   };
+}
+
+export async function fetchGameScreenshotsBySlug(slug) {
+  const res = await axios.get(
+    `${RAWG_PROXY}/games/${encodeURIComponent(slug)}/screenshots`
+  );
+
+  const screenshots = res.data.results || [];
+
+  return screenshots.map((shot) => shot.image);
 }

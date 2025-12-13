@@ -23,43 +23,102 @@ body {
     .info {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
+      margin-bottom: 10px;
       h1 {
         font-size: 32px;
         color: white;
         margin: 20px 0 0 0;
       }
-
-      p {
-        font-size: 18px;
-        margin: 10px 0 10px 0;
-        color: white;
-      }
-
-      .tabs {
-        margin-bottom: 15px;
+      .options {
         display: flex;
-        gap: 20px;
+        justify-content: space-between;
 
-        .tab {
-          background-color: transparent;
-          border: 2px solid #53257d;
-          color: white;
-          padding: 10px 30px;
-          border-radius: 25px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 150ms ease;
+        .type {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
 
-          &:hover {
-            background-color: #53257d;
-            transform: translateY(-2px);
+          p {
+            font-size: 18px;
+            margin: 10px 0 10px 0;
+            color: white;
           }
 
-          &.active {
-            background-color: #53257d;
-            border-color: #6b2da8;
+          .tabs {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px;
+
+            .tab {
+              background-color: transparent;
+              border: 2px solid #53257d;
+              color: white;
+              padding: 10px 30px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              cursor: pointer;
+              transition: all 150ms ease;
+
+              &:hover {
+                background-color: #53257d;
+                transform: translateY(-2px);
+              }
+
+              &.active {
+                background-color: #53257d;
+                border-color: #6b2da8;
+              }
+            }
+          }
+        }
+        .title {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          p {
+            font-size: 18px;
+            margin: 10px 0 10px 0;
+            color: white;
+          }
+
+          input {
+            border-radius: 5px;
+            border: none;
+            height: 30px;
+            width: 100%;
+          }
+        }
+
+        .gamechoice {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          p {
+            font-size: 18px;
+            margin: 10px 0 10px 0;
+            color: white;
+          }
+        }
+
+        .load-img {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+
+          p {
+            font-size: 18px;
+            margin: 10px 0 10px 0;
+            color: white;
+          }
+
+          input {
+            border-radius: 5px;
+            border: none;
+            height: 30px;
+            width: 100%;
           }
         }
       }
