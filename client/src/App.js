@@ -83,7 +83,7 @@ function App() {
         },
 
         {
-          path: "/settings/:UserId",
+          path: "/settings/",
           element: <Settings />,
         },
 
