@@ -29,6 +29,7 @@ func BodyContains(body, sub string) bool {
 }
 
 func TestEmailService_SendWelcome_Success(t *testing.T) {
+	t.Parallel()
 	mockMailer := &MockMailer{}
 	emailService := service.NewEmailService(mockMailer)
 
@@ -51,6 +52,7 @@ func TestEmailService_SendWelcome_Success(t *testing.T) {
 }
 
 func TestEmailService_SendWelcome_MissingUsername(t *testing.T) {
+	t.Parallel()
 	mockMailer := &MockMailer{}
 	emailService := service.NewEmailService(mockMailer)
 
@@ -71,6 +73,7 @@ func TestEmailService_SendWelcome_MissingUsername(t *testing.T) {
 }
 
 func TestEmailService_SendResetPassword_Success(t *testing.T) {
+	t.Parallel()
 	mockMailer := &MockMailer{}
 	emailService := service.NewEmailService(mockMailer)
 
@@ -91,6 +94,7 @@ func TestEmailService_SendResetPassword_Success(t *testing.T) {
 }
 
 func TestEmailService_SendResetPassword_MissingCode(t *testing.T) {
+	t.Parallel()
 	mockMailer := &MockMailer{}
 	emailService := service.NewEmailService(mockMailer)
 
@@ -109,7 +113,52 @@ func TestEmailService_SendResetPassword_MissingCode(t *testing.T) {
 	}
 }
 
+func TestEmailService_SendEmailChangeCode_Success(t *testing.T) {
+	t.Parallel()
+	mockMailer := &MockMailer{}
+	emailService := service.NewEmailService(mockMailer)
+
+	code := "ABC-456"
+	msg := model.Message{
+		RecipientEmail: "test@example.com",
+		Data:           map[string]interface{}{"change_code": code},
+	}
+
+	err := emailService.SendEmailChangeCode(msg)
+
+	if err != nil {
+		t.Fatalf("SendEmailChangeCode вернул ошибку: %v", err)
+	}
+	if !BodyContains(mockMailer.Body, code) {
+		t.Errorf("Тело письма не содержит код смены email: %s", code)
+	}
+	if !strings.Contains(mockMailer.Subject, "Смена email") {
+		t.Error("Неверная тема письма.")
+	}
+}
+
+func TestEmailService_SendEmailChangeCode_MissingCode(t *testing.T) {
+	t.Parallel()
+	mockMailer := &MockMailer{}
+	emailService := service.NewEmailService(mockMailer)
+
+	msg := model.Message{
+		RecipientEmail: "test@example.com",
+		Data:           map[string]interface{}{"username": "TestUser"},
+	}
+
+	err := emailService.SendEmailChangeCode(msg)
+
+	if err == nil {
+		t.Error("Ожидали ошибку при отсутствии 'change_code', получили nil.")
+	}
+	if mockMailer.Called {
+		t.Error("Метод Send на MockMailer ошибочно был вызван.")
+	}
+}
+
 func TestEmailService_SendEmail_Failure(t *testing.T) {
+	t.Parallel()
 	sendError := errors.New("ошибка SMTP: сервер недоступен")
 	mockMailer := &MockMailer{ErrorToReturn: sendError}
 	emailService := service.NewEmailService(mockMailer)
