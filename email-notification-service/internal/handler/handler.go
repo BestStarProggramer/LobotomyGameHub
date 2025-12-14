@@ -34,6 +34,9 @@ func (h *Handler) Handle(messageBody []byte) error {
 	case "RESET_PASSWORD":
 		return h.emailService.SendResetPassword(msg)
 
+	case "EMAIL_CHANGE_CODE":
+		return h.emailService.SendEmailChangeCode(msg)
+
 	default:
 		log.Printf("WARNING: Получен неизвестный тип сообщения: %s", msg.Type)
 		return nil

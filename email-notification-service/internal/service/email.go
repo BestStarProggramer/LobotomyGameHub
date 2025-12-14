@@ -18,17 +18,20 @@ func NewEmailService(mc mail.Client) *EmailServiceImpl {
 }
 
 func (s *EmailServiceImpl) ProcessMessage(msg model.Message) error {
-    switch msg.Type {
-    case "WELCOME":
-        return s.SendWelcome(msg)
+	switch msg.Type {
+	case "WELCOME":
+		return s.SendWelcome(msg)
 
-    case "RESET_PASSWORD":
-        return s.SendResetPassword(msg)
+	case "RESET_PASSWORD":
+		return s.SendResetPassword(msg)
 
-    default:
-        log.Printf("WARNING: Получен неизвестный тип сообщения: %s", msg.Type)
-        return fmt.Errorf("неизвестный тип сообщения: %s", msg.Type)
-    }
+	case "EMAIL_CHANGE_CODE":
+		return s.SendEmailChangeCode(msg)
+
+	default:
+		log.Printf("WARNING: Получен неизвестный тип сообщения: %s", msg.Type)
+		return fmt.Errorf("неизвестный тип сообщения: %s", msg.Type)
+	}
 }
 
 func (s *EmailServiceImpl) SendWelcome(msg model.Message) error {
@@ -62,5 +65,22 @@ func (s *EmailServiceImpl) SendResetPassword(msg model.Message) error {
 		return err
 	}
 	log.Printf("INFO: Успешно отправлено RESET_PASSWORD письмо пользователю: %s", msg.RecipientEmail)
+	return nil
+}
+
+func (s *EmailServiceImpl) SendEmailChangeCode(msg model.Message) error {
+	code, ok := msg.Data["change_code"].(string)
+	if !ok {
+		return fmt.Errorf("отсутствует или неверный формат 'change_code' в данных для смены email")
+	}
+
+	subject := "Смена email"
+	body := fmt.Sprintf("Ваш код для подтверждения смены Email: %s. Не сообщайте его никому.", code)
+
+	if err := s.mailClient.Send(msg.RecipientEmail, subject, body); err != nil {
+		log.Printf("ERROR: Не удалось отправить EMAIL_CHANGE_CODE письмо для %s: %v", msg.RecipientEmail, err)
+		return err
+	}
+	log.Printf("INFO: Успешно отправлено EMAIL_CHANGE_CODE письмо пользователю: %s", msg.RecipientEmail)
 	return nil
 }
