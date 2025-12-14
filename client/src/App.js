@@ -21,6 +21,7 @@ import Reviews from "./pages/reviews/Reviews.jsx";
 import Publications from "./pages/publications/Publications.jsx";
 import PublicationPage from "./pages/publication/PublicationPage.jsx";
 import Settings from "./pages/settings/Settings.jsx";
+import PublicationsWrite from "./pages/publications/Publications_write.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -75,6 +76,11 @@ function App() {
         {
           path: "/publications/:publicationId",
           element: <PublicationPage />,
+        },
+
+        {
+          path: "/publications/write",
+          element: <PublicationsWrite />,
         },
 
         {
