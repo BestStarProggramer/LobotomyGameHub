@@ -252,3 +252,171 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ error: "Ошибка сервера" });
   }
 };
+
+export const verifyOldEmail = async (req, res) => {
+  try {
+    let { email } = req.body ?? {};
+
+    if (!email) {
+      return res.status(400).json({ error: "Email обязателен" });
+    }
+
+    email = String(email).trim().toLowerCase();
+
+    const { rows } = await query(
+      "SELECT id, username, email FROM users WHERE email = $1 LIMIT 1",
+      [email]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    const user = rows[0];
+
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await query(
+      `INSERT INTO email_change_codes (user_id, old_email, verification_code, expires_at, step)
+       VALUES ($1, $2, $3, $4, 'verify_old')
+       ON CONFLICT (user_id)
+       DO UPDATE SET verification_code = $3, expires_at = $4, old_email = $2, step = 'verify_old', created_at = NOW()`,
+      [user.id, email, verificationCode, expiresAt]
+    );
+
+    publishEmailNotification("EMAIL_CHANGE_CODE", user.email, {
+      username: user.username,
+      change_code: verificationCode,
+    });
+
+    return res.status(200).json({
+      message: "Код отправлен на вашу почту",
+    });
+  } catch (err) {
+    console.error("[auth/verify-old-email] error:", err.message);
+    return res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+export const verifyOldEmailCode = async (req, res) => {
+  try {
+    let { email, code, newEmail } = req.body ?? {};
+
+    if (!email || !code || !newEmail) {
+      return res.status(400).json({ error: "Все поля обязательны" });
+    }
+
+    email = String(email).trim().toLowerCase();
+    newEmail = String(newEmail).trim().toLowerCase();
+    code = String(code).trim();
+
+    if (email === newEmail) {
+      return res.status(400).json({ error: "Новая почта совпадает со старой" });
+    }
+
+    const { rows: existingEmail } = await query(
+      "SELECT 1 FROM users WHERE email = $1 LIMIT 1",
+      [newEmail]
+    );
+
+    if (existingEmail.length > 0) {
+      return res.status(409).json({ error: "Эта почта уже используется" });
+    }
+
+    const { rows: userRows } = await query(
+      "SELECT id FROM users WHERE email = $1 LIMIT 1",
+      [email]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    const userId = userRows[0].id;
+
+    const { rows: codeRows } = await query(
+      `SELECT verification_code, expires_at, step FROM email_change_codes
+       WHERE user_id = $1 AND verification_code = $2 AND expires_at > NOW() AND step = 'verify_old'
+       LIMIT 1`,
+      [userId, code]
+    );
+
+    if (codeRows.length === 0) {
+      return res.status(400).json({ error: "Неверный или истёкший код" });
+    }
+
+    const newVerificationCode = crypto.randomInt(100000, 999999).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await query(
+      `UPDATE email_change_codes
+       SET new_email = $1, new_email_code = $2, expires_at = $3, step = 'verify_new', created_at = NOW()
+       WHERE user_id = $4`,
+      [newEmail, newVerificationCode, expiresAt, userId]
+    );
+
+    publishEmailNotification("EMAIL_CHANGE_CODE", newEmail, {
+      change_code: newVerificationCode,
+    });
+
+    return res.status(200).json({
+      message: "Код отправлен на новую почту",
+    });
+  } catch (err) {
+    console.error("[auth/verify-old-email-code] error:", err.message);
+    return res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+export const changeEmail = async (req, res) => {
+  try {
+    let { email, newEmail, newEmailCode } = req.body ?? {};
+
+    if (!email || !newEmail || !newEmailCode) {
+      return res.status(400).json({ error: "Все поля обязательны" });
+    }
+
+    email = String(email).trim().toLowerCase();
+    newEmail = String(newEmail).trim().toLowerCase();
+    newEmailCode = String(newEmailCode).trim();
+
+    const { rows: userRows } = await query(
+      "SELECT id FROM users WHERE email = $1 LIMIT 1",
+      [email]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    const userId = userRows[0].id;
+
+    const { rows: codeRows } = await query(
+      `SELECT new_email, new_email_code, expires_at, step FROM email_change_codes
+       WHERE user_id = $1 AND new_email = $2 AND new_email_code = $3
+       AND expires_at > NOW() AND step = 'verify_new'
+       LIMIT 1`,
+      [userId, newEmail, newEmailCode]
+    );
+
+    if (codeRows.length === 0) {
+      return res.status(400).json({ error: "Неверный или истёкший код" });
+    }
+
+    await query("UPDATE users SET email = $1 WHERE id = $2", [
+      newEmail,
+      userId,
+    ]);
+
+    await query("DELETE FROM email_change_codes WHERE user_id = $1", [userId]);
+
+    return res.status(200).json({
+      message: "Email успешно изменён",
+    });
+  } catch (err) {
+    console.error("[auth/change-email] error:", err.message);
+    return res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
