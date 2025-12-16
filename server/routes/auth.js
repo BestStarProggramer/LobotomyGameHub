@@ -7,6 +7,8 @@ import {
   verifyOldEmail,
   verifyOldEmailCode,
   changeEmail,
+  getProfile,
+  verifyToken,
 } from "../controllers/auth.js";
 import { Router } from "express";
 
@@ -20,5 +22,7 @@ router.post("/reset-password", resetPassword);
 router.post("/verify-old-email", verifyOldEmail);
 router.post("/verify-old-email-code", verifyOldEmailCode);
 router.post("/change-email", changeEmail);
+
+router.get("/profile", verifyToken, getProfile);
 
 export default router;

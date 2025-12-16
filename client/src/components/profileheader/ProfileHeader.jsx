@@ -7,19 +7,27 @@ import InfoIcon from "@mui/icons-material/Info";
 const ProfileHeader = ({ user }) => {
   return (
     <div className="profile-header">
-      {/* Avatar */}
-      <div className="profile-header__avatar-section">
-        <img
-          src={user.avatar}
-          alt={user.username}
-          className="profile-header__avatar"
-        />
-        <div className="profile-header__role">{user.role}</div>
+      <div className="profile-header__left-column">
+        <span className="profile-header__user-id-overlay">ID: {user.id}</span>
+
+        <div className="profile-header__avatar-section">
+          <img
+            src={user.avatar}
+            alt={user.username}
+            className="profile-header__avatar"
+          />
+        </div>
+
+        <h2 className="profile-header__username">{user.username}</h2>
+
+        <div
+          className={`profile-header__role profile-header__role--${user.role}`}
+        >
+          {user.role}
+        </div>
       </div>
 
-      {/* Info */}
       <div className="profile-header__info">
-        {/* Title */}
         <div className="profile-header__title">
           <div className="profile-header__icon">
             <InfoIcon style={{ fontSize: "30px", color: "white" }} />
@@ -27,13 +35,8 @@ const ProfileHeader = ({ user }) => {
           <h1>О профиле</h1>
         </div>
 
-        {/* Username */}
-        <h2 className="profile-header__username">{user.username}</h2>
-
-        {/* Bio */}
         <p className="profile-header__bio">{user.bio}</p>
 
-        {/* Stats */}
         <div className="profile-header__stats">
           <div className="profile-header__stat">
             <AccessTimeIcon />
@@ -45,7 +48,6 @@ const ProfileHeader = ({ user }) => {
           </div>
         </div>
 
-        {/* Favorite Genres */}
         <div className="profile-header__genres">
           <div className="profile-header__genres-title">
             <FavoriteIcon className="profile-header__heart-icon" />

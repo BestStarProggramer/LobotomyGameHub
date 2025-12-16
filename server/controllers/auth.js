@@ -4,6 +4,33 @@ import jwt from "jsonwebtoken";
 import { publishEmailNotification } from "../rabbitmq.js";
 import crypto from "crypto";
 
+export const verifyToken = (req, res, next) => {
+  const token = req.cookies.accessToken;
+
+  if (!token) {
+    console.log(
+      "[Auth Error] Токен отсутствует в куках (401). Пользователь не залогинен."
+    );
+    return res.status(401).json("Вы не авторизованы! Нет токена.");
+  }
+
+  const SECRET_KEY = process.env.JWT_SECRET || "your_jwt_secret_key";
+
+  jwt.verify(token, SECRET_KEY, (err, userInfo) => {
+    if (err) {
+      console.error(
+        "[Auth Error] Токен недействителен (403). Ошибка JWT:",
+        err.message
+      );
+      return res.status(403).json("Токен недействителен или просрочен!");
+    }
+
+    req.userInfo = userInfo;
+
+    next();
+  });
+};
+
 // Регистрация
 export const register = async (req, res) => {
   console.log("REGISTER BODY:", req.body);
@@ -418,5 +445,45 @@ export const changeEmail = async (req, res) => {
   } catch (err) {
     console.error("[auth/change-email] error:", err.message);
     return res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+export const getProfile = async (req, res) => {
+  const userId = req.userInfo.id;
+
+  try {
+    const q = `
+      SELECT
+          u.id,
+          u.username,
+          u.email,
+          u.role,
+          u.bio,
+          u.avatar_url AS img,
+          u.rated_games AS "ratedGames",
+          u.created_at AS "registrationDate",
+          COALESCE(
+              json_agg(g.name ORDER BY g.name) FILTER (WHERE g.name IS NOT NULL),
+              '{}'::json
+          ) as "favoriteGenres"
+      FROM users u
+      LEFT JOIN favorites_genres fg ON u.id = fg.user_id
+      LEFT JOIN genres g ON fg.genre_id = g.id
+      WHERE u.id = $1
+      GROUP BY u.id, u.username, u.email, u.role, u.bio, u.avatar_url, u.created_at, u.rated_games;
+    `;
+
+    const result = await query(q, [userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json("Пользователь не найден.");
+    }
+
+    const userData = result.rows[0];
+
+    return res.status(200).json(userData);
+  } catch (err) {
+    console.error("Ошибка при получении профиля:", err);
+    return res.status(500).json(err);
   }
 };

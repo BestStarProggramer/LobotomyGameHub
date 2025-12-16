@@ -1,12 +1,17 @@
 import "./profile.scss";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import ProfileHeader from "../../components/profileheader/ProfileHeader";
+import axios from "axios";
 
 const Profile = () => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!currentUser) {
@@ -14,30 +19,69 @@ const Profile = () => {
     }
   }, [currentUser, navigate]);
 
+  useEffect(() => {
+    if (currentUser) {
+      const fetchProfile = async () => {
+        try {
+          const res = await axios.get(
+            "http://localhost:8800/api/auth/profile",
+            {
+              withCredentials: true,
+            }
+          );
+
+          const data = res.data;
+
+          const mappedUserData = {
+            id: data.id,
+            username: data.username,
+            avatar: data.img || "/img/default_profilePic.jpg",
+            role: data.role,
+            bio: data.bio,
+            registrationDate: data.registrationDate
+              ? new Date(data.registrationDate).toLocaleDateString("ru-RU")
+              : "Неизвестно",
+            ratedGames: data.ratedGames,
+            favoriteGenres: Array.isArray(data.favoriteGenres)
+              ? data.favoriteGenres
+              : [],
+          };
+
+          setProfileData(mappedUserData);
+        } catch (err) {
+          console.error("Ошибка при загрузке профиля:", err);
+          setError(true);
+          setProfileData(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchProfile();
+    }
+  }, [currentUser]);
+
   if (!currentUser) {
     return null;
   }
 
-  const userData = {
-    username: "5Hnet5K",
-    avatar: "/img/profilePic.jpg",
-    role: "Сотрудник редакции",
-    bio: "Немного играю в игры, немного пишу рецензии. Я тут с самого основания. На объективность особо не рассчитывайте, так как при оценке руководствуюсь в основном общими впечатлениями. А ну и если есть какие-то вопросы по сайту - можете писать мне, возможно я даже отвечу",
-    registrationDate: "13.10.2025",
-    ratedGames: 777,
-    favoriteGenres: [
-      "RPG",
-      "Adventure",
-      "Choices Matter",
-      "Story Rich",
-      "Cyberpunk",
-    ],
-  };
+  if (loading) {
+    return <div className="profile">Загрузка данных профиля...</div>;
+  }
+
+  if (error || !profileData) {
+    return (
+      <div className="profile error-state">
+        Ошибка: Не удалось загрузить данные профиля. Попробуйте обновить
+        страницу.
+      </div>
+    );
+  }
 
   return (
     <div className="profile">
       <div className="profile__container">
-        <ProfileHeader user={userData} />
+        <ProfileHeader user={profileData} />
       </div>
     </div>
   );

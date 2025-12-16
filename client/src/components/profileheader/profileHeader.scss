@@ -6,36 +6,86 @@ body {
   height: 100%;
 }
 
+$color-purple: #53257d;
+$color-gray: #a0a0a0;
+$color-staff-green: #27ae60;
+$color-admin-orange: #f39c12;
+
 .profile-header {
   background-color: #1c151e;
   border-radius: 12px;
-  padding: 40px;
   display: flex;
-  gap: 40px;
-  align-items: flex-start;
+  align-items: stretch;
   margin-bottom: 30px;
+  overflow: hidden;
 
-  &__avatar-section {
+  &__left-column {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 12px 0 0 12px;
+    padding: 30px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 15px;
+    position: relative;
+    min-width: 300px;
+    max-width: 300px;
+    height: 100%;
+  }
+
+  &__user-id-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    font-weight: bold;
+    padding: 3px 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+  }
+
+  &__avatar-section {
+    display: block;
+    margin-bottom: 5px;
   }
 
   &__avatar {
-    width: 280px;
-    height: 280px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #53257d;
+    border: 4px solid $color-purple;
   }
 
   &__role {
-    background-color: #53257d;
-    color: white;
+    background-color: transparent;
     padding: 8px 20px;
     border-radius: 20px;
     font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+
+    &--user {
+      border: 2px solid $color-gray;
+      color: $color-gray;
+    }
+
+    &--staff {
+      border: 2px solid $color-staff-green;
+      color: $color-staff-green;
+    }
+
+    &--admin {
+      border: 2px solid $color-admin-orange;
+      color: $color-admin-orange;
+    }
+  }
+
+  &__username {
+    color: white;
+    font-size: 32px;
+    margin: 0;
     font-weight: bold;
   }
 
@@ -44,6 +94,11 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    padding: 40px;
+
+    border-radius: 0 12px 12px 0;
+    background-color: transparent;
   }
 
   &__title {
@@ -62,18 +117,11 @@ body {
   &__icon {
     width: 50px;
     height: 50px;
-    background-color: #53257d;
+    background-color: $color-purple;
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  &__username {
-    color: white;
-    font-size: 36px;
-    margin: 0;
-    font-weight: bold;
   }
 
   &__bio {
@@ -93,7 +141,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #a0a0a0;
+    color: $color-gray;
 
     svg {
       font-size: 20px;
@@ -119,7 +167,7 @@ body {
   }
 
   &__heart-icon {
-    color: #53257d;
+    color: $color-purple;
     font-size: 20px;
   }
 
