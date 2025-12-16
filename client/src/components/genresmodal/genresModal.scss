@@ -74,6 +74,21 @@
     padding: 8px 12px;
     background-color: rgba(255, 77, 79, 0.1);
     border-radius: 6px;
+    &--fatal {
+      padding: 15px;
+      background-color: rgba(255, 77, 79, 0.2);
+      border: 1px solid #ff4d4f;
+      margin-top: 10px;
+    }
+  }
+
+  &__loading {
+    color: #53257d;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px;
+    border: 1px dashed #53257d;
+    border-radius: 8px;
   }
 
   &__actions {

@@ -1,39 +1,46 @@
 import "./genresModal.scss";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 const GenresModal = ({ selectedGenres, onSave, onClose }) => {
-  const availableGenres = [
-    "Action",
-    "Indie",
-    "Adventure",
-    "RPG",
-    "Strategy",
-    "Shooter",
-    "Casual",
-    "Simulation",
-    "Puzzle",
-    "Arcade",
-    "Platformer",
-    "Massively Multiplayer",
-    "Racing",
-    "Sports",
-    "Fighting",
-    "Family",
-    "Board Games",
-    "Card",
-    "Educational",
-  ];
+  const [availableGenres, setAvailableGenres] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const [selected, setSelected] = useState([...selectedGenres]);
-  const [error, setError] = useState("");
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/api/data/genres");
+
+        if (Array.isArray(res.data)) {
+          setAvailableGenres(res.data);
+          setFetchError(null);
+        } else {
+          setFetchError("Неверный формат данных жанров от сервера.");
+        }
+      } catch (err) {
+        console.error("Ошибка загрузки доступных жанров:", err);
+        setFetchError(
+          "Не удалось загрузить список жанров из базы данных. Проверьте: 1. Запущен ли бэкенд; 2. Запустился ли loadGenres.js."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const toggleGenre = (genre) => {
-    setError("");
+    setSaveError("");
     if (selected.includes(genre)) {
       setSelected(selected.filter((g) => g !== genre));
     } else {
       if (selected.length >= 10) {
-        setError("Можно выбрать максимум 10 жанров");
+        setSaveError("Можно выбрать максимум 10 жанров");
         return;
       }
       setSelected([...selected, genre]);
@@ -41,11 +48,6 @@ const GenresModal = ({ selectedGenres, onSave, onClose }) => {
   };
 
   const handleSave = () => {
-    if (selected.length === 0) {
-      setError("Выберите хотя бы один жанр");
-      return;
-    }
-
     onSave(selected);
   };
 
@@ -60,26 +62,49 @@ const GenresModal = ({ selectedGenres, onSave, onClose }) => {
           Выбрано: {selected.length} / 10
         </p>
 
-        <div className="genres-modal__grid">
-          {availableGenres.map((genre) => (
-            <button
-              key={genre}
-              className={`genres-modal__genre ${
-                selected.includes(genre) ? "genres-modal__genre--selected" : ""
-              }`}
-              onClick={() => toggleGenre(genre)}
-            >
-              {genre}
-            </button>
-          ))}
-        </div>
+        {isLoading && (
+          <div className="genres-modal__loading">
+            Загрузка жанров из базы данных...
+          </div>
+        )}
 
-        {error && <div className="genres-modal__error">{error}</div>}
+        {fetchError && (
+          <div className="genres-modal__error genres-modal__error--fatal">
+            {fetchError}
+          </div>
+        )}
+
+        {!isLoading && !fetchError && (
+          <div className="genres-modal__grid">
+            {availableGenres.length === 0 ? (
+              <p className="genres-modal__loading">
+                В базе данных нет доступных жанров. Запустите loadGenres.js.
+              </p>
+            ) : (
+              availableGenres.map((genre) => (
+                <button
+                  key={genre}
+                  className={`genres-modal__genre ${
+                    selected.includes(genre)
+                      ? "genres-modal__genre--selected"
+                      : ""
+                  }`}
+                  onClick={() => toggleGenre(genre)}
+                >
+                  {genre}
+                </button>
+              ))
+            )}
+          </div>
+        )}
+
+        {saveError && <div className="genres-modal__error">{saveError}</div>}
 
         <div className="genres-modal__actions">
           <button
             className="genres-modal__button genres-modal__button--save"
             onClick={handleSave}
+            disabled={isLoading || fetchError || availableGenres.length === 0}
           >
             Сохранить
           </button>

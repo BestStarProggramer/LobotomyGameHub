@@ -5,6 +5,7 @@ import { query } from "./db.js";
 import authRouter from "./routes/auth.js";
 import gamesRouter from "./routes/games.js";
 import rawgRouter from "./routes/rawg.js";
+import dataRouter from "./routes/data.js";
 import healthRouter from "./routes/health.js";
 import cookieParser from "cookie-parser";
 import https from "https";
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 app.use("/api/auth", authRouter);
 app.use("/api/games", gamesRouter);
 app.use("/api/rawg", rawgRouter);
+app.use("/api/data", dataRouter);
 app.use("/api/health", healthRouter);
 
 app.listen(PORT, () => {

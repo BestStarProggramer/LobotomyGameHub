@@ -20,7 +20,7 @@ services:
   genres-loader:
     build: ./server
     container_name: lobotomy_genres_loader
-    command: ["node", "loadGenres.jsx"]
+    command: ["node", "loadGenres.js"]
     env_file:
       - ./server/.env
     volumes:
