@@ -1,0 +1,54 @@
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+
+  .game-card {
+    background-color: #130f14;
+    border-radius: 10px;
+    padding: 15px;
+    transition: transform 150ms ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+
+    &:hover {
+      transform: translateY(-5px);
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .game-poster {
+      width: 100%;
+      height: 250px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    h3 {
+      color: white;
+      font-size: 16px;
+      margin: 0 0 10px 0;
+      text-align: center;
+      font-weight: normal;
+      line-height: 1.3;
+    }
+
+    .game-rating {
+      color: #ffd700;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+  }
+}
