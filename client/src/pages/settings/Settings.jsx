@@ -1,5 +1,5 @@
 import "./settings.scss";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../context/authContext";
 import EditModal from "../../components/editmodal/EditModal";
 import GenresModal from "../../components/genresmodal/GenresModal";
@@ -9,6 +9,7 @@ import axios from "axios";
 const Settings = () => {
   const { currentUser, updateCurrentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -16,7 +17,7 @@ const Settings = () => {
 
   const [userData, setUserData] = useState({
     username: currentUser?.username || "Гость",
-    bio: currentUser?.bio || "Расскажите о себе...",
+    bio: currentUser?.bio || "",
     avatar: currentUser?.avatar_url || "/img/default-avatar.jpg",
     favoriteGenres: currentUser?.favoriteGenres || [],
   });
@@ -82,6 +83,10 @@ const Settings = () => {
         updateCurrentUser({ ...currentUser, username: value });
       }
 
+      if (field === "avatar" && updateCurrentUser) {
+        updateCurrentUser({ ...currentUser, avatar_url: value });
+      }
+
       setSuccess(res.data || "Настройка успешно обновлена!");
     } catch (err) {
       console.error("Ошибка обновления:", err.response?.data || err.message);
@@ -116,6 +121,35 @@ const Settings = () => {
   const handleSaveGenres = (newGenres) => {
     handleUpdateProfile("favoriteGenres", newGenres);
     setIsGenresModalOpen(false);
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Пожалуйста, выберите изображение");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Размер файла не должен превышать 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      handleUpdateProfile("avatar", base64String);
+    };
+    reader.onerror = () => {
+      setError("Ошибка при чтении файла");
+    };
+    reader.readAsDataURL(file);
   };
 
   const renderGenreTags = () => {
@@ -161,8 +195,16 @@ const Settings = () => {
               alt="Аватар"
               className="settings__avatar"
             />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              style={{ display: "none" }}
+            />
             <button
               className="settings__button settings__button--secondary"
+              onClick={handleAvatarClick}
               disabled={loading}
             >
               Сменить аватар
