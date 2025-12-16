@@ -29,21 +29,30 @@ export const getGames = async (req, res) => {
 
 export const getGameBySlug = async (req, res) => {
   try {
-    const { slug } = req.params;
-
-    const response = await axios.get(
-      `${RAWG_BASE}/games/${encodeURIComponent(slug)}`,
-      {
-        params: { key: RAWG_KEY },
-      }
-    );
-
+    const slug = req.params.slug; 
+    
+    if (!slug) {
+      return res.status(400).json({ error: "Slug параметр обязателен" });
+    }
+    
+    console.log(`Запрос к RAWG API для игры: ${slug}`);
+    
+    const response = await axios.get(`${RAWG_BASE}/games/${encodeURIComponent(slug)}`, {
+      params: { key: RAWG_KEY }
+    });
+    
     res.json(response.data);
   } catch (error) {
-    console.error("Ошибка при проксировании details RAWG API:", error.message);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch game details from RAWG API" });
+    console.error(`RAWG API error для ${slug}:`, error.message);
+    
+    if (error.response) {
+      // RAWG API вернул ошибку
+      return res.status(error.response.status).json({ 
+        error: error.response.data?.detail || "Игра не найдена в RAWG API" 
+      });
+    }
+    
+    res.status(500).json({ error: "Ошибка при запросе к RAWG API" });
   }
 };
 
