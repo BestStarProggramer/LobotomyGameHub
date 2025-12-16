@@ -17,6 +17,6 @@ WORKDIR /app
 
 COPY --from=builder /email-sender .
 
-COPY .env~ .env
+#COPY .env~ .env
 
 ENTRYPOINT ["/app/email-sender"]
