@@ -11,26 +11,29 @@ export function chunkArray(arr, size = 5) {
   return chunks;
 }
 
-export async function fetchGamesList(page = 1, page_size = 20, search = "") {
-  const params = { page, page_size };
-  if (search) params.search = search;
+export async function fetchGamesList(page = 1, page_size = 30, filters={}) {
+  const params = { page, page_size, ...filters}; //добавляем фильтры(search,genres,platforms,ordering,dates)
 
   const res = await axios.get(`${RAWG_PROXY}/games`, { params });
   const data = res.data;
 
-  const gamesFlat = (data.results || []).map((g) => ({
+  //Возвращаем простой массив игр
+  const games = data.results.map((g) => ({
+     id: g.id,           // Добавляем ID
+    slug: g.slug,       // Slug для URL
     title: g.name,
-    slug: g.slug,
     background_image: g.background_image || null,
+    rating: g.rating || 0,
+    released: g.released || null,
+    genres: g.genres?.map(genre => genre.name) || [],
   }));
 
-  const gamesChunked = chunkArray(gamesFlat, 5);
 
   return {
     count: data.count,
     next: data.next,
     previous: data.previous,
-    results: gamesChunked,
+    games: games, //простой массив вместо чанкс
   };
 }
 
