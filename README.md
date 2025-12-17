@@ -1,215 +1,191 @@
-# Проект LobotomyGH
+# Lobotomy Game Hub
 
-## Клонирование репозитория
+## Описание проекта
 
-```
+Lobotomy Game Hub — это игровой веб-портал, объединяющий пользовательские обзоры, редакционные статьи и каталог видеоигр.
+
+Платформа позволяет игрокам делиться личным опытом, читать материалы от редакции и находить игры по интересам, создавая активное сообщество вокруг игровой индустрии.
+
+## Цель проекта
+
+- Создать удобную платформу для обмена мнениями об играх
+- Предоставить структурированный каталог игр с отзывами и обзорами
+- Дать авторам редакции инструмент для публикации качественных материалов
+- Сформировать активное комьюнити игроков и авторов контента
+
+## Целевая аудитория
+
+- Геймеры 25+, ценящие время и осознанный выбор игр
+- Энтузиасты, любящие анализировать и обсуждать игры
+- Казуальные игроки, ищущие игры по настроению
+- Разработчики и издатели (аналитика пользовательских отзывов)
+
+## Основной функционал
+
+### Каталог игр
+
+- Интеграция со сторонним API (RAWG)
+- Фильтрация по дате релиза, рейтингу, названию, популярности
+- Страница игры с описанием, отзывами и редакционными материалами
+
+### Пользовательские отзывы
+
+- Текстовые отзывы с оценкой (0–5)
+
+### Редакционные публикации
+
+- Единый раздел со статьями и новостями
+- Публикация материалов редакцией
+- Поддержка форматирования, изображений
+- Привязка контента к конкретной игре
+
+### Пользовательские аккаунты
+
+- Регистрация и авторизация
+- Профиль пользователя (аватар, описание, избранные жанры)
+
+## Роли пользователей
+
+- **Гость** — просмотр контента
+- **Пользователь** — обзоры, комментарии, лайки
+- **Сотрудник редакции** — публикация статей и новостей
+- **Администратор** — модерация и управление ролями
+
+## Архитектура проекта
+
+- **Frontend**: SPA на React с React Router
+- **Backend**: REST API на Node.js
+- **Микросервисы**:
+  - Go-микросервис, обрабатывающий асинхронные задачи
+  - Взаимодействует через очередь сообщений **RabbitMQ**
+- **База данных**: PostgreSQL
+- **Очереди сообщений**: RabbitMQ
+- **Аутентификация и сессии**:
+  - JWT
+  - Access-токен хранится в cookies
+  - Данные сессии кэшируются в `localStorage`
+- **Внешние сервисы**: игровой API (RAWG)
+
+## Стек технологий
+
+### Frontend
+
+- React (SPA)
+- React Router
+- Работа с cookies и `localStorage` (хранение сессии)
+
+### Backend
+
+- Node.js
+- REST API
+- JWT
+
+### Микросервисы
+
+- Go
+- RabbitMQ (очередь сообщений)
+
+### Хранение данных
+
+- PostgreSQL
+
+## Запуск проекта
+
+### 1. Предварительные требования
+
+- Docker
+- Docker Compose
+
+### 2. Клонирование репозитория
+
+Склонируйте репозиторий на компьютер:
+
+```bash
 git clone https://github.com/BestStarProggramer/LobotomyGameHub.git
-
 cd LobotomyGameHub
-```
-
-## Запуск через Docker
-
-### Требования
-
-1. Docker
-2. Docker Compose
-
-
-### Подготовка окружения
-
-В файле `server/.env`
-```
-PORT=8800
-PGUSER=postgres
-PGHOST=postgres
-PGDATABASE=lobotomy_db
-PGPASSWORD=postgres
-PGPORT=5432
-JWT_SECRET=секретный_ключ
-JWT_EXPIRES=7d
-```
-
-### Сборка Docker-контейнеров
 
 ```
-docker-compose build
-```
-или
-```
-docker compose build
-```
 
-### Запуск Docker-контейнеров
+### 3. Настройка окружения
 
-```
-docker-compose up
-```
-или
-```
-docker compose up
-```
+В директории `server` создайте `.env` на основе `.env.example` и заполните переменные:
 
-### Остановка Docker
-
-```
-docker-compose down
-```
-или
-```
-docker compose down
-```
-
-
-## Запуск без Docker
-
-### Настройка окружения
-
-#### Перед запуском бэкенда необходимо создать файл `.env` в папке `server/`.
-
-Пример содержания `server/.env`:
-
-```env
-PORT=8800
-PGUSER=postgres
-PGHOST=localhost
-PGDATABASE=lobotomy_db
-PGPASSWORD=ваш_пароль
-PGPORT=5432
-JWT_SECRET=секретный_ключ_для_токенов
-```
-
-~~#### Поддержка протокола `https` для бекенда на Windows~~(Неактуально)
-
-~~Необходимо скачать Win64 OpenSSL v3.6.0 Light по сслылке:~~
-
-```
-https://slproweb.com/products/Win32OpenSSL.html
-```
-
-~~Далее нужно установить программу в директорию `C:\Program Files`.~~
-
-~~Во время установки ОБЯЗАТЕЛЬНО отметить:~~
-
-```
-- Copy OpenSSL DLLs to the Windows system directory
-- Add OpenSSL to the system PATH
-```
-
-~~Если не предложит добавить в PATH автоматически, то необходимо добавить в РАТН вручную.~~
-
-1. ~~Win + R~~
-2. ~~Введите: `SystemPropertiesAdvanced`~~
-3. ~~Нажмите Environment Variables~~
-4. ~~В разделе System variables найдите Path~~
-5. ~~Нажмите Edit~~
-6. ~~Добавьте новую строку: `C:\Program Files\OpenSSL-Win64\bin`~~
-7. ~~Сохраните~~
-
-~~Проверим, что все установлено (например, в терминале VSCode). Если версия выводится, то всё правильно:~~
-
-```
-openssl version
-```
-
-~~Далее перейдите в папку server и напишите в терминале~~
-
-```
+```bash
 cd server
-
-openssl req -nodes -new -x509 -keyout localhost.key -out localhost.cert
-```
-
-~~Заполните информацию (далее пример):~~
+cp .env.example .env
+# Затем заполните реальные значения в .env
 
 ```
-Country Name (2 letter code) [AU]:RU
-State or Province Name (full name) [Some-State]:Moscow
-Locality Name (eg, city) []:Moscow
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:LobotomyTeam
-Organizational Unit Name (eg, section) []:-
-Common Name (e.g. server FQDN or YOUR name) []:Dmitriy
-Email Address []:3sheepcanfly3@gmail.com
-```
 
-~~#### Поддержка протокола `https` для бекенда на Linux(Debian/Ubuntu)~~(Неактуально)
+В директории `email-notification-service` создайте `.env` на основе `.env.example` и заполните переменные:
 
-~~Установите OpenSSL:~~
+```bash
+cd email-notification-service
+cp .env.example .env
+# Затем заполните реальные значения в .env
 
 ```
-sudo apt update
 
-sudo apt install openssl
-```
+### 4. Запуск контейнеров
 
-~~Чтобы убедиться, что OpenSSL установлен и доступен, выполните команду:~~
-
-```
-openssl version
-```
-
-~~Если версия выводится, значит, все ОК.~~
-
-~~Далее перейдите в папку server и напишите в терминале~~
+```bash
+docker compose up --build
+# Для запуска в фоне: docker compose up -d --build
+# Остановка контейнеров: docker compose down
 
 ```
-cd server
 
-openssl req -nodes -new -x509 -keyout localhost.key -out localhost.cert
-```
+## Получение секретов и ключей
 
-~~Заполните информацию (далее пример):~~
+### Пароль к PostgeSQL
 
-```
-Country Name (2 letter code) [AU]:RU
-State or Province Name (full name) [Some-State]:Moscow
-Locality Name (eg, city) []:Moscow
-Organization Name (eg, company) [Internet Widgits Pty Ltd]:LobotomyTeam
-Organizational Unit Name (eg, section) []:-
-Common Name (e.g. server FQDN or YOUR name) []:Dmitriy
-Email Address []:3sheepcanfly3@gmail.com
-```
+Для переменной вроде `PGPASSWORD` и `POSTGRES_PASSWORD` нужно придумать одинаковый пароль.
 
-### Запуск Backend:
+Можно воспользоваться безопасным генератором:
 
-1. Перейдите в папку server:
+```bash
+openssl rand -hex 16
 
 ```
-cd server
-```
 
-2. Установите зависимости:
+Это выдаст случайный 32-символьный пароль в hex-формате, который можно вставить в `.env`.
 
-```
-npm install
-```
+### JWT_SECRET
 
-3. Запустите сервер:
+Через OpenSSL:
 
-```
-npm start
-```
-
-4. `Ctrl + C` - для завершения процесса.
-
-### Запуск Frontend:
-
-1. Перейдите в папку client:
+```bash
+openssl rand -hex 32
 
 ```
-cd client
-```
 
-2. Установите зависимости:
+Через Node.js:
 
-```
-npm install
-```
-
-3. Запустите приложение:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ```
-npm start
-```
 
-4. `Ctrl + C` - для завершения процесса.
+### API_KEY внешнего сервиса RAWG
+
+1. Перейдите на [RAWG API Documentation](https://rawg.io/apidocs).
+2. Нажмите кнопку **Get API Key**.
+3. Следуйте инструкциям на сайте, чтобы получить ваш ключ.
+4. Вставьте полученный ключ в переменную `API_KEY` в вашем `.env`.
+
+### SMTP / Email (MailerSend)
+
+Для отправки email‑уведомлений используется сервис **MailerSend**.
+
+1. Перейдите на сайт [MailerSend](https://www.mailersend.com/) и зарегистрируйтесь.
+2. Подтвердите email и войдите в панель управления.
+3. В разделе **Domains** добавьте и подтвердите домен отправителя.
+4. Перейдите в раздел **SMTP**.
+5. Создайте SMTP‑ключ (username и password).
+6. Укажите полученные значения в `.env`:
+
+- `SMTP_HOST` — SMTP‑сервер MailerSend
+- `SMTP_PORT` — порт SMTP (обычно `2525`)
+- `SMTP_USERNAME` — SMTP username
+- `SMTP_PASSWORD` — SMTP password
+- `SENDER_EMAIL` — email отправителя. Формируется так: **любое_имя + @ + значение после “@” из SMTP_USERNAME**.
