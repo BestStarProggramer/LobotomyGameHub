@@ -19,7 +19,6 @@ export async function fetchGamesList(page = 1, page_size = 30, filters={}) {
 
   //Возвращаем простой массив игр
   const games = data.results.map((g) => ({
-     id: g.id,           // Добавляем ID
     slug: g.slug,       // Slug для URL
     title: g.name,
     background_image: g.background_image || null,
