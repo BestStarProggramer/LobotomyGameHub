@@ -1,4 +1,4 @@
-import axios from "../axios.js";
+import axios from "axios";
 
 export async function fetchLocalGamesList(page = 1, page_size = 30, filters = {}) {
   const params = { page, page_size, ...filters };
