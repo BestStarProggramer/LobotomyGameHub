@@ -8,6 +8,7 @@ import rawgRouter from "./routes/rawg.js";
 import dataRouter from "./routes/data.js";
 import healthRouter from "./routes/health.js";
 import cookieParser from "cookie-parser";
+import gamesRoutes from "./routes/games.js"
 import https from "https";
 import fs from "fs";
 import axios from "axios";
@@ -38,6 +39,7 @@ app.use("/api/games", gamesRouter);
 app.use("/api/rawg", rawgRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/health", healthRouter);
+app.use("/api/games",gamesRoutes)
 
 app.listen(PORT, () => {
   console.log(
