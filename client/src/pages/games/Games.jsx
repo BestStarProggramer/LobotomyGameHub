@@ -10,22 +10,25 @@ const Games = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showLocalOnly, setShowLocalOnly] = useState(false)
+  const [showLocalOnly, setShowLocalOnly] = useState(false);
 
   // Загрузка игр
   const loadGames = async (pageNumber = 1, reset = false) => {
     if (isLoading) return;
-    
+
     setIsLoading(true);
     try {
       const filters = searchTerm ? { search: searchTerm } : {};
-      
-      const data=showLocalOnly
-        ? await fetchLocalGamesList(pageNumber,30,filters)
-        : await fetchGamesList(pageNumber,30,filters);
-      
-      setGames(prev => reset ? data.games : [...prev, ...data.games]);
-      setHasMore(data.length ===30); // если пришло меньше 30 значит конец
+
+      const data = showLocalOnly
+        ? await fetchLocalGamesList(pageNumber, 30, filters)
+        : await fetchGamesList(pageNumber, 30, filters);
+
+      // Унифицируем структуру данных: берём results (или games, или сам data)
+      const items = data.results ?? data.games ?? data;
+
+      setGames((prev) => (reset ? items : [...prev, ...items]));
+      setHasMore(items.length === 30); // если пришло меньше 30 значит конец
       setPage(pageNumber);
     } catch (error) {
       console.error("Ошибка загрузки игр:", error);
@@ -37,7 +40,7 @@ const Games = () => {
   // Первая загрузка
   useEffect(() => {
     loadGames(1, true);
-  }, [showLocalOnly]);//перезагрузка присмене источника
+  }, [showLocalOnly]); //перезагрузка присмене источника
 
   // Поиск
   const handleSearch = () => {
@@ -55,28 +58,31 @@ const Games = () => {
         <h1 className="games-page__title">Каталог игр</h1>
 
         {/* Поиск */}
-        <div className="games-page__search">
-          <input
-            type="text"
-            placeholder="Поиск игр..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-          />
-          <button onClick={handleSearch}>Найти</button>
+        <div className="games-page__filters">
+          <div className="games-page__search">
+            <input
+              type="text"
+              placeholder="Поиск игр..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <button onClick={handleSearch}>Найти</button>
+          </div>
+
+          {/* Новая галочка */}
+          <div className="games-page__checkbox">
+            <label>
+              <input
+                type="checkbox"
+                checked={showLocalOnly}
+                onChange={(e) => setShowLocalOnly(e.target.checked)}
+              />
+              <span> Только добавленные на сайт </span>
+            </label>
+          </div>
         </div>
 
-        {/* Новая галочка */}
-        <div className="games-gape__checkbox">
-          <label>
-            <input
-              type="checkbox"
-              checked={showLocalOnly}
-              onChange={(e) => setShowLocalOnly(e.target.checked)}
-            />
-            <span> Только добавленные на сайт </span>
-          </label>
-        </div>
         {/* Сетка игр */}
         <GamesGrid games={games} />
 

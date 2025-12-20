@@ -1,5 +1,5 @@
 import express from "express";
-import { search } from "../controllers/games.js";
+import { search, getLocalGames } from "../controllers/games.js";
 
 const router = express.Router();
 
