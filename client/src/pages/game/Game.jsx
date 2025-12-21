@@ -1,12 +1,21 @@
 import "./game.scss";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import StarIcon from "@mui/icons-material/Star";
 import ReviewsBlock from "../../components/reviewsblock/ReviewsBlock";
 import { AuthContext } from "../../context/authContext";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
+import {
+  fetchGameDetailsBySlug,
+  fetchGameScreenshotsBySlug,
+} from "../../utils/rawg"
 
 const Game = () => {
   const { currentUser } = useContext(AuthContext);
+  const { GameId } = useParams(); // slug from url
+  const [game, setGame] = useState(null);
+  const [bannerUrl, setBannerUrl] = useState("/img/gamebanner.jpg");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const reviewsList = [
     {
@@ -38,36 +47,89 @@ const Game = () => {
     },
   ];
 
-  const gameId = "1";
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const details = await fetchGameDetailsBySlug(GameId);
+        const shots = await fetchGameScreenshotsBySlug(GameId);
+        
+        if (cancelled) return;
+
+        setGame(details);
+
+        const nextBanner = 
+          (Array.isArray(shots) && shots[0]) ||
+          details?.backgroundimage ||
+          "/img/gamebanner.jpg";
+
+        setBannerUrl(nextBanner);
+      } catch (e){
+        if (!cancelled) setError("Не удалось загрузить игру");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    
+    if (GameId) load();
+    
+    return () => {
+      cancelled = true;
+    };
+  },[GameId]);
+  
+  if (loading) {
+    return (
+      <div className="game">
+        <div className="gamewrapper" style={{ color: "white"}}>
+          Загрузка...
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="game">
+        <div className="gamewrapper" style ={{ color: "white"}}>
+        {error}
+        </div>
+      </div>
+    );
+  }
+
+  const posterUrl=game?.backgroundimage || "/img/gameposter.jpg";
+  const title= game?.title || "";
+  const description=game?.description || "";
+  const rating= Number(game?.rating || 0).toFixed(1);
 
   return (
     <div className="game">
       <div className="game_wrapper">
         <div className="banner">
-          <img src="/img/game_banner.jpg" alt="Баннер игры" />
+          <img src={bannerUrl} alt={title} />
         </div>
 
         <div className="info">
           <div className="top">
             <div className="left">
               <div className="poster_wrapper">
-                <img src="/img/game_poster.jpg" alt="Постер игры" />
+                <img src={posterUrl} alt={title} />
               </div>
 
               <div className="rating">
-                <span>4.3</span>
+                <span>{rating}</span>
                 <StarIcon className="star" />
               </div>
             </div>
 
             <div className="right">
-              <h1>Hollow Knight: Silksong</h1>
+              <h1>{title}</h1>
               <div className="description">
-                <p>
-                  Исследуйте огромное проклятое царство в Hollow Knight:
-                  Silksong! Открывайте его тайны, сражайтесь и боритесь за свою
-                  жизнь, поднимаясь к вершинам земель, где правят шёлк и песня.
-                </p>
+                <p> {description || "Описание отсутствует."}</p>
               </div>
             </div>
           </div>
@@ -83,7 +145,7 @@ const Game = () => {
                 <div className="articles_wrapper">
                   <div className="article">
                     <div className="top">
-                      <h1>Все секреты начальной локации Silksong</h1>
+                      <h1>{title || "Статья"}</h1>
                       <div className="author">
                         <span>5Hnet5K</span>
                         <img src="/img/profilePic.jpg" alt="аватар" />
@@ -115,7 +177,7 @@ const Game = () => {
         <ReviewsBlock
           reviews={reviewsList}
           buttonText="На страницу с отзывами →"
-          buttonLink={`/games/${gameId}/reviews`}
+          buttonLink={`/games/${GameId}/reviews`}
           showReviewInput={currentUser}
         />
       </div>
