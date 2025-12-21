@@ -59,7 +59,7 @@ body {
         flex-direction: row;
 
         .left {
-          margin-top: -150px;
+          margin-top: 0;
           position: relative;
           width: fit-content;
           display: flex;
@@ -81,7 +81,7 @@ body {
           .rating {
             left: 60%;
             top: 310px;
-            position: absolute;
+            position: static;
             display: flex;
             align-items: center;
             justify-content: space-between;
