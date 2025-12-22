@@ -7,15 +7,92 @@ import { useContext, useEffect, useState } from "react";
 import {
   fetchGameDetailsBySlug,
   fetchGameScreenshotsBySlug,
-} from "../../utils/rawg"
+  fetchGameTrailersBySlug,
+} from "../../utils/rawg";
 
 const Game = () => {
   const { currentUser } = useContext(AuthContext);
   const { GameId } = useParams(); // slug from url
   const [game, setGame] = useState(null);
   const [bannerUrl, setBannerUrl] = useState("/img/gamebanner.jpg");
+  const [screenshots, setScreenshots] = useState([]);
+  const [trailerUrl, setTrailerUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [activeScreenshotIndex, setActiveScreenshotIndex] = useState(0);
+
+  //  6 скринов для листания
+  const visibleScreenshots = screenshots.slice(0, 6);
+
+  const openLightbox = (index) => {
+    setActiveScreenshotIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+  };
+
+  const goPrev = () => {
+    if (visibleScreenshots.length === 0) return;
+    setActiveScreenshotIndex(
+      (prev) => (prev - 1 + visibleScreenshots.length) % visibleScreenshots.length
+    );
+  };
+
+  const goNext = () => {
+    if (visibleScreenshots.length === 0) return;
+    setActiveScreenshotIndex((prev) => (prev + 1) % visibleScreenshots.length);
+  };
+
+  // клавиши Esc,ArrowLeft,ArrowRight
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") closeLightbox();
+      if (e.key === "ArrowLeft") goPrev();
+      if (e.key === "ArrowRight") goNext();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isLightboxOpen, visibleScreenshots.length]);
+
+  // нормализация трейлера (на случай если fetchGameTrailersBySlug вернёт объект/массив)
+  const normalizeTrailerUrl = (trailer) => {
+    if (!trailer) return null;
+
+    if (typeof trailer === "string") {
+      const v = trailer.trim();
+      return v.length > 0 ? v : null;
+    }
+
+    if (Array.isArray(trailer)) {
+      return normalizeTrailerUrl(trailer[0]);
+    }
+
+    if (typeof trailer === "object") {
+      const v =
+        trailer.url ||
+        trailer.video ||
+        trailer.trailerUrl ||
+        trailer.data?.url ||
+        trailer.data?.max ||
+        trailer.data?.["720"] ||
+        trailer.data?.["480"] ||
+        (Array.isArray(trailer.results) ? trailer.results[0]?.data?.max : null) ||
+        (Array.isArray(trailer.results) ? trailer.results[0]?.data?.["480"] : null) ||
+        (Array.isArray(trailer.results) ? trailer.results[0]?.url : null);
+
+      return typeof v === "string" && v.trim().length > 0 ? v.trim() : null;
+    }
+
+    return null;
+  };
+
+  const hasTrailer = Boolean(trailerUrl);
 
   const reviewsList = [
     {
@@ -57,35 +134,46 @@ const Game = () => {
 
         const details = await fetchGameDetailsBySlug(GameId);
         const shots = await fetchGameScreenshotsBySlug(GameId);
-        
+        const trailerRaw = await fetchGameTrailersBySlug(GameId);
+
         if (cancelled) return;
 
-        setGame(details);
+        const safeShots = Array.isArray(shots) ? shots : [];
+        const trailerNormalized = normalizeTrailerUrl(trailerRaw);
 
-        const nextBanner = 
-          (Array.isArray(shots) && shots[0]) ||
+        setGame(details);
+        setScreenshots(safeShots);
+        setTrailerUrl(trailerNormalized);
+
+        // если трейлер появился — закрыть лайтбокс (чтобы не висел поверх)
+        if (trailerNormalized) {
+          setIsLightboxOpen(false);
+        }
+
+        const nextBanner =
+          (Array.isArray(safeShots) && safeShots[0]) ||
           details?.backgroundimage ||
           "/img/gamebanner.jpg";
 
         setBannerUrl(nextBanner);
-      } catch (e){
+      } catch (e) {
         if (!cancelled) setError("Не удалось загрузить игру");
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
-    
+
     if (GameId) load();
-    
+
     return () => {
       cancelled = true;
     };
-  },[GameId]);
-  
+  }, [GameId]);
+
   if (loading) {
     return (
       <div className="game">
-        <div className="gamewrapper" style={{ color: "white"}}>
+        <div className="gamewrapper" style={{ color: "white" }}>
           Загрузка...
         </div>
       </div>
@@ -94,17 +182,17 @@ const Game = () => {
   if (error) {
     return (
       <div className="game">
-        <div className="gamewrapper" style ={{ color: "white"}}>
-        {error}
+        <div className="gamewrapper" style={{ color: "white" }}>
+          {error}
         </div>
       </div>
     );
   }
 
-  const posterUrl=game?.backgroundimage || "/img/gameposter.jpg";
-  const title= game?.title || "";
-  const description=game?.description || "";
-  const rating= Number(game?.rating || 0).toFixed(1);
+  const posterUrl = game?.backgroundimage || "/img/gameposter.jpg";
+  const title = game?.title || "";
+  const description = game?.description || "";
+  const rating = Number(game?.rating || 0).toFixed(1);
 
   return (
     <div className="game">
@@ -138,7 +226,30 @@ const Game = () => {
             <h2>Трейлер игры</h2>
             <div className="sections">
               <div className="left">
-                <video src="/videos/trailer.mp4" controls />
+                {hasTrailer ? (
+                  <video src={trailerUrl} controls />
+                ) : (
+                  <>
+                    <p className="no-trailer">Трейлер отсутствует.</p>
+
+                    {visibleScreenshots.length > 0 ? (
+                      <div className="screenshots">
+                        <button
+                          type="button"
+                          className="screenshot_btn screenshot_btn--preview"
+                          onClick={() => openLightbox(0)}
+                        >
+                          <img
+                            src={visibleScreenshots[0]}
+                            alt="screenshot-preview"
+                          />
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="no-trailer">Скриншоты отсутствуют.</p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="right">
@@ -169,6 +280,50 @@ const Game = () => {
                 </div>
               </div>
             </div>
+
+            {/* лайтбокс только когда трейлера нет */}
+            {!hasTrailer && isLightboxOpen && visibleScreenshots.length > 0 && (
+              <div className="lightbox_overlay" onClick={closeLightbox}>
+                <div
+                  className="lightbox_content"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="lightbox_close"
+                    onClick={closeLightbox}
+                  >
+                    ✕
+                  </button>
+
+                  <button
+                    type="button"
+                    className="lightbox_nav lightbox_nav__prev"
+                    onClick={goPrev}
+                  >
+                    ‹
+                  </button>
+
+                  <img
+                    className="lightbox_image"
+                    src={visibleScreenshots[activeScreenshotIndex]}
+                    alt={`screenshot-full-${activeScreenshotIndex}`}
+                  />
+
+                  <button
+                    type="button"
+                    className="lightbox_nav lightbox_nav__next"
+                    onClick={goNext}
+                  >
+                    ›
+                  </button>
+
+                  <div className="lightbox_counter">
+                    {activeScreenshotIndex + 1} / {visibleScreenshots.length}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

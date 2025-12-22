@@ -64,3 +64,14 @@ export async function fetchGameScreenshotsBySlug(slug) {
 
   return screenshots.map((shot) => shot.image);
 }
+
+export async function fetchGameTrailersBySlug(slug) {
+  const res = await axios.get(
+    `${RAWG_PROXY}/games/${encodeURIComponent(slug)}/trailers`
+  );
+
+  const trailers = res.data.results || [];
+  const first = trailers[0];
+
+  return first?.data?.max || first?.data?.["480"] || null;
+}
