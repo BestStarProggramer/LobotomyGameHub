@@ -199,3 +199,6 @@ CREATE TABLE IF NOT EXISTS favorites_genres (
 
 CREATE INDEX IF NOT EXISTS idx_favorites_genres_user_id ON favorites_genres(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_genres_genre_id ON favorites_genres(genre_id);
+ALTER TABLE publications ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP;
+CREATE INDEX IF NOT EXISTS idx_publications_user_id ON publications(user_id);
+CREATE INDEX IF NOT EXISTS idx_publications_type ON publications(type);

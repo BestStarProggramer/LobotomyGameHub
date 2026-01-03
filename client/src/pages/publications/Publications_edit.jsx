@@ -1,12 +1,13 @@
-import { useRef, useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Editor from "../../components/editor/Editor.jsx";
 import { AuthContext } from "../../context/authContext";
-import "./publications_write.scss";
+import "./publications_edit.scss";
 
-function PublicationsWrite() {
+function PublicationsEdit() {
   const editorRef = useRef(null);
+  const { publicationId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
 
@@ -15,18 +16,52 @@ function PublicationsWrite() {
   const [title, setTitle] = useState("");
   const [game, setGame] = useState("");
   const [err, setErr] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [imagePreview, setImagePreview] = useState("");
 
   useEffect(() => {
-    if (
-      !currentUser ||
-      (currentUser.role !== "staff" && currentUser.role !== "admin")
-    ) {
-      navigate("/publications");
-    }
-  }, [currentUser, navigate]);
+    const fetchPublication = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:8800/api/publications/${publicationId}`,
+          {
+            withCredentials: true,
+          }
+        );
+
+        const data = res.data;
+        setTitle(data.title);
+        setActiveTab(data.type);
+        setGame(data.gameId || "");
+        if (data.imageUrl) {
+          setImagePreview(data.imageUrl);
+        }
+
+        if (editorRef.current) {
+          editorRef.current.root.innerHTML = data.content;
+        }
+      } catch (err) {
+        console.error("Ошибка при загрузке публикации:", err);
+        setErr("Не удалось загрузить публикацию для редактирования");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPublication();
+  }, [publicationId]);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
   };
 
   const handleSave = async (e) => {
@@ -52,36 +87,38 @@ function PublicationsWrite() {
     formData.append("title", title);
     formData.append("content", contentHtml);
     formData.append("type", activeTab);
+    formData.append("game_id", game || "");
 
     if (file) {
       formData.append("file", file);
     }
 
     try {
-      await axios.post("http://localhost:8800/api/publications", formData, {
-        withCredentials: true,
-      });
-      navigate("/publications");
+      await axios.put(
+        `http://localhost:8800/api/publications/${publicationId}`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      navigate(`/publications/${publicationId}`);
     } catch (err) {
-      console.error("Ошибка при публикации:", err);
-      setErr("Что-то пошло не так при создании публикации.");
+      console.error("Ошибка при обновлении публикации:", err);
+      setErr(
+        err.response?.data?.error ||
+          "Что-то пошло не так при обновлении публикации."
+      );
     }
   };
 
-  if (
-    !currentUser ||
-    (currentUser.role !== "staff" && currentUser.role !== "admin")
-  ) {
+  if (loading) {
     return (
       <div className="page">
         <div className="container">
-          <div className="access-denied">
-            <h2>Доступ запрещен</h2>
-            <p>
-              Только пользователи с ролью staff или admin могут создавать
-              публикации.
-            </p>
-          </div>
+          <div className="loading">Загрузка...</div>
         </div>
       </div>
     );
@@ -91,10 +128,10 @@ function PublicationsWrite() {
     <div className="page">
       <div className="container">
         <div className="info">
-          <h1>Написание Публикации</h1>
+          <h1>Редактирование Публикации</h1>
           <div className="options">
             <div className="type">
-              <p>Я хочу написать...</p>
+              <p>Тип публикации</p>
               <div className="tabs">
                 <button
                   className={`tab ${activeTab === "news" ? "active" : ""}`}
@@ -106,12 +143,12 @@ function PublicationsWrite() {
                   className={`tab ${activeTab === "article" ? "active" : ""}`}
                   onClick={() => setActiveTab("article")}
                 >
-                  Статью
+                  Статья
                 </button>
               </div>
             </div>
             <div className="title">
-              <p>С названием</p>
+              <p>Название</p>
               <input
                 type="text"
                 value={title}
@@ -127,8 +164,16 @@ function PublicationsWrite() {
               />
             </div>
             <div className="load-img">
-              <p>И у нее будет такая картинка</p>
+              <p>Картинка публикации</p>
+              {imagePreview && (
+                <div className="image-preview">
+                  <img src={imagePreview} alt="Предпросмотр" />
+                </div>
+              )}
               <input type="file" onChange={handleFileChange} />
+              <p className="hint">
+                Оставьте пустым, чтобы сохранить текущую картинку
+              </p>
             </div>
           </div>
           {err && (
@@ -143,7 +188,13 @@ function PublicationsWrite() {
           <Editor ref={editorRef} />
           <div className="button-wrapper">
             <button onClick={handleSave} className="save-button">
-              Опубликовать
+              Сохранить изменения
+            </button>
+            <button
+              onClick={() => navigate(`/publications/${publicationId}`)}
+              className="cancel-button"
+            >
+              Отмена
             </button>
           </div>
         </div>
@@ -152,4 +203,4 @@ function PublicationsWrite() {
   );
 }
 
-export default PublicationsWrite;
+export default PublicationsEdit;

@@ -23,6 +23,7 @@ import Publications from "./pages/publications/Publications.jsx";
 import PublicationPage from "./pages/publication/PublicationPage.jsx";
 import Settings from "./pages/settings/Settings.jsx";
 import PublicationsWrite from "./pages/publications/Publications_write.jsx";
+import PublicationsEdit from "./pages/publications/Publications_edit.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -102,6 +103,10 @@ function App() {
         {
           path: "/games/:GameId/reviews",
           element: <Reviews />,
+        },
+        {
+          path: "/publications/edit/:publicationId",
+          element: <PublicationsEdit />,
         },
       ],
     },

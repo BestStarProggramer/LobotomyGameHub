@@ -22,20 +22,11 @@ body {
     margin: 0 auto;
     padding: 0 20px;
 
-    .access-denied {
+    .loading {
       text-align: center;
       padding: 40px;
       color: white;
-
-      h2 {
-        color: #ff4d4f;
-        font-size: 28px;
-      }
-
-      p {
-        font-size: 18px;
-        margin-top: 10px;
-      }
+      font-size: 18px;
     }
 
     .info {
@@ -107,6 +98,23 @@ body {
         input[type="file"] {
           width: 100%;
         }
+
+        .image-preview {
+          margin-bottom: 15px;
+
+          img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            object-fit: cover;
+          }
+        }
+
+        .hint {
+          color: #a0a0a0;
+          font-size: 14px;
+          margin-top: 5px;
+        }
       }
 
       .error-message {
@@ -136,14 +144,17 @@ body {
       .button-wrapper {
         display: flex;
         justify-content: flex-end;
+        align-items: center;
+        gap: 15px;
         width: 100%;
+        margin-top: 15px;
+        margin-bottom: 30px;
 
         .save-button {
-          margin: 15px 0;
           outline: none;
           border: none;
           font-size: 20px;
-          padding: 6px 30px;
+          padding: 8px 30px;
           display: inline-block;
           text-align: center;
           text-decoration: none;
@@ -156,6 +167,30 @@ body {
 
           &:hover {
             background-color: #6b2da8;
+          }
+        }
+
+        .cancel-button {
+          outline: none;
+          border: 2px solid #a0a0a0;
+          font-size: 16px;
+          padding: 8px 30px;
+          display: inline-block;
+          text-align: center;
+          text-decoration: none;
+          border-radius: 25px;
+          background-color: transparent;
+          color: white;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 150ms ease;
+          min-width: 120px;
+          height: 42px;
+          line-height: 24px;
+
+          &:hover {
+            background-color: #2a2533;
+            border-color: #6b2da8;
           }
         }
       }
