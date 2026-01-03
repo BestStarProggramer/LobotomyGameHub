@@ -1,128 +1,72 @@
 import "./publications.scss";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Publication from "../../components/publication/Publication";
+import axios from "axios";
 
 const Publications = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [publicationsData, setPublicationsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Заглушки данных для публикаций
-  const publicationsData = [
-    {
-      id: 1,
-      type: "article",
-      title: "Топ 10 игр 2024 года, которые вас удивят",
-      author: {
-        username: "GameCritic",
-        avatar: "/img/profilePic.jpg",
-      },
-      date: "15.11.2024",
-      commentsCount: 24,
-      imageUrl: "/img/game_poster.jpg",
-    },
-    {
-      id: 2,
-      type: "news",
-      title: "Новый патч для Cyberpunk 2077 добавляет долгожданные функции",
-      author: {
-        username: "NewsHunter",
-        avatar: "/img/default-avatar.jpg",
-      },
-      date: "14.11.2024",
-      commentsCount: 56,
-      imageUrl: "/img/game_banner.jpg",
-    },
-    {
-      id: 3,
-      type: "article",
-      title: "Гайд: Как пройти сложнейшего босса в Elden Ring",
-      author: {
-        username: "ProGamer",
-        avatar: "/img/profilePic.jpg",
-      },
-      date: "13.11.2024",
-      commentsCount: 18,
-      imageUrl: "/img/game_poster.jpg",
-    },
-    {
-      id: 4,
-      type: "news",
-      title: "Анонсирована дата выхода Hollow Knight: Silksong",
-      author: {
-        username: "IndieLover",
-        avatar: "/img/default-avatar.jpg",
-      },
-      date: "12.11.2024",
-      commentsCount: 142,
-      imageUrl: "/img/game_banner.jpg",
-    },
-    {
-      id: 5,
-      type: "article",
-      title: "Сравнение графики: PlayStation 5 vs Xbox Series X",
-      author: {
-        username: "TechExpert",
-        avatar: "/img/profilePic.jpg",
-      },
-      date: "11.11.2024",
-      commentsCount: 32,
-      imageUrl: "/img/game_poster.jpg",
-    },
-    {
-      id: 6,
-      type: "news",
-      title: "Steam обновляет систему рекомендаций",
-      author: {
-        username: "PCGamer",
-        avatar: "/img/default-avatar.jpg",
-      },
-      date: "10.11.2024",
-      commentsCount: 28,
-      imageUrl: "/img/game_banner.jpg",
-    },
-    {
-      id: 7,
-      type: "article",
-      title: "История развития жанра battle royale",
-      author: {
-        username: "Historian",
-        avatar: "/img/profilePic.jpg",
-      },
-      date: "09.11.2024",
-      commentsCount: 15,
-      imageUrl: "/img/game_poster.jpg",
-    },
-    {
-      id: 8,
-      type: "news",
-      title: "Nintendo анонсировала новую консоль",
-      author: {
-        username: "ConsoleFan",
-        avatar: "/img/default-avatar.jpg",
-      },
-      date: "08.11.2024",
-      commentsCount: 89,
-      imageUrl: "/img/game_banner.jpg",
-    },
-    {
-      id: 9,
-      type: "article",
-      title: "Лучшие инди-игры, которые вы могли пропустить",
-      author: {
-        username: "IndieExplorer",
-        avatar: "/img/profilePic.jpg",
-      },
-      date: "07.11.2024",
-      commentsCount: 21,
-      imageUrl: "/img/game_poster.jpg",
-    },
-  ];
+  useEffect(() => {
+    const fetchPublications = async () => {
+      setLoading(true);
+      setError(null);
 
-  const filteredPublications =
-    activeTab === "all"
-      ? publicationsData
-      : publicationsData.filter(
-          (pub) => pub.type === (activeTab === "news" ? "news" : "article")
-        );
+      try {
+        const params = {};
+        if (activeTab !== "all") {
+          params.type = activeTab;
+        }
+
+        const res = await axios.get("http://localhost:8800/api/publications", {
+          params,
+          withCredentials: true,
+        });
+
+        setPublicationsData(res.data);
+      } catch (err) {
+        console.error("Ошибка при загрузке публикаций:", err);
+        setError("Не удалось загрузить публикации");
+        setPublicationsData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPublications();
+  }, [activeTab]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  if (loading) {
+    return (
+      <div className="publications-page">
+        <div className="container">
+          <div className="publications-section">
+            <h1 className="section-title">Публикации</h1>
+            <div className="loading">Загрузка...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="publications-page">
+        <div className="container">
+          <div className="publications-section">
+            <h1 className="section-title">Публикации</h1>
+            <div className="error-message">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="publications-page">
@@ -134,19 +78,19 @@ const Publications = () => {
             <div className="tabs">
               <button
                 className={`tab ${activeTab === "all" ? "active" : ""}`}
-                onClick={() => setActiveTab("all")}
+                onClick={() => handleTabChange("all")}
               >
                 Все
               </button>
               <button
                 className={`tab ${activeTab === "news" ? "active" : ""}`}
-                onClick={() => setActiveTab("news")}
+                onClick={() => handleTabChange("news")}
               >
                 Новости
               </button>
               <button
-                className={`tab ${activeTab === "articles" ? "active" : ""}`}
-                onClick={() => setActiveTab("articles")}
+                className={`tab ${activeTab === "article" ? "active" : ""}`}
+                onClick={() => handleTabChange("article")}
               >
                 Статьи
               </button>
@@ -154,11 +98,18 @@ const Publications = () => {
           </div>
 
           <div className="bottom">
-            <div className="publications-grid">
-              {filteredPublications.map((publication) => (
-                <Publication key={publication.id} publication={publication} />
-              ))}
-            </div>
+            {publicationsData.length === 0 ? (
+              <div className="no-publications">
+                <p>Публикаций пока нет</p>
+                <p>Будьте первым, кто создаст публикацию!</p>
+              </div>
+            ) : (
+              <div className="publications-grid">
+                {publicationsData.map((publication) => (
+                  <Publication key={publication.id} publication={publication} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

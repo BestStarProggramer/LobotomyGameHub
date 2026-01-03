@@ -1,10 +1,8 @@
 import "./publicationSection.scss";
 import CommentIcon from "@mui/icons-material/Comment";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const PublicationSection = ({ publication }) => {
-  const { title, author, date, commentsCount, viewsCount, content } =
-    publication;
+  const { title, author, date, commentsCount, content } = publication;
 
   return (
     <div className="publication-section">
@@ -14,10 +12,6 @@ const PublicationSection = ({ publication }) => {
           <div className="stat">
             <CommentIcon className="stat-icon" />
             <span>{commentsCount}</span>
-          </div>
-          <div className="stat">
-            <VisibilityIcon className="stat-icon" />
-            <span>{viewsCount}</span>
           </div>
         </div>
 

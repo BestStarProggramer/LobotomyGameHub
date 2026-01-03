@@ -5,6 +5,14 @@ body {
   padding: 0;
   height: 100%;
 }
+.loading,
+.error-message,
+.no-publications {
+  text-align: center;
+  padding: 40px;
+  color: white;
+  font-size: 18px;
+}
 
 .publications-page {
   background-image: url("~/public/img/background.png");
@@ -27,6 +35,28 @@ body {
       flex-direction: column;
       width: 100%;
       padding-bottom: 30px;
+
+      .error-message {
+        color: #ff4d4f;
+        background-color: rgba(255, 77, 79, 0.1);
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+
+      .no-publications {
+        text-align: center;
+        color: #a0a0a0;
+        font-size: 16px;
+        padding: 40px;
+        border: 2px dashed #53257d;
+        border-radius: 10px;
+        margin: 20px 0;
+
+        p {
+          margin: 10px 0;
+        }
+      }
 
       .section-title {
         color: white;
