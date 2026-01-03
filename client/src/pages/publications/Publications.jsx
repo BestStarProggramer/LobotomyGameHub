@@ -1,13 +1,16 @@
 import "./publications.scss";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 import Publication from "../../components/publication/Publication";
 import axios from "axios";
+import { AuthContext } from "../../context/authContext";
 
 const Publications = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [publicationsData, setPublicationsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { currentUser } = useContext(AuthContext); // Добавляем контекст
 
   useEffect(() => {
     const fetchPublications = async () => {
@@ -42,6 +45,10 @@ const Publications = () => {
     setActiveTab(tab);
   };
 
+  const canCreatePublication =
+    currentUser &&
+    (currentUser.role === "admin" || currentUser.role === "staff");
+
   if (loading) {
     return (
       <div className="publications-page">
@@ -72,7 +79,15 @@ const Publications = () => {
     <div className="publications-page">
       <div className="container">
         <div className="publications-section">
-          <h1 className="section-title">Публикации</h1>
+          <div className="section-header">
+            <h1 className="section-title">Публикации</h1>
+
+            {canCreatePublication && (
+              <Link to="/publications/write" className="add-publication-btn">
+                Добавить+
+              </Link>
+            )}
+          </div>
 
           <div className="top">
             <div className="tabs">
@@ -101,7 +116,13 @@ const Publications = () => {
             {publicationsData.length === 0 ? (
               <div className="no-publications">
                 <p>Публикаций пока нет</p>
-                <p>Будьте первым, кто создаст публикацию!</p>
+                {canCreatePublication && (
+                  <p>
+                    <Link to="/publications/write" className="create-link">
+                      Создайте первую публикацию
+                    </Link>
+                  </p>
+                )}
               </div>
             ) : (
               <div className="publications-grid">

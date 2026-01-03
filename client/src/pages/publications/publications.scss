@@ -121,3 +121,38 @@ body {
     }
   }
 }
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 30px 30px 20px 30px;
+
+  .add-publication-btn {
+    background-color: #53257d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 150ms ease;
+
+    &:hover {
+      background-color: #6b2da8;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.create-link {
+  color: #53257d;
+  font-weight: bold;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
