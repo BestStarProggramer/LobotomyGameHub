@@ -1,31 +1,60 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Editor from "../../components/editor/Editor.jsx";
 import "./publications_write.scss";
 
 function PublicationsWrite() {
   const editorRef = useRef(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("news");
+  const [file, setFile] = useState(null);
+  const [title, setTitle] = useState("");
+  const [game, setGame] = useState("");
+  const [err, setErr] = useState(null);
 
-  function handleSave() {
-    const html = editorRef.current.root.innerHTML;
-    console.log("Content HTML:", html);
-    console.log("Selected Game:", inputs.game);
-  }
-
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "image") {
-      setInputs((prev) => ({ ...prev, [name]: files[0] }));
-    } else {
-      setInputs((prev) => ({ ...prev, [name]: value }));
-    }
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
   };
 
-  const [inputs, setInputs] = useState({
-    image: null,
-    title: "",
-    game: "",
-  });
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setErr(null);
+
+    const contentHtml = editorRef.current.root.innerHTML;
+
+    if (!title.trim()) {
+      setErr("Название публикации обязательно");
+      return;
+    }
+    if (
+      !contentHtml ||
+      contentHtml === "<p><br></p>" ||
+      contentHtml.trim() === ""
+    ) {
+      setErr("Содержание публикации не может быть пустым");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("content", contentHtml);
+    formData.append("type", activeTab);
+
+    if (file) {
+      formData.append("file", file);
+    }
+
+    try {
+      await axios.post("http://localhost:8800/api/publications", formData, {
+        withCredentials: true,
+      });
+      navigate("/publications");
+    } catch (err) {
+      console.error("Ошибка при публикации:", err);
+      setErr("Что-то пошло не так при создании публикации.");
+    }
+  };
 
   return (
     <div className="page">
@@ -43,8 +72,8 @@ function PublicationsWrite() {
                   Новость
                 </button>
                 <button
-                  className={`tab ${activeTab === "articles" ? "active" : ""}`}
-                  onClick={() => setActiveTab("articles")}
+                  className={`tab ${activeTab === "article" ? "active" : ""}`}
+                  onClick={() => setActiveTab("article")}
                 >
                   Статью
                 </button>
@@ -52,16 +81,32 @@ function PublicationsWrite() {
             </div>
             <div className="title">
               <p>С названием</p>
-              <input type="text" name="title" onChange={handleChange} />
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
             <div className="gamechoice">
-              <p>По игре</p>
+              <p>По игре (ID или название)</p>
+              <input
+                type="text"
+                value={game}
+                onChange={(e) => setGame(e.target.value)}
+              />
             </div>
             <div className="load-img">
               <p>И у нее будет такая картинка</p>
-              <input type="file" name="image" onChange={handleChange} />
+              <input type="file" onChange={handleFileChange} />
             </div>
           </div>
+          {err && (
+            <div className="error-message">
+              {typeof err === "string"
+                ? err
+                : err.error || "Ошибка при заполнении формы"}
+            </div>
+          )}
         </div>
         <div className="editor">
           <Editor ref={editorRef} />
