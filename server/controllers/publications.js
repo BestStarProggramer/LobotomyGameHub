@@ -1,6 +1,10 @@
 import { query } from "../db.js";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import fs from "fs";
-import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const getPublications = async (req, res) => {
   try {
@@ -138,15 +142,29 @@ export const updatePublication = async (req, res) => {
     }
 
     let image = publication.image;
+
     if (req.file) {
       if (publication.image && publication.image.startsWith("/upload/")) {
-        const oldImagePath = path.join(
-          __dirname,
-          "../../client/public",
-          publication.image
-        );
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+        try {
+          const oldImagePath = join(
+            process.cwd(),
+            "client/public",
+            publication.image
+          );
+
+          const normalizedPath = oldImagePath.replace(/\\/g, "/");
+          if (normalizedPath.includes("/client/public/upload/")) {
+            if (fs.existsSync(oldImagePath)) {
+              fs.unlinkSync(oldImagePath);
+              console.log(`Удалена старая картинка: ${oldImagePath}`);
+            }
+          } else {
+            console.warn(
+              `Попытка удалить файл вне разрешенной директории: ${publication.image}`
+            );
+          }
+        } catch (fileError) {
+          console.error("Ошибка при удалении старого файла:", fileError);
         }
       }
       image = `/upload/${req.file.filename}`;
@@ -254,13 +272,26 @@ export const deletePublication = async (req, res) => {
     }
 
     if (publication.image && publication.image.startsWith("/upload/")) {
-      const imagePath = path.join(
-        __dirname,
-        "../../client/public",
-        publication.image
-      );
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
+      try {
+        const imagePath = join(
+          process.cwd(),
+          "client/public",
+          publication.image
+        );
+
+        const normalizedPath = imagePath.replace(/\\/g, "/");
+        if (normalizedPath.includes("/client/public/upload/")) {
+          if (fs.existsSync(imagePath)) {
+            fs.unlinkSync(imagePath);
+            console.log(`Удалена картинка: ${imagePath}`);
+          }
+        } else {
+          console.warn(
+            `Попытка удалить файл вне разрешенной директории: ${publication.image}`
+          );
+        }
+      } catch (fileError) {
+        console.error("Ошибка при удалении файла:", fileError);
       }
     }
 
