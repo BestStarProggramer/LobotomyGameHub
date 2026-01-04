@@ -34,10 +34,28 @@ export const AuthContextProvider = ({ children }) => {
   };
 
   const updateCurrentUser = (updatedData) => {
-    setCurrentUser((prev) => ({
-      ...prev,
-      ...updatedData,
-    }));
+    setCurrentUser((prev) => {
+      const newUser = { ...prev, ...updatedData };
+      localStorage.setItem("user", JSON.stringify(newUser));
+      return newUser;
+    });
+  };
+
+  const refreshUserData = async () => {
+    try {
+      const res = await axios.get("http://localhost:8800/api/auth/profile", {
+        withCredentials: true,
+      });
+      const data = res.data;
+
+      updateCurrentUser({
+        username: data.username,
+        avatar_url: data.avatar_url || data.img,
+        bio: data.bio,
+      });
+    } catch (err) {
+      console.error("Ошибка обновления данных пользователя:", err);
+    }
   };
 
   useEffect(() => {
@@ -46,7 +64,13 @@ export const AuthContextProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, login, logout, updateCurrentUser }}
+      value={{
+        currentUser,
+        login,
+        logout,
+        updateCurrentUser,
+        refreshUserData,
+      }}
     >
       {children}
     </AuthContext.Provider>

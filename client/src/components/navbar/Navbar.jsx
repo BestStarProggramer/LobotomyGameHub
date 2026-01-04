@@ -1,6 +1,6 @@
 import "./navbar.scss";
 import { Link } from "react-router-dom";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../../context/authContext";
 import PersonIcon from "@mui/icons-material/Person";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -11,10 +11,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const NavBar = () => {
-  const { currentUser, logout } = useContext(AuthContext);
+  const { currentUser, logout, refreshUserData } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const [err, setErr] = useState(null);
 
   const handleClick = async (e) => {
     e.preventDefault();
@@ -26,12 +25,18 @@ const NavBar = () => {
       logout();
       navigate("/login");
     } catch (err) {
-      setErr(err.response?.data || "Что-то пошло не так");
+      console.error("Ошибка выхода:", err.response?.data || err);
     }
   };
 
   const userAvatar = currentUser?.avatar_url || "/img/default-avatar.jpg";
   const userName = currentUser?.username || "Гость";
+
+  useEffect(() => {
+    if (currentUser && !currentUser.avatar_url && refreshUserData) {
+      refreshUserData();
+    }
+  }, [currentUser, refreshUserData]);
 
   return (
     <div className="navbar">
@@ -54,13 +59,20 @@ const NavBar = () => {
       <div className="right">
         <div className="user" onClick={() => setOpen(!open)}>
           <span>{userName}</span>
-          <img src={userAvatar} alt="Аватар профиля" />
+          <img
+            src={userAvatar}
+            alt="Аватар профиля"
+            className="user-avatar"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/img/default-avatar.jpg";
+            }}
+          />
         </div>
 
         {open && (
           <div className="options">
             {currentUser ? (
-              // меню для авторизованного пользователя
               <>
                 <Link to={`/profile/${currentUser.id}`} className="option-link">
                   <PersonIcon className="icon" />
@@ -83,7 +95,6 @@ const NavBar = () => {
                 </div>
               </>
             ) : (
-              // меню для гостя: только кнопка входа
               <Link to="/login" className="option-link">
                 <LoginIcon className="icon" />
                 <span>Вход</span>

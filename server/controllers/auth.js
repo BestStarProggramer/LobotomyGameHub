@@ -69,7 +69,7 @@ export const register = async (req, res) => {
     const sql = `
         INSERT INTO users (username, email, password_hash)
         VALUES ($1, $2, $3)
-        RETURNING id, username, email, role, created_at
+        RETURNING id, username, email, role, avatar_url, created_at
       `;
     const { rows } = await query(sql, [username, email, passwordHash]);
     const user = rows[0];
@@ -80,7 +80,13 @@ export const register = async (req, res) => {
 
     return res.status(201).json({
       message: "Пользователь зарегистрирован",
-      user,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar_url: user.avatar_url,
+      },
     });
   } catch (err) {
     console.error("[auth/register] error:", err.message);
@@ -107,7 +113,7 @@ export const login = async (req, res) => {
 
     // Находим пользователя
     const { rows } = await query(
-      `SELECT id, username, email, password_hash, role FROM users WHERE ${field} = $1 LIMIT 1`,
+      `SELECT id, username, email, password_hash, role, avatar_url FROM users WHERE ${field} = $1 LIMIT 1`,
       [value]
     );
 
@@ -142,6 +148,7 @@ export const login = async (req, res) => {
           username: user.username,
           email: user.email,
           role: user.role,
+          avatar_url: user.avatar_url,
         },
         token,
       });

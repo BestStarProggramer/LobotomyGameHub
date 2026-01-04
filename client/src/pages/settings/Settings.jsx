@@ -79,26 +79,30 @@ const Settings = () => {
 
       setUserData((prev) => ({ ...prev, [field]: value }));
 
-      if (field === "username" && updateCurrentUser) {
-        updateCurrentUser({ ...currentUser, username: value });
-      }
+      if (updateCurrentUser) {
+        const updatedUser = { ...currentUser };
 
-      if (field === "avatar" && updateCurrentUser) {
-        updateCurrentUser({ ...currentUser, avatar_url: value });
+        if (field === "username") {
+          updatedUser.username = value;
+        } else if (field === "avatar") {
+          updatedUser.avatar_url = value;
+        } else if (field === "bio") {
+          updatedUser.bio = value;
+        }
+
+        updateCurrentUser(updatedUser);
       }
 
       setSuccess(res.data || "Настройка успешно обновлена!");
+
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (field === "avatar" && storedUser) {
+        storedUser.avatar_url = value;
+        localStorage.setItem("user", JSON.stringify(storedUser));
+      }
     } catch (err) {
       console.error("Ошибка обновления:", err.response?.data || err.message);
-
-      if (err.response?.status === 400 && field === "favoriteGenres") {
-        setError(
-          err.response.data ||
-            "Ошибка: Один или несколько жанров не найдены в БД."
-        );
-      } else {
-        setError(err.response?.data || "Ошибка сервера при обновлении.");
-      }
+      setError(err.response?.data || "Ошибка сервера при обновлении.");
     } finally {
       setLoading(false);
     }
