@@ -150,7 +150,10 @@ const Game = () => {
 
               <div className="game_meta">
                 <p>
-                  <strong>Релиз:</strong> {game?.released || "Неизвестно"}
+                  <strong>Релиз:</strong>{" "}
+                  {game?.released
+                    ? new Date(game.released).toLocaleDateString("ru-RU")
+                    : "Неизвестно"}
                 </p>
                 <p>
                   <strong>Жанры:</strong> {game?.genres?.join(", ")}
@@ -167,6 +170,7 @@ const Game = () => {
           buttonText="Все отзывы →"
           buttonLink={`/games/${GameId}/reviews`}
           showReviewInput={currentUser}
+          gameId={game?.id || GameId}
         />
       </div>
     </div>
