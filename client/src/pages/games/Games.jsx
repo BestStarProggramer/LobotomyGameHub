@@ -3,6 +3,8 @@ import { fetchGamesList } from "../../utils/rawg.js";
 import { fetchLocalGamesList } from "../../utils/localGames.js";
 import GamesGrid from "../../components/gamesgrid/GamesGrid";
 import "./games.scss";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import SearchIcon from "@mui/icons-material/Search";
 
 const Games = () => {
   const [games, setGames] = useState([]);
@@ -12,7 +14,6 @@ const Games = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showLocalOnly, setShowLocalOnly] = useState(false);
 
-  // Загрузка игр
   const loadGames = async (pageNumber = 1, reset = false) => {
     if (isLoading) return;
 
@@ -24,11 +25,10 @@ const Games = () => {
         ? await fetchLocalGamesList(pageNumber, 30, filters)
         : await fetchGamesList(pageNumber, 30, filters);
 
-      // Унифицируем структуру данных: берём results (или games, или сам data)
       const items = data.results ?? data.games ?? data;
 
       setGames((prev) => (reset ? items : [...prev, ...items]));
-      setHasMore(items.length === 30); // если пришло меньше 30 значит конец
+      setHasMore(items.length === 30);
       setPage(pageNumber);
     } catch (error) {
       console.error("Ошибка загрузки игр:", error);
@@ -37,17 +37,14 @@ const Games = () => {
     }
   };
 
-  // Первая загрузка
   useEffect(() => {
     loadGames(1, true);
-  }, [showLocalOnly]); //перезагрузка присмене источника
+  }, [showLocalOnly]);
 
-  // Поиск
   const handleSearch = () => {
     loadGames(1, true);
   };
 
-  // Загрузить ещё
   const handleLoadMore = () => {
     loadGames(page + 1, false);
   };
@@ -57,9 +54,9 @@ const Games = () => {
       <div className="container">
         <h1 className="games-page__title">Каталог игр</h1>
 
-        {/* Поиск */}
         <div className="games-page__filters">
           <div className="games-page__search">
+            <FilterAltIcon className="search-filter-icon" />
             <input
               type="text"
               placeholder="Поиск игр..."
@@ -67,10 +64,11 @@ const Games = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <button onClick={handleSearch}>Найти</button>
+            <button onClick={handleSearch} className="search-button">
+              <SearchIcon />
+            </button>
           </div>
 
-          {/* Новая галочка */}
           <div className="games-page__checkbox">
             <label>
               <input
@@ -83,10 +81,8 @@ const Games = () => {
           </div>
         </div>
 
-        {/* Сетка игр */}
         <GamesGrid games={games} />
 
-        {/* Кнопка "Загрузить ещё" */}
         {hasMore && (
           <div className="games-page__load-more">
             <button onClick={handleLoadMore} disabled={isLoading}>

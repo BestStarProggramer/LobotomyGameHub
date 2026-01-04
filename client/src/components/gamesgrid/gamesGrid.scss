@@ -8,11 +8,13 @@
     background-color: #130f14;
     border-radius: 10px;
     padding: 15px;
-    transition: transform 150ms ease;
+    transition: transform 150ms ease, border-color 150ms ease;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    border: 2px solid #53257d;
 
     &:hover {
       transform: translateY(-5px);
+      border-color: #6b2da8;
     }
 
     a {
@@ -45,7 +47,7 @@
     }
 
     .game-rating {
-      color: #ffd700;
+      color: white;
       text-align: center;
       font-size: 14px;
       font-weight: bold;

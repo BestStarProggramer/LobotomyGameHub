@@ -1,5 +1,6 @@
 import "./gamesGrid.scss";
 import { Link } from "react-router-dom";
+import StarIcon from "@mui/icons-material/Star";
 
 const GamesGrid = ({ games }) => {
   return (
@@ -16,7 +17,10 @@ const GamesGrid = ({ games }) => {
             </div>
             <h3>{game.title}</h3>
             {game.rating > 0 && (
-              <div className="game-rating">⭐ {game.rating}</div>
+              <div className="game-rating">
+                <StarIcon />
+                {game.rating}
+              </div>
             )}
           </Link>
         </div>

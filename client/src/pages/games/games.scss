@@ -1,7 +1,5 @@
 .games-page {
-  /* background-image temporarily disabled to avoid build errors */
-  /* background-image: url('/img/background.png'); */
-  background-color: #000; /* simple fallback */
+  background-image: url("~/public/img/background.png");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -12,6 +10,10 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
+    background-color: rgba(19, 15, 20, 0.85);
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 20px;
   }
 
   &__title {
@@ -30,24 +32,39 @@
 
   &__search {
     display: flex;
+    align-items: center;
     gap: 15px;
     margin-bottom: 40px;
-    max-width: 600px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
+    background-color: #1c151e;
+    border-radius: 10px;
+    padding: 5px 15px;
+    border: 1px solid #53257d;
+
+    .search-filter-icon {
+      color: #53257d;
+      font-size: 28px;
+      cursor: pointer;
+      transition: color 150ms ease;
+
+      &:hover {
+        color: #6b2da8;
+      }
+    }
 
     input {
       flex: 1;
       padding: 12px 20px;
-      border: 1px solid #53257d;
-      border-radius: 8px;
-      background-color: #1c151e;
+      border: none;
+      background-color: transparent;
       color: white;
       font-size: 16px;
+      outline: none;
 
       &:focus {
         outline: none;
-        border-color: #6b2da8;
       }
 
       &::placeholder {
@@ -55,15 +72,17 @@
       }
     }
 
-    button {
-      padding: 12px 30px;
+    .search-button {
       background-color: #53257d;
       color: white;
       border: none;
       border-radius: 8px;
-      font-weight: bold;
+      padding: 12px 20px;
       cursor: pointer;
       transition: background-color 150ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       &:hover {
         background-color: #6b2da8;
@@ -130,4 +149,15 @@
     font-size: 18px;
     margin: 40px 0;
   }
+}
+
+.game-card .game-rating {
+  color: white !important;
+  text-align: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.games-grid .game-card .game-rating {
+  color: white !important;
 }
