@@ -1,5 +1,8 @@
-import express from "express";
 import { query } from "../db.js";
+import axios from "axios";
+
+const RAWG_KEY = process.env.API_KEY || process.env.APIKEY;
+const RAWG_BASE = "https://api.rawg.io/api";
 
 export const search = async (req, res) => {
   try {
@@ -12,6 +15,7 @@ export const search = async (req, res) => {
 
     const escaped = rawQ.replace(/[%_]/g, (m) => `\\${m}`);
     const likeParam = `%${escaped}%`;
+    const prefixParam = `${escaped}%`;
 
     const sql = `
       SELECT id, title, background_image
@@ -22,7 +26,6 @@ export const search = async (req, res) => {
         char_length(title) ASC
       LIMIT $3
     `;
-    const prefixParam = `${escaped}%`;
 
     const { rows } = await query(sql, [likeParam, prefixParam, limit]);
 
@@ -53,7 +56,7 @@ export const getLocalGames = async (req, res) => {
         g.slug,
         g.background_image,
         g.rating,
-        g.released,
+        g.release_date as released,
         g.description,
         g.created_at,
         (
@@ -80,11 +83,10 @@ export const getLocalGames = async (req, res) => {
     if (ordering === "-title") orderBy = "g.title DESC";
     if (ordering === "rating") orderBy = "g.rating ASC";
     if (ordering === "-rating") orderBy = "g.rating DESC";
-    if (ordering === "released") orderBy = "g.released ASC";
-    if (ordering === "-released") orderBy = "g.released DESC";
+    if (ordering === "released") orderBy = "g.release_date ASC";
+    if (ordering === "-released") orderBy = "g.release_date DESC";
 
     sql += ` ORDER BY ${orderBy}`;
-
     sql += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(pageSize, offset);
 
@@ -102,7 +104,7 @@ export const getLocalGames = async (req, res) => {
       slug: game.slug || `game-${game.id}`,
       name: game.title,
       background_image: game.background_image || null,
-      rating: game.rating || 0,
+      rating: parseFloat(game.rating) || 0,
       released: game.released || null,
       description: game.description || "",
       genres: (game.genres || []).map((g) => ({ id: g.id, name: g.name })),
@@ -123,70 +125,130 @@ export const getLocalGames = async (req, res) => {
   }
 };
 
-export const getLocalGameDetails = async (req, res) => {
+export const getGameDetailsWithSync = async (req, res) => {
+  const { slug } = req.params;
+
   try {
-    const { slugOrId } = req.params;
-
-    const isNumeric = !isNaN(slugOrId) && !isNaN(parseFloat(slugOrId));
-
-    const whereClause = isNumeric
-      ? "g.id = $1"
-      : "g.slug = $1 OR LOWER(g.title) = LOWER($1)";
-
-    const sql = `
+    const localGameQuery = `
       SELECT 
-        g.id,
-        g.title,
-        g.slug,
-        g.background_image,
-        g.rating,
-        g.released,
-        g.description,
-        g.developers,
-        g.publishers,
-        g.website,
-        g.metacritic_score,
-        g.created_at,
-        (
-          SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
-          FROM game_genres gg
-          JOIN genres gr ON gg.genre_id = gr.id
-          WHERE gg.game_id = g.id
+        g.id, g.title, g.slug, g.background_image, g.rating, g.release_date, 
+        g.description, g.developers, g.publishers, g.created_at,
+        COALESCE(
+          (
+            SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
+            FROM game_genres gg
+            JOIN genres gr ON gg.genre_id = gr.id
+            WHERE gg.game_id = g.id
+          ), '[]'
         ) as genres
       FROM games g
-      WHERE ${whereClause}
+      WHERE g.slug = $1
       LIMIT 1
     `;
 
-    const { rows } = await query(sql, [slugOrId]);
+    const localResult = await query(localGameQuery, [slug]);
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Игра не найдена" });
+    if (localResult.rows.length > 0) {
+      const game = localResult.rows[0];
+      return res.status(200).json({
+        id: game.id,
+        slug: game.slug,
+        title: game.title,
+        name: game.title,
+        description: game.description,
+        background_image: game.background_image,
+        rating: parseFloat(game.rating),
+        released: game.release_date,
+        genres: game.genres,
+        developers: game.developers ? JSON.parse(game.developers) : [],
+        publishers: game.publishers ? JSON.parse(game.publishers) : [],
+        isLocal: true,
+      });
     }
 
-    const game = rows[0];
+    if (!RAWG_KEY) {
+      return res.status(500).json({ error: "RAWG API key is not configured" });
+    }
 
-    const response = {
-      id: game.id,
-      slug: game.slug || `game-${game.id}`,
-      name: game.title,
-      description_raw: game.description || "",
-      description: game.description || "",
-      background_image: game.background_image || null,
-      rating: game.rating || 0,
-      released: game.released || null,
-      developers: game.developers ? JSON.parse(game.developers) : [],
-      publishers: game.publishers ? JSON.parse(game.publishers) : [],
-      website: game.website || "",
-      metacritic: game.metacritic_score || null,
-      genres: (game.genres || []).map((g) => ({ id: g.id, name: g.name })),
-    };
+    const rawgResponse = await axios.get(
+      `${RAWG_BASE}/games/${encodeURIComponent(slug)}`,
+      {
+        params: { key: RAWG_KEY },
+      }
+    );
+    const rawgData = rawgResponse.data;
 
-    return res.status(200).json(response);
+    const title = rawgData.name;
+    const description = rawgData.description_raw || rawgData.description || "";
+    const developers = JSON.stringify(
+      rawgData.developers?.map((d) => d.name) || []
+    ).substring(0, 100);
+    const publishers = JSON.stringify(
+      rawgData.publishers?.map((p) => p.name) || []
+    ).substring(0, 100);
+    const releaseDate = rawgData.released || null;
+    const backgroundImage = rawgData.background_image || null;
+
+    const initialRating = 0;
+
+    const insertGameSql = `
+      INSERT INTO games (title, description, developers, publishers, slug, release_date, rating, background_image)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING id
+    `;
+
+    const insertResult = await query(insertGameSql, [
+      title,
+      description,
+      developers,
+      publishers,
+      slug,
+      releaseDate,
+      initialRating,
+      backgroundImage,
+    ]);
+    const newGameId = insertResult.rows[0].id;
+
+    if (rawgData.genres && rawgData.genres.length > 0) {
+      for (const g of rawgData.genres) {
+        const genreSql = `
+          INSERT INTO genres (name) VALUES ($1)
+          ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+          RETURNING id
+        `;
+        const genreRes = await query(genreSql, [g.name]);
+        const genreId = genreRes.rows[0].id;
+
+        await query(
+          `INSERT INTO game_genres (game_id, genre_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [newGameId, genreId]
+        );
+      }
+    }
+
+    return res.status(200).json({
+      id: newGameId,
+      slug: slug,
+      name: title,
+      title: title,
+      description: description,
+      background_image: backgroundImage,
+      rating: 0,
+      released: releaseDate,
+      genres: rawgData.genres || [],
+      developers: rawgData.developers?.map((d) => d.name) || [],
+      publishers: rawgData.publishers?.map((p) => p.name) || [],
+      isLocal: false,
+    });
   } catch (err) {
-    console.error("Ошибка при получении деталей игры:", err);
+    console.error("Ошибка в getGameDetailsWithSync:", err.message);
+    if (err.response) {
+      return res
+        .status(err.response.status)
+        .json({ error: "Игра не найдена в RAWG API" });
+    }
     return res.status(500).json({
-      error: "Ошибка сервера при получении деталей игры",
+      error: "Не удалось получить или сохранить данные игры",
       details: err.message,
     });
   }

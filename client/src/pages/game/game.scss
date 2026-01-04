@@ -7,35 +7,25 @@ body {
 }
 
 .game {
-  background-image: url("~/public/img/background.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background-color: #0b0b0b;
+  min-height: 100vh;
+  color: white;
 
   .game_wrapper {
-    border-radius: 12px;
-    margin-top: 30px;
-    background-color: #130f14;
-    display: flex;
-    flex-direction: column;
-    width: 80%;
-    padding-bottom: 30px;
-
     .banner {
-      display: flex;
       width: 100%;
       height: 400px;
-      justify-content: center;
-      align-items: center;
-      border-top-left-radius: 12px;
-      border-top-right-radius: 12px;
       overflow: hidden;
-
+      position: relative;
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(to top, #0b0b0b, transparent);
+      }
       img {
         width: 100%;
         height: 100%;
@@ -43,360 +33,145 @@ body {
       }
     }
 
-    .info {
-      padding: 0px 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 25px;
-      width: auto;
+    .game_content {
+      max-width: 1200px;
+      margin: -100px auto 0;
+      position: relative;
+      padding: 20px;
 
-      .top {
-        width: 100%;
-        gap: 20px;
+      .main_info_section {
         display: flex;
-        flex-direction: row;
-        align-items: center;
+        gap: 40px;
+        align-items: flex-start;
 
-        .left {
-          margin-top: 0;
-          position: relative;
-          width: fit-content;
-          display: flex;
-          align-items: center;
-          flex-direction: column;
+        .media_container {
+          flex: 1.5;
+          max-width: 650px;
 
-          .poster_wrapper {
+          .main_display {
             width: 100%;
-            height: 350px;
-            border-radius: 50px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 8px;
             overflow: hidden;
-
-            img {
-              height: 100%;
-              object-fit: cover;
-            }
-          }
-
-          .rating {
-            left: 60%;
-            top: 310px;
-            position: static;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-direction: row;
-            gap: 5px;
-
-            span {
-              color: white;
-              font-size: 30px;
-              font-weight: 450;
-            }
-
-            .star {
-              margin-top: -5px;
-              color: white;
-              font-size: 40px;
-            }
-          }
-        }
-
-        .right {
-          padding: 0px 10px;
-          width: fit-content;
-          display: flex;
-          flex-direction: column;
-
-          h1 {
-            margin-bottom: 10px;
-            color: white;
-            font-weight: bold;
-            font-size: 40px;
-          }
-
-          .description {
-            background-color: #1c151e;
-            border-radius: 10px;
-            padding: 0px 14px;
-
-            p {
-              color: white;
-              font-size: 20px;
-            }
-          }
-        }
-      }
-
-      .bottom {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-
-        h2 {
-          margin: 0;
-          color: white;
-          font-weight: bold;
-          font-size: 28px;
-        }
-
-        .sections {
-          display: flex;
-          justify-content: space-between;
-          align-items: stretch;
-
-          .left {
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            height: 100%;
-
+            border: 1px solid #333;
+            img,
             video {
-              width: 720px;
-              height: auto;
-              border-radius: 15px;
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+            }
+          }
+
+          .thumbnails_list {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+
+            &::-webkit-scrollbar {
+              height: 6px;
+            }
+            &::-webkit-scrollbar-thumb {
+              background: #444;
+              border-radius: 10px;
             }
 
-            .no-trailer {
-              margin: 0;
-              color: white;
-              font-size: 16px;
-            }
-
-            .screenshots_title {
-              margin: 10px 0 0 0;
-              color: white;
-              font-weight: bold;
-              font-size: 18px;
-            }
-
-            .screenshots_grid {
-              width: 720px;
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 10px;
-            }
-
-            .screenshots {
-              width: 720px;
-              display: block;
-            }
-
-            .screenshot_btn {
-              padding: 0;
-              border: none;
-              background: transparent;
+            .thumb_item {
+              min-width: 120px;
+              height: 70px;
               cursor: pointer;
-              border-radius: 12px;
+              border-radius: 4px;
               overflow: hidden;
+              opacity: 0.6;
+              border: 2px solid transparent;
+              transition: 0.2s;
+              background: #222;
+              position: relative;
+
+              &.active {
+                opacity: 1;
+                border-color: #fff;
+              }
+              &:hover {
+                opacity: 1;
+              }
 
               img {
                 width: 100%;
-                height: 130px;
-                object-fit: cover;
-                display: block;
-                border-radius: 12px;
-                transition: transform 150ms ease;
-              }
-
-              &:hover img {
-                transform: scale(1.03);
-              }
-            }
-
-            .screenshot_btn--preview {
-              width: 720px;
-              border-radius: 15px;
-
-              img {
-                height: auto;
-                max-height: 405px;
-                border-radius: 15px;
+                height: 100%;
                 object-fit: cover;
               }
-            }
-          }
-
-          .right {
-            position: relative;
-            z-index: 1;
-            left: -20px;
-            display: flex;
-            flex-direction: column;
-
-            .articles_wrapper {
-              height: 100%;
-              padding: 10px;
-              padding-left: 40px;
-              border-radius: 0 15px 15px 0;
-              background-color: #1c151e;
-
-              .article {
+              .video_placeholder {
                 display: flex;
-                flex-direction: column;
-                gap: 20px;
-
-                .top {
-                  padding-top: 10px;
-                  display: flex;
-                  align-items: start;
-                  justify-content: space-between;
-
-                  h1 {
-                    margin: 0;
-                    color: white;
-                    font-size: 30px;
-                  }
-
-                  .author {
-                    display: flex;
-                    gap: 10px;
-                    justify-content: space-between;
-                    align-items: center;
-
-                    span {
-                      color: white;
-                      font-size: 14px;
-                    }
-
-                    img {
-                      width: 40px;
-                      object-fit: cover;
-                      border-radius: 50%;
-                    }
-                  }
-                }
-
-                .bottom {
-                  display: flex;
-                  flex-direction: column;
-                  gap: 25px;
-
-                  p {
-                    color: white;
-                    font-size: 16px;
-                  }
-
-                  .read_more {
-                    align-self: flex-end;
-                    text-decoration: none;
-                    cursor: pointer;
-                    transition: color 150ms ease;
-                    background-color: #6b2da8;
-
-                    &:hover {
-                      background-color: #53257d;
-                    }
-
-                    border-radius: 10px;
-                    padding: 5px 15px;
-
-                    p {
-                      color: white;
-                      margin: 0;
-                      font-size: 14px;
-                      font-weight: bold;
-                    }
-                  }
-                }
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                color: white;
+                font-size: 24px;
               }
             }
           }
         }
 
-        .lightbox_overlay {
-          position: fixed;
-          inset: 0;
-          background-color: rgba(0, 0, 0, 0.85);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 20000;
-        }
+        .text_info {
+          flex: 1;
+          .title_row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            h1 {
+              margin: 0;
+              font-size: 32px;
+            }
 
-        .lightbox_content {
-          position: relative;
-          width: min(1100px, 92vw);
-          height: min(700px, 85vh);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .lightbox_image {
-          max-width: 100%;
-          max-height: 100%;
-          border-radius: 16px;
-          object-fit: contain;
-          background-color: rgba(20, 15, 20, 0.6);
-        }
-
-        .lightbox_close {
-          position: absolute;
-          top: -10px;
-          right: -10px;
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          border: none;
-          cursor: pointer;
-          background-color: #53257d;
-          color: white;
-          font-size: 22px;
-          font-weight: bold;
-          transition: background-color 150ms ease;
-
-          &:hover {
-            background-color: #6b2da8;
+            .rating_badge {
+              display: flex;
+              align-items: center;
+              gap: 5px;
+              background: rgba(255, 255, 255, 0.1);
+              padding: 5px 15px;
+              border-radius: 20px;
+              font-weight: bold;
+              font-size: 1.2rem;
+              .star_icon {
+                color: white;
+              }
+            }
           }
-        }
 
-        .lightbox_nav {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 52px;
-          height: 52px;
-          border-radius: 50%;
-          border: none;
-          cursor: pointer;
-          background-color: rgba(83, 37, 125, 0.85);
-          color: white;
-          font-size: 34px;
-          line-height: 52px;
-          text-align: center;
-          transition: background-color 150ms ease;
-
-          &:hover {
-            background-color: rgba(107, 45, 168, 0.95);
+          .description_box {
+            line-height: 1.6;
+            color: #ccc;
+            .toggle_btn {
+              color: #3498db;
+              cursor: pointer;
+              font-weight: bold;
+              margin-left: 5px;
+              &:hover {
+                text-decoration: underline;
+              }
+            }
           }
-        }
 
-        .lightbox_nav__prev {
-          left: -70px;
-        }
-
-        .lightbox_nav__next {
-          right: -70px;
-        }
-
-        .lightbox_counter {
-          position: absolute;
-          bottom: -35px;
-          color: white;
-          font-size: 14px;
-          background-color: rgba(0, 0, 0, 0.6);
-          padding: 6px 10px;
-          border-radius: 12px;
+          .game_meta {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
+            p {
+              margin: 5px 0;
+            }
+          }
         }
       }
     }
   }
 
   .reviews-container {
-    width: 80%;
-    margin-top: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
   }
 }
