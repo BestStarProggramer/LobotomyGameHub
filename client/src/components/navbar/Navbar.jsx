@@ -1,6 +1,6 @@
 import "./navbar.scss";
 import { Link } from "react-router-dom";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { AuthContext } from "../../context/authContext";
 import PersonIcon from "@mui/icons-material/Person";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -14,6 +14,8 @@ const NavBar = () => {
   const { currentUser, logout, refreshUserData } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
+  const userButtonRef = useRef(null);
 
   const handleClick = async (e) => {
     e.preventDefault();
@@ -28,6 +30,30 @@ const NavBar = () => {
       console.error("Ошибка выхода:", err.response?.data || err);
     }
   };
+
+  const toggleDropdown = () => {
+    setOpen(!open);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        open &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        userButtonRef.current &&
+        !userButtonRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
 
   const userAvatar = currentUser?.avatar_url || "/img/default-avatar.jpg";
   const userName = currentUser?.username || "Гость";
@@ -57,7 +83,7 @@ const NavBar = () => {
       </div>
 
       <div className="right">
-        <div className="user" onClick={() => setOpen(!open)}>
+        <div className="user" onClick={toggleDropdown} ref={userButtonRef}>
           <span>{userName}</span>
           <img
             src={userAvatar}
@@ -71,31 +97,50 @@ const NavBar = () => {
         </div>
 
         {open && (
-          <div className="options">
+          <div className="options" ref={dropdownRef}>
             {currentUser ? (
               <>
-                <Link to={`/profile/${currentUser.id}`} className="option-link">
+                <Link
+                  to={`/profile/${currentUser.id}`}
+                  className="option-link"
+                  onClick={() => setOpen(false)}
+                >
                   <PersonIcon className="icon" />
                   <span>Профиль</span>
                 </Link>
                 <Link
                   to={`/profile/${currentUser.id}/reviews`}
                   className="option-link"
+                  onClick={() => setOpen(false)}
                 >
                   <ArticleIcon className="icon" />
                   <span>Мои обзоры</span>
                 </Link>
-                <Link to="/settings" className="option-link">
+                <Link
+                  to="/settings"
+                  className="option-link"
+                  onClick={() => setOpen(false)}
+                >
                   <SettingsIcon className="icon" />
                   <span>Настройки</span>
                 </Link>
-                <div className="option-link logout" onClick={handleClick}>
+                <div
+                  className="option-link logout"
+                  onClick={(e) => {
+                    setOpen(false);
+                    handleClick(e);
+                  }}
+                >
                   <LogoutIcon className="icon" />
                   <span>Выйти</span>
                 </div>
               </>
             ) : (
-              <Link to="/login" className="option-link">
+              <Link
+                to="/login"
+                className="option-link"
+                onClick={() => setOpen(false)}
+              >
                 <LoginIcon className="icon" />
                 <span>Вход</span>
               </Link>
