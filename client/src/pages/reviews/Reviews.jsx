@@ -1,78 +1,96 @@
 import "./reviews.scss";
-import MainGameCard from "../../components/maingamecard/MainGameCard";
 import ReviewsBlock from "../../components/reviewsblock/ReviewsBlock";
-import { AuthContext } from "../../context/authContext";
-import { useContext } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchGameDetailsBySlug } from "../../utils/rawg";
 
 const Reviews = () => {
-  const { currentUser } = useContext(AuthContext);
+  const params = useParams();
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const gameData = {
-    id: 1,
-    title: "Silent Hill f",
-    description:
-      "Родной город Хинако окутан туманом, что заставляет ее сражаться с гротескными монстрами и решать жуткие головоломки. Раскройте волнующую красоту, скрытую в ужасе.",
-    genres: ["Суравйвал хоррор", "Психологический хоррор"],
-    rating: 4.3,
-    imageUrl: "/img/game_poster.jpg",
+  const resolveSlugFromPath = () => {
+    if (params.slug) return params.slug;
+
+    try {
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const gamesIndex = parts.findIndex((p) => p.toLowerCase() === "games");
+      if (gamesIndex >= 0 && parts.length > gamesIndex + 1) {
+        return parts[gamesIndex + 1];
+      }
+    } catch (e) {}
+    return null;
   };
 
-  const reviewsList = [
-    {
-      id: 1,
-      username: "NightWarrior",
-      avatar: "/img/profilePic.jpg",
-      rating: "5",
-      date: "01.11.2025",
-      content:
-        "Это просто шедевр! Я ждал эту игру годами, и она полностью оправдала ожидания. Музыка, визуальный стиль, боевка — всё на высшем уровне.",
-    },
-    {
-      id: 2,
-      username: "CasualGamer99",
-      avatar: "/img/default-avatar.jpg",
-      rating: "4",
-      date: "02.11.2025",
-      content:
-        "Игра отличная, но для меня сложновата. Порог вхождения выше, чем в первой части. Но атмосфера тащит!",
-    },
-    {
-      id: 3,
-      username: "HornetLover",
-      avatar: "/img/profilePic.jpg",
-      rating: "5",
-      date: "03.11.2025",
-      content:
-        "ШАУ! ГИД ГУД! А если серьезно, механика инструментов просто переворачивает геймплей. 10 из 10.",
-    },
-    {
-      id: 4,
-      username: "Critic_Zero",
-      avatar: "/img/default-avatar.jpg",
-      rating: "3",
-      date: "05.11.2025",
-      content:
-        "Графика красивая, но мне показалось, что локации слишком затянуты. Бэктрекинг утомляет сильнее, чем раньше.",
-    },
-    {
-      id: 5,
-      username: "SpeedRunner",
-      avatar: "/img/profilePic.jpg",
-      rating: "4",
-      date: "07.11.2025",
-      content:
-        "Мувмент стал намного быстрее и плавнее. Хорнет ощущается совершенно иначе, чем Рыцарь. Уже ищу скипы!",
-    },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    const slug = resolveSlugFromPath();
+
+    const loadGame = async () => {
+      if (!slug) {
+        if (mounted) {
+          setError(
+            "Не указан slug игры в URL. Убедитесь, что маршрут содержит :slug (например /games/:slug/reviews)."
+          );
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const g = await fetchGameDetailsBySlug(slug);
+        if (mounted) {
+          if (!g) {
+            setError("Игра не найдена по указанному slug.");
+            setGame(null);
+          } else {
+            setGame(g);
+          }
+        }
+      } catch (e) {
+        console.error("Ошибка загрузки игры:", e);
+        if (mounted) setError("Не удалось загрузить данные игры");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadGame();
+    return () => (mounted = false);
+  }, [params]);
+
+  if (loading) return <div className="container">Загрузка…</div>;
+  if (error)
+    return (
+      <div className="container" style={{ color: "white" }}>
+        {error}
+      </div>
+    );
+  if (!game) return <div className="container">Игра не найдена</div>;
 
   return (
     <div className="reviews-page">
       <div className="container">
-        <section className="game-info-section">
-          <MainGameCard game={gameData} />
-        </section>
+        <h1 style={{ color: "white", marginBottom: 16 }}>Страница отзывов</h1>
 
-        <ReviewsBlock reviews={reviewsList} showReviewInput={currentUser} />
+        <img
+          src={game.backgroundimage || "/img/game_banner.jpg"}
+          alt={game.title}
+          style={{ width: "100%", borderRadius: 12, marginBottom: 12 }}
+        />
+
+        <h2 style={{ color: "white", marginBottom: 24 }}>{game.title}</h2>
+
+        <ReviewsBlock
+          gameId={game.id}
+          gameSlug={game.slug}
+          showReviewInput={true}
+          initialLimit={5}
+          infinite={true}
+        />
       </div>
     </div>
   );

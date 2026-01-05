@@ -3,6 +3,7 @@ import {
   addReview,
   getReviewsByGame,
   getAllReviews,
+  deleteReview,
 } from "../controllers/reviews.js";
 import { verifyToken } from "../middleware/auth.js";
 
@@ -16,5 +17,8 @@ router.get("/game/:gameId", getReviewsByGame);
 
 // POST /api/reviews/game/:gameId -> create review (authorized)
 router.post("/game/:gameId", verifyToken, addReview);
+
+// DELETE /api/reviews/game/:gameId/:reviewId -> delete review (authorized, owner only)
+router.delete("/game/:gameId/:reviewId", verifyToken, deleteReview);
 
 export default router;

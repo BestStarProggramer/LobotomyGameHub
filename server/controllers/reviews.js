@@ -41,6 +41,7 @@ export const getReviewsByGame = async (req, res) => {
   try {
     const { gameId } = req.params;
     const limit = Math.min(parseInt(req.query.limit || "5", 10), 100);
+    const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
 
     if (!gameId) return res.status(400).json({ error: "gameId is required" });
 
@@ -51,9 +52,9 @@ export const getReviewsByGame = async (req, res) => {
       JOIN users u ON r.user_id = u.id
       WHERE r.game_id = $1
       ORDER BY r.created_at DESC
-      LIMIT $2
+      LIMIT $2 OFFSET $3
     `;
-    const { rows } = await query(q, [parseInt(gameId, 10), limit]);
+    const { rows } = await query(q, [parseInt(gameId, 10), limit, offset]);
 
     const reviews = rows.map((r) => ({
       id: r.id,
@@ -68,6 +69,33 @@ export const getReviewsByGame = async (req, res) => {
     return res.status(200).json(reviews);
   } catch (err) {
     console.error("getReviewsByGame error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const deleteReview = async (req, res) => {
+  try {
+    const userId = req.userInfo?.id;
+    const { gameId, reviewId } = req.params;
+
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+    if (!reviewId) return res.status(400).json({ error: "reviewId required" });
+
+    const check = await query(
+      "SELECT user_id FROM reviews WHERE id = $1 LIMIT 1",
+      [parseInt(reviewId, 10)]
+    );
+    if (check.rows.length === 0)
+      return res.status(404).json({ error: "Review not found" });
+
+    if (parseInt(check.rows[0].user_id, 10) !== parseInt(userId, 10)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    await query("DELETE FROM reviews WHERE id = $1", [parseInt(reviewId, 10)]);
+    return res.status(200).json({ message: "Review deleted" });
+  } catch (err) {
+    console.error("deleteReview error:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };
