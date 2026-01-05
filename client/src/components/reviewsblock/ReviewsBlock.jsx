@@ -2,7 +2,14 @@ import "./reviewsBlock.scss";
 import { Link } from "react-router-dom";
 import ReviewsList from "../reviewslist/ReviewsList";
 import ReviewInput from "../reviewinput/ReviewInput";
-import { useState, useContext, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useContext,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { AuthContext } from "../../context/authContext";
 import { makeRequest } from "../../axios";
 
@@ -160,9 +167,33 @@ const ReviewsBlock = ({
     }
   };
 
-  const myReview = currentUser
-    ? localReviews.find((r) => Number(r.user_id) === Number(currentUser.id))
-    : null;
+  const sortedReviews = useMemo(() => {
+    if (!currentUser) return localReviews;
+
+    const userReview = localReviews.find(
+      (r) => Number(r.user_id) === Number(currentUser.id)
+    );
+    const otherReviews = localReviews.filter(
+      (r) => Number(r.user_id) !== Number(currentUser.id)
+    );
+
+    return userReview ? [userReview, ...otherReviews] : localReviews;
+  }, [localReviews, currentUser]);
+
+  const hasUserReview = useMemo(() => {
+    return (
+      currentUser &&
+      localReviews.some((r) => Number(r.user_id) === Number(currentUser.id))
+    );
+  }, [localReviews, currentUser]);
+
+  const shouldShowReviewInputContainer = useMemo(() => {
+    if (!currentUser) return true;
+
+    if (!hasUserReview) return true;
+
+    return false;
+  }, [currentUser, hasUserReview]);
 
   return (
     <div className="reviews_section">
@@ -176,48 +207,62 @@ const ReviewsBlock = ({
         )}
       </div>
 
-      <div className="review-input-container">
-        {!currentUser && (
-          <div style={{ padding: 10 }}>
-            <Link to="/login" className="button_reviews">
-              Войти, чтобы оставить отзыв
-            </Link>
-          </div>
-        )}
+      {shouldShowReviewInputContainer && (
+        <div className="review-input-container">
+          {!currentUser ? (
+            <div className="guest-review-block">
+              <div className="blur-overlay"></div>
 
-        {currentUser && myReview && (
-          <div style={{ marginBottom: 20 }}>
-            <h3 style={{ color: "white" }}>Ваш отзыв</h3>
-            <ReviewsList reviews={[myReview]} />
-            <div style={{ marginTop: 8 }}>
-              <button
-                className="button_reviews"
-                onClick={() => handleDeleteReview(myReview.id)}
-                style={{
-                  backgroundColor: "transparent",
-                  border: "1px solid #ff4d4f",
-                  color: "#ff4d4f",
-                }}
-              >
-                Удалить
-              </button>
+              <div className="review-form-preview">
+                <textarea
+                  className="preview-textarea"
+                  placeholder="Напишите ваш отзыв..."
+                  rows="4"
+                  disabled
+                />
+
+                <div className="rating-section preview">
+                  <div className="stars">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span key={star} className="star preview">
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="rating-text preview">Поставьте оценку</span>
+                </div>
+
+                <div className="review-actions preview">
+                  <button className="submit-btn preview" disabled>
+                    Отправить
+                  </button>
+                  <button className="cancel-btn preview" disabled>
+                    Отмена
+                  </button>
+                </div>
+              </div>
+
+              <div className="guest-message">
+                <Link to="/login" className="login-button">
+                  Войдите, чтобы оставить отзыв
+                </Link>
+              </div>
             </div>
-          </div>
-        )}
-
-        {currentUser && !myReview && (
-          <ReviewInput onSubmit={handleReviewSubmit} onCancel={() => {}} />
-        )}
-      </div>
+          ) : (
+            <ReviewInput onSubmit={handleReviewSubmit} onCancel={() => {}} />
+          )}
+        </div>
+      )}
 
       <div className="bottom">
-        <ReviewsList reviews={localReviews} />
+        <ReviewsList
+          reviews={sortedReviews}
+          onDelete={handleDeleteReview}
+          currentUserId={currentUser?.id}
+        />
 
         {infinite && hasMore && (
-          <div
-            ref={sentinelRef}
-            style={{ padding: 20, textAlign: "center", color: "white" }}
-          >
+          <div ref={sentinelRef} className="loading-indicator">
             {loadingMore ? "Загрузка..." : "Прокрутите вниз для загрузки..."}
           </div>
         )}

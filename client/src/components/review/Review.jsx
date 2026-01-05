@@ -1,7 +1,8 @@
 import "./review.scss";
 import StarIcon from "@mui/icons-material/Star";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const Review = ({ review }) => {
+const Review = ({ review, onDelete, isCurrentUser }) => {
   const { username, avatar, rating, date, content } = review;
 
   return (
@@ -23,6 +24,12 @@ const Review = ({ review }) => {
 
         <div className="date">
           <p>{date}</p>
+          {isCurrentUser && onDelete && (
+            <button className="delete-btn" onClick={onDelete}>
+              <DeleteIcon />
+              Удалить
+            </button>
+          )}
         </div>
       </div>
 

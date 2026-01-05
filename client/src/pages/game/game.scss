@@ -161,7 +161,12 @@ body {
             font-size: 0.9rem;
             color: #888;
             p {
-              margin: 5px 0;
+              margin: 8px 0;
+              line-height: 1.4;
+
+              strong {
+                color: #ccc;
+              }
             }
           }
         }

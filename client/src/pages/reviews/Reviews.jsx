@@ -1,8 +1,9 @@
 import "./reviews.scss";
 import ReviewsBlock from "../../components/reviewsblock/ReviewsBlock";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { fetchGameDetailsBySlug } from "../../utils/rawg";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const Reviews = () => {
   const params = useParams();
@@ -12,7 +13,6 @@ const Reviews = () => {
 
   const resolveSlugFromPath = () => {
     if (params.slug) return params.slug;
-
     try {
       const parts = window.location.pathname.split("/").filter(Boolean);
       const gamesIndex = parts.findIndex((p) => p.toLowerCase() === "games");
@@ -30,9 +30,7 @@ const Reviews = () => {
     const loadGame = async () => {
       if (!slug) {
         if (mounted) {
-          setError(
-            "Не указан slug игры в URL. Убедитесь, что маршрут содержит :slug (например /games/:slug/reviews)."
-          );
+          setError("Не указан slug игры в URL.");
           setLoading(false);
         }
         return;
@@ -62,27 +60,56 @@ const Reviews = () => {
     return () => (mounted = false);
   }, [params]);
 
-  if (loading) return <div className="container">Загрузка…</div>;
-  if (error)
+  if (loading)
     return (
-      <div className="container" style={{ color: "white" }}>
-        {error}
+      <div className="reviews-page">
+        <div className="container">
+          <div className="loading-spinner">Загрузка…</div>
+        </div>
       </div>
     );
-  if (!game) return <div className="container">Игра не найдена</div>;
+
+  if (error)
+    return (
+      <div className="reviews-page">
+        <div className="container">
+          <div className="error-message" style={{ color: "white" }}>
+            {error}
+          </div>
+        </div>
+      </div>
+    );
+
+  if (!game)
+    return (
+      <div className="reviews-page">
+        <div className="container">
+          <div className="not-found">Игра не найдена</div>
+        </div>
+      </div>
+    );
 
   return (
     <div className="reviews-page">
-      <div className="container">
-        <h1 style={{ color: "white", marginBottom: 16 }}>Страница отзывов</h1>
-
+      <div className="banner">
         <img
           src={game.backgroundimage || "/img/game_banner.jpg"}
           alt={game.title}
-          style={{ width: "100%", borderRadius: 12, marginBottom: 12 }}
         />
+      </div>
 
-        <h2 style={{ color: "white", marginBottom: 24 }}>{game.title}</h2>
+      <div className="container">
+        <div className="page-header">
+          <Link to={`/games/${game.slug}`} className="back-to-game">
+            <ArrowBackIcon className="back-icon" />
+            <span>На страницу игры</span>
+          </Link>
+
+          <div className="header-content">
+            <h1 className="page-title">Страница отзывов</h1>
+            <h2 className="game-title">{game.title}</h2>
+          </div>
+        </div>
 
         <ReviewsBlock
           gameId={game.id}

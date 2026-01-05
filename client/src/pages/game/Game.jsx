@@ -158,6 +158,16 @@ const Game = () => {
                 <p>
                   <strong>Жанры:</strong> {game?.genres?.join(", ")}
                 </p>
+                {game?.publishers && game.publishers.length > 0 && (
+                  <p>
+                    <strong>Издатели:</strong> {game.publishers.join(", ")}
+                  </p>
+                )}
+                {game?.developers && game.developers.length > 0 && (
+                  <p>
+                    <strong>Разработчики:</strong> {game.developers.join(", ")}
+                  </p>
+                )}
               </div>
             </div>
           </div>

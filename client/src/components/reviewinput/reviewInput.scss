@@ -1,6 +1,6 @@
 .review-input {
   width: 100%;
-  margin-bottom: 30px;
+  margin-bottom: 0;
 
   .review-form {
     width: 100%;
@@ -20,6 +20,7 @@
       resize: vertical;
       box-sizing: border-box;
       margin-bottom: 15px;
+      min-height: 150px;
 
       &:focus {
         outline: none;

@@ -7,13 +7,30 @@ body {
 }
 
 .reviews-page {
-  background-image: url("~/public/img/background.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-color: #0b0b0b;
   min-height: 100vh;
-  padding: 20px 0;
+  color: white;
+
+  .banner {
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 150px;
+      background: linear-gradient(to top, #0b0b0b, transparent);
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
 
   .container {
     max-width: 1200px;
@@ -23,10 +40,65 @@ body {
     flex-direction: column;
     gap: 40px;
 
-    .game-info-section {
-      margin-top: 20px;
+    .loading-spinner,
+    .error-message,
+    .not-found {
+      text-align: center;
+      padding: 60px 0;
+      color: white;
+      font-size: 1.2rem;
     }
 
-    // Все стили для блока отзывов перенесены в reviewsBlock.scss
+    .page-header {
+      margin-top: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+
+      .back-to-game {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #53257d;
+        font-weight: bold;
+        font-size: 16px;
+        transition: all 150ms ease;
+        width: fit-content;
+        padding: 8px 16px;
+        border-radius: 6px;
+        background-color: rgba(83, 37, 125, 0.1);
+
+        &:hover {
+          color: #6b2da8;
+          background-color: rgba(83, 37, 125, 0.2);
+          transform: translateX(-3px);
+        }
+
+        .back-icon {
+          font-size: 20px;
+        }
+      }
+
+      .header-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .page-title {
+          color: white;
+          font-size: 2.5rem;
+          margin: 0;
+          font-weight: bold;
+        }
+
+        .game-title {
+          color: #a0a0a0;
+          font-size: 1.5rem;
+          margin: 0;
+          font-weight: normal;
+        }
+      }
+    }
   }
 }

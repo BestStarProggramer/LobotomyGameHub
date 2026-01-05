@@ -1,16 +1,21 @@
 import "./reviewsList.scss";
 import Review from "../review/Review";
 
-// Компонент принимает список отзывов как пропс
-const ReviewsList = ({ reviews }) => {
+const ReviewsList = ({ reviews, onDelete, currentUserId }) => {
   const reviewsToRender = Array.isArray(reviews) ? reviews : [];
 
-  // Этот div получает стили .reviews_section
   return (
     <div className="reviews-list-wrapper">
       <div className="reviews-grid">
         {reviewsToRender.map((review) => (
-          <Review key={review.id} review={review} />
+          <Review
+            key={review.id}
+            review={review}
+            onDelete={onDelete ? () => onDelete(review.id) : null}
+            isCurrentUser={
+              currentUserId && review.user_id && currentUserId == review.user_id
+            }
+          />
         ))}
       </div>
     </div>
