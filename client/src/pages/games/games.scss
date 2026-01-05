@@ -20,52 +20,57 @@
     color: white;
     font-size: 2.5rem;
     text-align: center;
-    margin: 30px 0;
+    margin: 20px 0 30px 0;
   }
 
-  &__filters {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
+  &__search-bar-container {
+    max-width: 800px;
+    margin: 0 auto 20px auto;
   }
 
   &__search {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 40px;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
+    gap: 10px;
     background-color: #1c151e;
     border-radius: 10px;
     padding: 5px 15px;
     border: 1px solid #53257d;
 
-    .search-filter-icon {
+    .filter-toggle-btn {
+      background: transparent;
+      border: none;
       color: #53257d;
-      font-size: 28px;
       cursor: pointer;
-      transition: color 150ms ease;
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      border-radius: 5px;
+      transition: all 0.2s ease;
 
       &:hover {
+        background-color: rgba(83, 37, 125, 0.1);
         color: #6b2da8;
+      }
+
+      &.active {
+        background-color: #53257d;
+        color: white;
+      }
+
+      svg {
+        font-size: 28px;
       }
     }
 
     input {
       flex: 1;
-      padding: 12px 20px;
+      padding: 12px 10px;
       border: none;
       background-color: transparent;
       color: white;
       font-size: 16px;
       outline: none;
-
-      &:focus {
-        outline: none;
-      }
 
       &::placeholder {
         color: #a0a0a0;
@@ -77,9 +82,8 @@
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 12px 20px;
+      padding: 10px 20px;
       cursor: pointer;
-      transition: background-color 150ms ease;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -90,28 +94,172 @@
     }
   }
 
-  &__checkbox {
-    display: flex;
-    align-items: center;
-    margin-top: 20px;
+  &__filters-panel {
+    background-color: #1c151e;
+    border: 1px solid #53257d;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    animation: slideDown 0.2s ease-out;
 
-    label {
+    .filters-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      color: white;
-      font-size: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #2a2533;
+      padding-bottom: 10px;
 
-      input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        accent-color: #53257d;
+      h3 {
+        color: white;
+        margin: 0;
+        font-size: 20px;
       }
 
-      span {
-        user-select: none;
+      .reset-btn {
+        background: transparent;
+        border: 1px solid #a0a0a0;
+        color: #a0a0a0;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+
+        &:hover {
+          border-color: white;
+          color: white;
+        }
+      }
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 2fr;
+      gap: 30px;
+
+      @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-column {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+
+        h4 {
+          color: #a0a0a0;
+          margin: 0 0 10px 0;
+          font-size: 16px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .control-group {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+
+          label {
+            color: #a0a0a0;
+            font-size: 14px;
+          }
+
+          select,
+          input[type="number"],
+          input[type="date"] {
+            background-color: #2a2533;
+            border: 1px solid #53257d;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            outline: none;
+
+            &:focus {
+              border-color: #6b2da8;
+            }
+          }
+        }
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          gap: 0px; // Mui Checkbox has its own padding
+          color: white;
+          cursor: pointer;
+          user-select: none;
+
+          &.local-only {
+            background-color: #2a2533;
+            padding: 5px 15px 5px 5px;
+            border-radius: 8px;
+            border: 1px solid #53257d;
+            width: fit-content;
+          }
+        }
+
+        .date-inputs {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          .date-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            span {
+              color: #a0a0a0;
+              width: 30px;
+            }
+
+            input {
+              flex: 1;
+            }
+          }
+        }
+
+        .genres-list {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+          gap: 10px;
+          max-height: 250px;
+          overflow-y: auto;
+          padding-right: 5px;
+
+          /* Scrollbar style */
+          &::-webkit-scrollbar {
+            width: 6px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background-color: #53257d;
+            border-radius: 4px;
+          }
+          &::-webkit-scrollbar-track {
+            background-color: #2a2533;
+          }
+
+          .genre-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+
+            input[type="checkbox"] {
+              accent-color: #53257d;
+              width: 16px;
+              height: 16px;
+            }
+
+            span {
+              color: white;
+              font-size: 14px;
+            }
+          }
+        }
       }
     }
   }
@@ -151,13 +299,13 @@
   }
 }
 
-.game-card .game-rating {
-  color: white !important;
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.games-grid .game-card .game-rating {
-  color: white !important;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
