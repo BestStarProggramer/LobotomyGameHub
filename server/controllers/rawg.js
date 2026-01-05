@@ -8,12 +8,12 @@ export const getGames = async (req, res) => {
   try {
     const {
       page = 1,
-      page_size = 30, // По умолчанию 30 игр
+      page_size = 30,
       search,
-      genres, // Жанры (через запятую)
-      platforms, // Платформы
-      ordering, // Сортировка (rating, -rating, released, -released)
-      dates, // Даты релиза (2020-01-01,2024-12-31)
+      genres,
+      platforms,
+      ordering,
+      dates,
     } = req.query;
 
     if (!RAWG_KEY) {
@@ -84,8 +84,13 @@ export const getScreenshotsBySlug = async (req, res) => {
 
     res.json(response.data);
   } catch (error) {
-    console.error("Ошибка при проксировании screenshots RAWG API:", error.message);
-    res.status(500).json({ error: "Failed to fetch game screenshots from RAWG API" });
+    console.error(
+      "Ошибка при проксировании screenshots RAWG API:",
+      error.message
+    );
+    res
+      .status(500)
+      .json({ error: "Failed to fetch game screenshots from RAWG API" });
   }
 };
 
@@ -105,6 +110,8 @@ export const getTrailersBySlug = async (req, res) => {
     res.json(response.data);
   } catch (error) {
     console.error("Ошибка при проксировании movies RAWG API:", error.message);
-    res.status(500).json({ error: "Failed to fetch game trailers from RAWG API" });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch game trailers from RAWG API" });
   }
 };

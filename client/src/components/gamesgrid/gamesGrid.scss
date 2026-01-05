@@ -47,6 +47,10 @@
     }
 
     .game-rating {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
       color: white;
       text-align: center;
       font-size: 14px;

@@ -54,33 +54,63 @@ const Games = () => {
 
     setIsLoading(true);
     try {
-      let orderingParam = filters.orderBy;
-      if (filters.orderDirection === "desc") {
-        orderingParam = `-${filters.orderBy}`;
-      }
+      let queryParams = {};
 
-      let datesParam = null;
-      if (filters.dateFrom && filters.dateTo) {
-        datesParam = `${filters.dateFrom},${filters.dateTo}`;
-      }
+      // Если включен режим локальных игр, используем свою логику
+      if (filters.localOnly) {
+        if (filters.minRating) {
+          queryParams.min_rating = filters.minRating;
+        }
+        // Для локальных игр можно добавить другие параметры по необходимости
+      } else {
+        // Для RAWG API: только если есть активные фильтры
+        const hasActiveFilters =
+          searchTerm.trim() !== "" ||
+          filters.selectedGenres.length > 0 ||
+          filters.dateFrom ||
+          filters.dateTo ||
+          filters.orderBy !== "released" ||
+          filters.orderDirection !== "desc";
 
-      let genresParam = null;
-      if (filters.selectedGenres.length > 0) {
-        genresParam = filters.selectedGenres
-          .map((g) => g.toLowerCase().replace(/\s+/g, "-"))
-          .join(",");
-      }
+        if (hasActiveFilters) {
+          let orderingParam = filters.orderBy;
+          if (filters.orderDirection === "desc") {
+            orderingParam = `-${filters.orderBy}`;
+          }
 
-      const queryParams = {
-        search: searchTerm || undefined,
-        ordering: orderingParam,
-        genres: genresParam || undefined,
-        dates: datesParam || undefined,
-        min_rating:
-          filters.localOnly && filters.minRating
-            ? filters.minRating
-            : undefined,
-      };
+          let datesParam = null;
+          if (filters.dateFrom && filters.dateTo) {
+            datesParam = `${filters.dateFrom},${filters.dateTo}`;
+          }
+
+          let genresParam = null;
+          if (filters.selectedGenres.length > 0) {
+            genresParam = filters.selectedGenres
+              .map((g) => g.toLowerCase().replace(/\s+/g, "-"))
+              .join(",");
+          }
+
+          if (searchTerm.trim() !== "") {
+            queryParams.search = searchTerm;
+          }
+
+          if (
+            filters.orderBy !== "released" ||
+            filters.orderDirection !== "desc"
+          ) {
+            queryParams.ordering = orderingParam;
+          }
+
+          if (genresParam) {
+            queryParams.genres = genresParam;
+          }
+
+          if (datesParam) {
+            queryParams.dates = datesParam;
+          }
+        }
+        // Если нет активных фильтров - queryParams останется пустым объектом
+      }
 
       const fetcher = filters.localOnly ? fetchLocalGamesList : fetchGamesList;
 
