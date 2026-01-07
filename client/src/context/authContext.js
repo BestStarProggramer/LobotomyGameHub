@@ -7,6 +7,7 @@ export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(
     JSON.parse(localStorage.getItem("user")) || null
   );
+  const [initializing, setInitializing] = useState(true);
 
   const login = async (inputs) => {
     try {
@@ -15,7 +16,10 @@ export const AuthContextProvider = ({ children }) => {
         inputs,
         { withCredentials: true }
       );
-      setCurrentUser(res.data.user);
+      const user = res.data.user;
+      setCurrentUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+      return user;
     } catch (error) {
       throw error;
     }
@@ -26,10 +30,11 @@ export const AuthContextProvider = ({ children }) => {
       await axios.post("http://localhost:8800/api/auth/logout", null, {
         withCredentials: true,
       });
-      setCurrentUser(null);
-      localStorage.removeItem("user");
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      setCurrentUser(null);
+      localStorage.removeItem("user");
     }
   };
 
@@ -48,15 +53,46 @@ export const AuthContextProvider = ({ children }) => {
       });
       const data = res.data;
 
-      updateCurrentUser({
+      const normalized = {
+        id: data.id,
         username: data.username,
-        avatar_url: data.avatar_url || data.img,
-        bio: data.bio,
+        email: data.email,
+        role: data.role,
+        avatar_url: data.avatar_url || data.img || null,
+        bio: data.bio || null,
+      };
+      setCurrentUser((prev) => {
+        const merged = { ...(prev || {}), ...normalized };
+        localStorage.setItem("user", JSON.stringify(merged));
+        return merged;
       });
+      return normalized;
     } catch (err) {
-      console.error("Ошибка обновления данных пользователя:", err);
+      console.error(
+        "Ошибка обновления данных пользователя:",
+        err?.response?.data || err.message
+      );
+      setCurrentUser(null);
+      localStorage.removeItem("user");
+      return null;
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    const init = async () => {
+      try {
+        await refreshUserData();
+      } catch (err) {
+      } finally {
+        if (mounted) setInitializing(false);
+      }
+    };
+    init();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUser));
@@ -66,6 +102,7 @@ export const AuthContextProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         currentUser,
+        initializing,
         login,
         logout,
         updateCurrentUser,
