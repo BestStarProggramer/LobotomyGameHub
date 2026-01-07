@@ -235,8 +235,8 @@ export const getGameDetailsWithSync = async (req, res) => {
         rating: parseFloat(game.rating),
         released: game.release_date,
         genres: game.genres,
-        developers: game.developers ? JSON.parse(game.developers) : [],
-        publishers: game.publishers ? JSON.parse(game.publishers) : [],
+        developers: Array.isArray(game.developers) ? game.developers : [],
+        publishers: Array.isArray(game.publishers) ? game.publishers : [],
         isLocal: true,
       });
     }
@@ -255,12 +255,8 @@ export const getGameDetailsWithSync = async (req, res) => {
 
     const title = rawgData.name;
     const description = rawgData.description_raw || rawgData.description || "";
-    const developers = JSON.stringify(
-      rawgData.developers?.map((d) => d.name) || []
-    ).substring(0, 100);
-    const publishers = JSON.stringify(
-      rawgData.publishers?.map((p) => p.name) || []
-    ).substring(0, 100);
+    const developers = rawgData.developers?.map((d) => d.name) || [];
+    const publishers = rawgData.publishers?.map((p) => p.name) || [];
     const releaseDate = rawgData.released || null;
     const backgroundImage = rawgData.background_image || null;
 
@@ -311,8 +307,8 @@ export const getGameDetailsWithSync = async (req, res) => {
       rating: 0,
       released: releaseDate,
       genres: rawgData.genres || [],
-      developers: rawgData.developers?.map((d) => d.name) || [],
-      publishers: rawgData.publishers?.map((p) => p.name) || [],
+      developers: game.developers || [],
+      publishers: game.publishers || [],
       isLocal: false,
     });
   } catch (err) {

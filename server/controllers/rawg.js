@@ -1,4 +1,3 @@
-import express from "express";
 import axios from "axios";
 
 const RAWG_KEY = process.env.APIKEY || process.env.API_KEY;
