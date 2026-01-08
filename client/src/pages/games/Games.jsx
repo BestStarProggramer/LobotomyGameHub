@@ -56,14 +56,38 @@ const Games = () => {
     try {
       let queryParams = {};
 
-      // Если включен режим локальных игр, используем свою логику
       if (filters.localOnly) {
+        if (searchTerm.trim() !== "") {
+          queryParams.search = searchTerm;
+        }
+
+        if (
+          filters.orderBy !== "released" ||
+          filters.orderDirection !== "desc"
+        ) {
+          let orderingParam = filters.orderBy;
+          if (filters.orderDirection === "desc") {
+            orderingParam = `-${filters.orderBy}`;
+          }
+          queryParams.ordering = orderingParam;
+        }
+
+        if (filters.selectedGenres.length > 0) {
+          let genresParam = filters.selectedGenres
+            .map((g) => g.toLowerCase().replace(/\s+/g, "-"))
+            .join(",");
+          queryParams.genres = genresParam;
+        }
+
+        if (filters.dateFrom && filters.dateTo) {
+          let datesParam = `${filters.dateFrom},${filters.dateTo}`;
+          queryParams.dates = datesParam;
+        }
+
         if (filters.minRating) {
           queryParams.min_rating = filters.minRating;
         }
-        // Для локальных игр можно добавить другие параметры по необходимости
       } else {
-        // Для RAWG API: только если есть активные фильтры
         const hasActiveFilters =
           searchTerm.trim() !== "" ||
           filters.selectedGenres.length > 0 ||
@@ -109,7 +133,6 @@ const Games = () => {
             queryParams.dates = datesParam;
           }
         }
-        // Если нет активных фильтров - queryParams останется пустым объектом
       }
 
       const fetcher = filters.localOnly ? fetchLocalGamesList : fetchGamesList;
