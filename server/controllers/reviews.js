@@ -138,3 +138,43 @@ export const getAllReviews = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+export const getReviewsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const limit = Math.min(parseInt(req.query.limit || "5", 10), 100);
+    const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+
+    const q = `
+      SELECT r.id, r.rating, r.content, r.created_at,
+             g.id as game_id, g.title as game_title, g.slug as game_slug, 
+             g.background_image as game_image
+      FROM reviews r
+      JOIN games g ON r.game_id = g.id
+      WHERE r.user_id = $1
+      ORDER BY r.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+
+    const { rows } = await query(q, [parseInt(userId, 10), limit, offset]);
+
+    const reviews = rows.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      content: r.content,
+      created_at: r.created_at,
+
+      game: {
+        id: r.game_id,
+        title: r.game_title,
+        slug: r.game_slug,
+        image: r.game_image || "/img/default.jpg",
+      },
+    }));
+
+    return res.status(200).json(reviews);
+  } catch (err) {
+    console.error("getReviewsByUser error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};

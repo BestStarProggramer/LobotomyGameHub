@@ -1,0 +1,72 @@
+.user-reviews-page {
+  background-image: url("~/public/img/background.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 30px 0;
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: rgba(19, 15, 20, 0.95);
+    border-radius: 12px;
+
+    .header {
+      margin-bottom: 30px;
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: #a0a0a0;
+        text-decoration: none;
+        margin-bottom: 15px;
+        transition: color 0.2s;
+
+        &:hover {
+          color: white;
+        }
+      }
+
+      h1 {
+        color: white;
+        margin: 0;
+      }
+    }
+
+    .loading,
+    .no-data {
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .load-more-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+
+      .load-more-btn {
+        background-color: #53257d;
+        color: white;
+        border: none;
+        padding: 10px 30px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.2s;
+
+        &:hover {
+          background-color: #6b2da8;
+        }
+
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

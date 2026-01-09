@@ -24,6 +24,7 @@ import PublicationPage from "./pages/publication/PublicationPage.jsx";
 import Settings from "./pages/settings/Settings.jsx";
 import PublicationsWrite from "./pages/publications/Publications_write.jsx";
 import PublicationsEdit from "./pages/publications/Publications_edit.jsx";
+import UserReviews from "./pages/userreviews/UserReviews.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -64,6 +65,10 @@ function App() {
         {
           path: "/",
           element: <Home />,
+        },
+        {
+          path: "/profile/:UserId/reviews",
+          element: <UserReviews />,
         },
         {
           path: "/games",

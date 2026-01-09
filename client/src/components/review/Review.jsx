@@ -1,18 +1,32 @@
 import "./review.scss";
 import StarIcon from "@mui/icons-material/Star";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Link } from "react-router-dom";
 
 const Review = ({ review, onDelete, isCurrentUser }) => {
-  const { username, avatar, rating, date, content } = review;
+  const isProfileView = !!review.game;
+
+  const { rating, date, content } = review;
+
+  const displayImage = isProfileView ? review.game.image : review.avatar;
+  const displayName = isProfileView ? review.game.title : review.username;
+  const linkTarget = isProfileView ? `/games/${review.game.slug}` : null;
 
   return (
     <div className="review">
       <div className="upper">
         <div className="left_side">
-          <div className="author">
-            <img src={avatar} alt="аватар" />
-            <span>{username}</span>
-          </div>
+          {isProfileView ? (
+            <Link to={linkTarget} className="author game-link">
+              <img src={displayImage} alt={displayName} className="game-img" />
+              <span>{displayName}</span>
+            </Link>
+          ) : (
+            <div className="author">
+              <img src={displayImage} alt="avatar" />
+              <span>{displayName}</span>
+            </div>
+          )}
 
           <div className="rating">
             <div className="value">

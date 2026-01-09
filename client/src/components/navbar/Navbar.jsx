@@ -114,7 +114,7 @@ const NavBar = () => {
                   onClick={() => setOpen(false)}
                 >
                   <ArticleIcon className="icon" />
-                  <span>Мои обзоры</span>
+                  <span>Мои отзывы</span>
                 </Link>
                 <Link
                   to="/settings"

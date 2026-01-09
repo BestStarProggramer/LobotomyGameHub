@@ -19,4 +19,46 @@ body {
     margin: 0 auto;
     padding: 0 20px;
   }
+
+  &__reviews-section {
+    margin-top: 30px;
+    background-color: #130f14;
+    padding: 30px;
+    border-radius: 12px;
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #2a2533;
+      padding-bottom: 15px;
+
+      h2 {
+        color: white;
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .view-all-btn {
+        background-color: transparent;
+        border: 1px solid #53257d;
+        color: white;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #53257d;
+        }
+      }
+    }
+
+    .no-reviews {
+      color: #a0a0a0;
+      font-style: italic;
+    }
+  }
 }
