@@ -246,3 +246,66 @@ export const updateProfile = async (req, res) => {
 export const updateFavoriteGenres = async (req, res) => {
   return res.status(501).json({ error: "Not implemented in this patch" });
 };
+
+export const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const userQuery = `
+      SELECT 
+        id,
+        username,
+        avatar_url,
+        bio,
+        role,
+        created_at as "registrationDate",
+        rated_games as "ratedGames"
+      FROM users 
+      WHERE id = $1
+    `;
+
+    const userResult = await query(userQuery, [userId]);
+    const user = userResult.rows[0];
+
+    if (!user) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
+    if (user.registrationDate) {
+      user.registrationDate = new Date(
+        user.registrationDate
+      ).toLocaleDateString("ru-RU");
+    }
+
+    if (!user.avatar_url) {
+      user.avatar_url = "/img/default-avatar.jpg";
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Ошибка получения публичного профиля:", err);
+    res.status(500).json({ error: "Ошибка сервера при получении профиля" });
+  }
+};
+
+export const getFavoriteGenres = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const q = `
+      SELECT g.name
+      FROM favorites_genres fg
+      JOIN genres g ON fg.genre_id = g.id
+      WHERE fg.user_id = $1
+      ORDER BY g.name
+    `;
+
+    const result = await query(q, [userId]);
+    const genres = result.rows.map((row) => row.name);
+
+    res.json(genres);
+  } catch (err) {
+    console.error("Ошибка получения жанров пользователя:", err);
+    res.status(500).json({ error: "Ошибка сервера при получении жанров" });
+  }
+};

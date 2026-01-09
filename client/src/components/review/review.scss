@@ -28,11 +28,15 @@
         align-items: center;
         justify-content: space-between;
         gap: 10px;
+        text-decoration: none;
+        transition: all 150ms ease;
+
+        &:hover {
+          background-color: #3a3240;
+          transform: translateX(3px);
+        }
 
         &.game-link {
-          text-decoration: none;
-          transition: background-color 0.2s;
-
           &:hover {
             background-color: #3a3240;
           }
@@ -46,13 +50,6 @@
         }
 
         img:not(.game-img) {
-          width: 50px;
-          height: 50px;
-          object-fit: cover;
-          border-radius: 50%;
-        }
-
-        img {
           width: 50px;
           height: 50px;
           object-fit: cover;

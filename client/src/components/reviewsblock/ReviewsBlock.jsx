@@ -259,6 +259,7 @@ const ReviewsBlock = ({
           reviews={sortedReviews}
           onDelete={handleDeleteReview}
           currentUserId={currentUser?.id}
+          hideDelete={false}
         />
 
         {infinite && hasMore && (

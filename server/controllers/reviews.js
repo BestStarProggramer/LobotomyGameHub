@@ -145,12 +145,22 @@ export const getReviewsByUser = async (req, res) => {
     const limit = Math.min(parseInt(req.query.limit || "5", 10), 100);
     const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
 
+    const userCheck = await query("SELECT id FROM users WHERE id = $1", [
+      parseInt(userId, 10),
+    ]);
+
+    if (userCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Пользователь не найден" });
+    }
+
     const q = `
       SELECT r.id, r.rating, r.content, r.created_at,
              g.id as game_id, g.title as game_title, g.slug as game_slug, 
-             g.background_image as game_image
+             g.background_image as game_image,
+             u.id as user_id, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar
       FROM reviews r
       JOIN games g ON r.game_id = g.id
+      JOIN users u ON r.user_id = u.id
       WHERE r.user_id = $1
       ORDER BY r.created_at DESC
       LIMIT $2 OFFSET $3
@@ -163,6 +173,9 @@ export const getReviewsByUser = async (req, res) => {
       rating: r.rating,
       content: r.content,
       created_at: r.created_at,
+      user_id: r.user_id,
+      username: r.username,
+      avatar: r.avatar,
 
       game: {
         id: r.game_id,

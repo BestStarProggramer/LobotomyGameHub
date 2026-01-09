@@ -1,7 +1,12 @@
 import "./reviewsList.scss";
 import Review from "../review/Review";
 
-const ReviewsList = ({ reviews, onDelete, currentUserId }) => {
+const ReviewsList = ({
+  reviews,
+  onDelete,
+  currentUserId,
+  hideDelete = false,
+}) => {
   const reviewsToRender = Array.isArray(reviews) ? reviews : [];
 
   return (
@@ -11,10 +16,13 @@ const ReviewsList = ({ reviews, onDelete, currentUserId }) => {
           <Review
             key={review.id}
             review={review}
-            onDelete={onDelete ? () => onDelete(review.id) : null}
+            onDelete={onDelete}
             isCurrentUser={
-              currentUserId && review.user_id && currentUserId == review.user_id
+              currentUserId &&
+              review.user_id &&
+              currentUserId.toString() === review.user_id.toString()
             }
+            hideDelete={hideDelete}
           />
         ))}
       </div>

@@ -3,14 +3,25 @@ import StarIcon from "@mui/icons-material/Star";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Link } from "react-router-dom";
 
-const Review = ({ review, onDelete, isCurrentUser }) => {
+const Review = ({ review, onDelete, isCurrentUser, hideDelete = false }) => {
+  // Отладка
+  // console.log("Review props:", {
+  //   reviewId: review.id,
+  //   isCurrentUser,
+  //   hideDelete,
+  //   onDeleteExists: !!onDelete,
+  //   reviewUserId: review.user_id,
+  // });
+
   const isProfileView = !!review.game;
 
-  const { rating, date, content } = review;
+  const { rating, date, content, user_id } = review;
 
   const displayImage = isProfileView ? review.game.image : review.avatar;
   const displayName = isProfileView ? review.game.title : review.username;
-  const linkTarget = isProfileView ? `/games/${review.game.slug}` : null;
+  const linkTarget = isProfileView
+    ? `/games/${review.game.slug}`
+    : `/profile/${user_id}`;
 
   return (
     <div className="review">
@@ -22,10 +33,10 @@ const Review = ({ review, onDelete, isCurrentUser }) => {
               <span>{displayName}</span>
             </Link>
           ) : (
-            <div className="author">
+            <Link to={linkTarget} className="author">
               <img src={displayImage} alt="avatar" />
               <span>{displayName}</span>
-            </div>
+            </Link>
           )}
 
           <div className="rating">
@@ -38,8 +49,8 @@ const Review = ({ review, onDelete, isCurrentUser }) => {
 
         <div className="date">
           <p>{date}</p>
-          {isCurrentUser && onDelete && (
-            <button className="delete-btn" onClick={onDelete}>
+          {!hideDelete && isCurrentUser && onDelete && (
+            <button className="delete-btn" onClick={() => onDelete(review.id)}>
               <DeleteIcon />
               Удалить
             </button>
