@@ -3,16 +3,13 @@ import StarIcon from "@mui/icons-material/Star";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Link } from "react-router-dom";
 
-const Review = ({ review, onDelete, isCurrentUser, hideDelete = false }) => {
-  // Отладка
-  // console.log("Review props:", {
-  //   reviewId: review.id,
-  //   isCurrentUser,
-  //   hideDelete,
-  //   onDeleteExists: !!onDelete,
-  //   reviewUserId: review.user_id,
-  // });
-
+const Review = ({
+  review,
+  onDelete,
+  isCurrentUser,
+  hideDelete = false,
+  isAdmin = false,
+}) => {
   const isProfileView = !!review.game;
 
   const { rating, date, content, user_id } = review;
@@ -49,7 +46,8 @@ const Review = ({ review, onDelete, isCurrentUser, hideDelete = false }) => {
 
         <div className="date">
           <p>{date}</p>
-          {!hideDelete && isCurrentUser && onDelete && (
+
+          {!hideDelete && (isCurrentUser || isAdmin) && onDelete && (
             <button className="delete-btn" onClick={() => onDelete(review.id)}>
               <DeleteIcon />
               Удалить

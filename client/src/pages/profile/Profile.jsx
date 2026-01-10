@@ -18,7 +18,11 @@ const Profile = () => {
   const [favoriteGenres, setFavoriteGenres] = useState([]);
 
   const targetUserId = UserId || currentUser?.id;
-  const isOwnProfile = currentUser && currentUser.id === parseInt(targetUserId);
+
+  const isOwnProfile =
+    currentUser && String(currentUser.id) === String(targetUserId);
+  const isAdmin = currentUser?.role === "admin";
+  const canDelete = isOwnProfile || isAdmin;
 
   useEffect(() => {
     if (!targetUserId && !UserId) {
@@ -57,14 +61,11 @@ const Profile = () => {
           favoriteGenres: favoriteGenres,
         };
 
-        console.log("Profile data:", mappedUserData);
         setProfileData(mappedUserData);
 
         const reviewRes = await axios.get(
           `http://localhost:8800/api/reviews/user/${targetUserId}?limit=5`
         );
-
-        console.log("Reviews data:", reviewRes.data);
 
         const mappedReviews = reviewRes.data.map((r) => ({
           ...r,
@@ -93,8 +94,8 @@ const Profile = () => {
   }, [favoriteGenres]);
 
   const handleDeleteReview = async (reviewId) => {
-    if (!reviewId || !isOwnProfile) {
-      console.log("Cannot delete: no reviewId or not own profile");
+    if (!reviewId || !canDelete) {
+      console.log("Cannot delete: no reviewId or permission denied");
       return;
     }
 
@@ -105,13 +106,6 @@ const Profile = () => {
         return;
       }
 
-      console.log(
-        "Deleting review:",
-        reviewId,
-        "game:",
-        reviewToDelete.game?.id
-      );
-
       await axios.delete(
         `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
         {
@@ -120,7 +114,6 @@ const Profile = () => {
       );
 
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-      alert("Отзыв успешно удален");
     } catch (err) {
       console.error("Error deleting review:", err.response?.data || err);
       alert(
@@ -133,11 +126,6 @@ const Profile = () => {
   if (loading) return <div className="profile">Загрузка...</div>;
   if (error || !profileData)
     return <div className="profile">Ошибка загрузки профиля.</div>;
-
-  console.log("Rendering profile. Is own profile?", isOwnProfile);
-  console.log("Current user ID:", currentUser?.id);
-  console.log("Target user ID:", targetUserId);
-  console.log("Reviews count:", reviews.length);
 
   return (
     <div className="profile">
@@ -162,9 +150,10 @@ const Profile = () => {
           ) : (
             <ReviewsList
               reviews={reviews}
-              onDelete={isOwnProfile ? handleDeleteReview : null}
+              onDelete={canDelete ? handleDeleteReview : null}
               currentUserId={currentUser?.id}
-              hideDelete={!isOwnProfile}
+              hideDelete={!canDelete}
+              isAdmin={isAdmin}
             />
           )}
         </div>

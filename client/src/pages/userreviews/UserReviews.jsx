@@ -17,7 +17,9 @@ const UserReviews = () => {
   const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 10;
 
-  const isOwnProfile = currentUser && currentUser.id === parseInt(UserId);
+  const isOwnProfile = currentUser && String(currentUser.id) === String(UserId);
+  const isAdmin = currentUser?.role === "admin";
+  const canDelete = isOwnProfile || isAdmin;
 
   useEffect(() => {
     const fetchUserName = async () => {
@@ -50,8 +52,6 @@ const UserReviews = () => {
           user_id: r.user_id || UserId,
         }));
 
-        console.log("Loaded reviews:", mappedReviews);
-
         if (mappedReviews.length < PAGE_SIZE) {
           setHasMore(false);
         }
@@ -70,8 +70,8 @@ const UserReviews = () => {
   }, [UserId, page]);
 
   const handleDeleteReview = async (reviewId) => {
-    if (!reviewId || !isOwnProfile) {
-      console.log("Cannot delete: no reviewId or not own profile");
+    if (!reviewId || !canDelete) {
+      console.log("Cannot delete: permission denied");
       return;
     }
 
@@ -82,13 +82,6 @@ const UserReviews = () => {
         return;
       }
 
-      console.log(
-        "Deleting review:",
-        reviewId,
-        "game:",
-        reviewToDelete.game?.id
-      );
-
       await axios.delete(
         `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
         {
@@ -97,7 +90,6 @@ const UserReviews = () => {
       );
 
       setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-      alert("Отзыв успешно удален");
     } catch (err) {
       console.error("Error deleting review:", err.response?.data || err);
       alert(
@@ -123,9 +115,10 @@ const UserReviews = () => {
           <>
             <ReviewsList
               reviews={reviews}
-              onDelete={isOwnProfile ? handleDeleteReview : null}
+              onDelete={canDelete ? handleDeleteReview : null}
               currentUserId={currentUser?.id}
-              hideDelete={!isOwnProfile}
+              hideDelete={!canDelete}
+              isAdmin={isAdmin}
             />
 
             {hasMore && (

@@ -6,6 +6,7 @@ const ReviewsList = ({
   onDelete,
   currentUserId,
   hideDelete = false,
+  isAdmin = false,
 }) => {
   const reviewsToRender = Array.isArray(reviews) ? reviews : [];
 
@@ -20,8 +21,9 @@ const ReviewsList = ({
             isCurrentUser={
               currentUserId &&
               review.user_id &&
-              currentUserId.toString() === review.user_id.toString()
+              String(currentUserId) === String(review.user_id)
             }
+            isAdmin={isAdmin}
             hideDelete={hideDelete}
           />
         ))}
