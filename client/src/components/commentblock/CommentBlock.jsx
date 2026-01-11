@@ -43,6 +43,7 @@ const CommentBlock = ({ publicationId }) => {
       setComments((prev) => [...prev, newComment]);
     } catch (err) {
       console.error("Failed to post comment", err);
+
       alert(err.response?.data?.error || "Ошибка при отправке комментария");
     }
   };

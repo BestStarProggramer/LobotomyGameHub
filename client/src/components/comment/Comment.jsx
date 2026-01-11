@@ -33,19 +33,26 @@ const Comment = ({
 
   const handleLike = async () => {
     if (!currentUser) return;
+
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
+
     setIsLiked(!isLiked);
     setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
     try {
-      await makeRequest.post(`/comments/${id}/like`);
+      const res = await makeRequest.post(`/comments/${id}/like`);
+
+      setLikesCount(res.data.likesCount);
+      setIsLiked(res.data.isLiked);
     } catch (err) {
-      setIsLiked(!isLiked);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
+      console.error(err);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Удалить комментарий?")) return;
     try {
       await makeRequest.delete(`/comments/${id}`);
       onDelete(id);
@@ -57,7 +64,6 @@ const Comment = ({
   const handleReplySubmit = async (data) => {
     try {
       const isMaxDepth = depth >= 2;
-
       const targetParentId = isMaxDepth ? parent_id : id;
 
       let finalContent = data.content;

@@ -12,16 +12,17 @@ export const getPublications = async (req, res) => {
 
     let queryText = `
       SELECT 
-        p.id, 
-        p.type, 
-        p.title, 
-        p.content, 
+        p.id,
+        p.type,
+        p.title,
+        p.content,
         p.image,
         p.created_at,
+        u.id AS author_id,
         u.username,
         u.avatar_url,
-        g.title as game_title,
-        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) as comments_count
+        g.title AS game_title,
+        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count
       FROM publications p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN games g ON p.game_id = g.id
@@ -44,20 +45,20 @@ export const getPublications = async (req, res) => {
       type: row.type,
       title: row.title,
       author: {
+        id: row.author_id,
         username: row.username || "Неизвестный автор",
         avatar: row.avatar_url || "/img/default-avatar.jpg",
       },
       date: new Date(row.created_at).toLocaleDateString("ru-RU"),
-      commentsCount: parseInt(row.comments_count) || 0,
+      commentsCount: Number(row.comments_count) || 0,
       imageUrl: row.image || "/img/game_poster.jpg",
       content: row.content,
       gameTitle: row.game_title,
     }));
 
-    return res.status(200).json(publications);
+    res.status(200).json(publications);
   } catch (err) {
-    console.error("Ошибка при получении публикаций:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 };
 
@@ -67,16 +68,17 @@ export const getPublicationById = async (req, res) => {
 
     const q = `
       SELECT 
-        p.id, 
-        p.type, 
-        p.title, 
-        p.content, 
+        p.id,
+        p.type,
+        p.title,
+        p.content,
         p.image,
         p.created_at,
+        u.id AS author_id,
         u.username,
         u.avatar_url,
-        g.title as game_title,
-        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) as comments_count
+        g.title AS game_title,
+        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count
       FROM publications p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN games g ON p.game_id = g.id
@@ -85,31 +87,29 @@ export const getPublicationById = async (req, res) => {
 
     const result = await query(q, [id]);
 
-    if (result.rows.length === 0) {
+    if (!result.rows.length) {
       return res.status(404).json({ error: "Публикация не найдена" });
     }
 
     const row = result.rows[0];
 
-    const publication = {
+    res.status(200).json({
       id: row.id,
       type: row.type,
       title: row.title,
       author: {
+        id: row.author_id,
         username: row.username || "Неизвестный автор",
         avatar: row.avatar_url || "/img/default-avatar.jpg",
       },
       date: new Date(row.created_at).toLocaleDateString("ru-RU"),
-      commentsCount: parseInt(row.comments_count) || 0,
+      commentsCount: Number(row.comments_count) || 0,
       imageUrl: row.image || "/img/game_poster.jpg",
       content: row.content,
       gameTitle: row.game_title,
-    };
-
-    return res.status(200).json(publication);
+    });
   } catch (err) {
-    console.error("Ошибка при получении публикации:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 };
 
@@ -117,107 +117,63 @@ export const updatePublication = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, type, game_id } = req.body;
-    const userId = req.userInfo.id;
-    const userRole = req.userInfo.role;
+    const { id: userId, role } = req.userInfo;
 
-    const publicationCheck = await query(
-      "SELECT * FROM publications WHERE id = $1",
-      [id]
-    );
-
-    if (publicationCheck.rows.length === 0) {
+    const check = await query("SELECT * FROM publications WHERE id = $1", [id]);
+    if (!check.rows.length) {
       return res.status(404).json({ error: "Публикация не найдена" });
     }
 
-    const publication = publicationCheck.rows[0];
+    const publication = check.rows[0];
 
     if (
       publication.user_id !== userId &&
-      userRole !== "staff" &&
-      userRole !== "admin"
+      role !== "staff" &&
+      role !== "admin"
     ) {
-      return res.status(403).json({
-        error: "У вас нет прав для редактирования этой публикации",
-      });
+      return res.status(403).json({ error: "Нет прав" });
     }
 
     let image = publication.image;
 
     if (req.file) {
-      if (publication.image && publication.image.startsWith("/upload/")) {
-        try {
-          const oldImagePath = join(
-            process.cwd(),
-            "client/public",
-            publication.image
-          );
-
-          const normalizedPath = oldImagePath.replace(/\\/g, "/");
-          if (normalizedPath.includes("/client/public/upload/")) {
-            if (fs.existsSync(oldImagePath)) {
-              fs.unlinkSync(oldImagePath);
-              console.log(`Удалена старая картинка: ${oldImagePath}`);
-            }
-          } else {
-            console.warn(
-              `Попытка удалить файл вне разрешенной директории: ${publication.image}`
-            );
-          }
-        } catch (fileError) {
-          console.error("Ошибка при удалении старого файла:", fileError);
-        }
+      if (image && image.startsWith("/upload/")) {
+        const path = join(process.cwd(), "client/public", image);
+        if (fs.existsSync(path)) fs.unlinkSync(path);
       }
       image = `/upload/${req.file.filename}`;
     }
 
     const validType = type === "news" ? "news" : "article";
-    const validGameId =
-      game_id && !isNaN(parseInt(game_id)) ? parseInt(game_id) : null;
+    const validGameId = game_id && !isNaN(game_id) ? Number(game_id) : null;
 
     const q = `
-      UPDATE publications 
-      SET title = $1, content = $2, type = $3, game_id = $4, image = $5, updated_at = NOW()
-      WHERE id = $6
-      RETURNING id, title, content, type, image
+      UPDATE publications
+      SET title=$1, content=$2, type=$3, game_id=$4, image=$5, updated_at=NOW()
+      WHERE id=$6
+      RETURNING id
     `;
 
-    const result = await query(q, [
-      title,
-      content,
-      validType,
-      validGameId,
-      image,
-      id,
-    ]);
+    await query(q, [title, content, validType, validGameId, image, id]);
 
-    return res.status(200).json({
-      message: "Публикация успешно обновлена!",
-      publication: result.rows[0],
-    });
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Ошибка при обновлении публикации:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 };
 
 export const addPublication = async (req, res) => {
   try {
     const { title, content, type, game_id } = req.body;
-    const userId = req.userInfo.id;
-    const userRole = req.userInfo.role;
+    const { id: userId, role } = req.userInfo;
 
-    if (userRole !== "staff" && userRole !== "admin") {
-      return res.status(403).json({
-        error:
-          "Только пользователи с ролью staff или admin могут создавать публикации",
-      });
+    if (role !== "staff" && role !== "admin") {
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     const image = req.file ? `/upload/${req.file.filename}` : null;
     const validType = type === "news" ? "news" : "article";
-
-    const validGameId =
-      game_id && !isNaN(parseInt(game_id)) ? parseInt(game_id) : null;
+    const validGameId = game_id && !isNaN(game_id) ? Number(game_id) : null;
 
     const q = `
       INSERT INTO publications (user_id, game_id, type, title, content, image, created_at)
@@ -234,74 +190,41 @@ export const addPublication = async (req, res) => {
       image,
     ]);
 
-    return res.status(200).json({
-      message: "Публикация успешно создана!",
-      id: result.rows[0].id,
-    });
+    res.status(200).json({ id: result.rows[0].id });
   } catch (err) {
-    console.error("Ошибка при создании публикации:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 };
 
 export const deletePublication = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.userInfo.id;
-    const userRole = req.userInfo.role;
+    const { id: userId, role } = req.userInfo;
 
-    const publicationCheck = await query(
-      "SELECT * FROM publications WHERE id = $1",
-      [id]
-    );
-
-    if (publicationCheck.rows.length === 0) {
+    const check = await query("SELECT * FROM publications WHERE id = $1", [id]);
+    if (!check.rows.length) {
       return res.status(404).json({ error: "Публикация не найдена" });
     }
 
-    const publication = publicationCheck.rows[0];
+    const publication = check.rows[0];
 
     if (
       publication.user_id !== userId &&
-      userRole !== "staff" &&
-      userRole !== "admin"
+      role !== "staff" &&
+      role !== "admin"
     ) {
-      return res.status(403).json({
-        error: "У вас нет прав для удаления этой публикации",
-      });
+      return res.status(403).json({ error: "Нет прав" });
     }
 
     if (publication.image && publication.image.startsWith("/upload/")) {
-      try {
-        const imagePath = join(
-          process.cwd(),
-          "client/public",
-          publication.image
-        );
-
-        const normalizedPath = imagePath.replace(/\\/g, "/");
-        if (normalizedPath.includes("/client/public/upload/")) {
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-            console.log(`Удалена картинка: ${imagePath}`);
-          }
-        } else {
-          console.warn(
-            `Попытка удалить файл вне разрешенной директории: ${publication.image}`
-          );
-        }
-      } catch (fileError) {
-        console.error("Ошибка при удалении файла:", fileError);
-      }
+      const path = join(process.cwd(), "client/public", publication.image);
+      if (fs.existsSync(path)) fs.unlinkSync(path);
     }
 
     await query("DELETE FROM publications WHERE id = $1", [id]);
 
-    return res.status(200).json({
-      message: "Публикация успешно удалена!",
-    });
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error("Ошибка при удалении публикации:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    res.status(500).json({ error: "Ошибка сервера" });
   }
 };

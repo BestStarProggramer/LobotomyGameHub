@@ -196,29 +196,39 @@ export const toggleLike = async (req, res) => {
     const { commentId } = req.params;
     const userId = req.userInfo.id;
 
+    const cId = parseInt(commentId, 10);
+    const uId = parseInt(userId, 10);
+
+    if (isNaN(cId))
+      return res.status(400).json({ error: "Invalid comment ID" });
+
     const checkQ =
       "SELECT 1 FROM comment_likes WHERE user_id = $1 AND comment_id = $2";
-    const checkRes = await query(checkQ, [userId, commentId]);
+    const checkRes = await query(checkQ, [uId, cId]);
 
     let isLiked = false;
 
     if (checkRes.rows.length > 0) {
       await query(
         "DELETE FROM comment_likes WHERE user_id = $1 AND comment_id = $2",
-        [userId, commentId]
+        [uId, cId]
       );
       isLiked = false;
     } else {
       await query(
-        "INSERT INTO comment_likes (user_id, comment_id) VALUES ($1, $2)",
-        [userId, commentId]
+        `
+        INSERT INTO comment_likes (user_id, comment_id) 
+        VALUES ($1, $2) 
+        ON CONFLICT (user_id, comment_id) DO NOTHING
+      `,
+        [uId, cId]
       );
       isLiked = true;
     }
 
     const countRes = await query(
       "SELECT COUNT(*) FROM comment_likes WHERE comment_id = $1",
-      [commentId]
+      [cId]
     );
     const likesCount = parseInt(countRes.rows[0].count, 10);
 

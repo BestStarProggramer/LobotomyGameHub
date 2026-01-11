@@ -45,10 +45,6 @@ const PublicationPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Вы уверены, что хотите удалить эту публикацию?")) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await axios.delete(
