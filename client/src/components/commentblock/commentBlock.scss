@@ -4,6 +4,7 @@
   padding: 30px;
   width: 100%;
   margin-top: 30px;
+  box-sizing: border-box;
 
   .comment-header {
     display: flex;
@@ -24,9 +25,17 @@
     }
   }
 
+  .guest-message {
+    color: #a0a0a0;
+    text-align: center;
+    padding: 20px;
+    border: 1px dashed #2a2533;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+
   .comments-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
   }
 }

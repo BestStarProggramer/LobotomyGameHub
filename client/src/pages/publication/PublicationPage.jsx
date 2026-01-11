@@ -117,7 +117,7 @@ const PublicationPage = () => {
         )}
 
         <PublicationSection publication={publication} />
-        <CommentBlock comments={[]} publicationId={publication.id} />
+        <CommentBlock publicationId={publication.id} />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import "./publicationSection.scss";
 import CommentIcon from "@mui/icons-material/Comment";
+import { Link } from "react-router-dom";
 
 const PublicationSection = ({ publication }) => {
   const { title, author, date, commentsCount, content } = publication;
@@ -17,10 +18,14 @@ const PublicationSection = ({ publication }) => {
 
         <h1 className="publication-title">{title}</h1>
 
-        <div className="author-info">
+        <Link
+          to={`/profile/${author.id || "#"}`}
+          className="author-info"
+          style={{ textDecoration: "none", width: "fit-content" }}
+        >
           <img src={author.avatar} alt={author.username} />
           <span>{author.username}</span>
-        </div>
+        </Link>
       </div>
 
       <div className="publication-content">

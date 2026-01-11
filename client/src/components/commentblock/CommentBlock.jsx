@@ -1,52 +1,90 @@
 import "./commentBlock.scss";
-import { useState, useContext, useRef, useEffect } from "react";
+import { useState, useContext, useEffect, useMemo } from "react";
 import CommentIcon from "@mui/icons-material/Comment";
 import Comment from "../comment/Comment";
 import CommentInput from "../commentinput/CommentInput";
 import { AuthContext } from "../../context/authContext";
+import { makeRequest } from "../../axios";
 
-const CommentBlock = ({ comments: initialComments, publicationId }) => {
-  const [comments, setComments] = useState(initialComments);
+const CommentBlock = ({ publicationId }) => {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { currentUser } = useContext(AuthContext);
 
-  const currentUserRef = useRef(currentUser);
-
   useEffect(() => {
-    currentUserRef.current = currentUser;
-  }, [currentUser]);
+    const fetchComments = async () => {
+      try {
+        const res = await makeRequest.get(`/comments/${publicationId}`);
+        setComments(res.data);
+      } catch (err) {
+        console.error("Failed to fetch comments", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchComments();
+  }, [publicationId]);
 
-  const formatDate = (date) => {
-    return date.toLocaleString("ru-RU", {
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+  const handleCommentSubmit = async (commentData) => {
+    try {
+      const res = await makeRequest.post(`/comments/${publicationId}`, {
+        content: commentData.content,
+      });
+
+      const newComment = {
+        ...res.data,
+        user: {
+          id: currentUser.id,
+          username: currentUser.username,
+          avatar: currentUser.avatar_url || "/img/default-avatar.jpg",
+        },
+      };
+
+      setComments((prev) => [...prev, newComment]);
+    } catch (err) {
+      console.error("Failed to post comment", err);
+      alert(err.response?.data?.error || "Ошибка при отправке комментария");
+    }
   };
 
-  const handleCommentSubmit = (commentData) => {
-    const user = currentUserRef.current;
+  const handleDeleteComment = (commentId) => {
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+  };
 
-    if (!user) {
-      console.error("Пользователь не авторизован");
-      return;
-    }
+  const commentTree = useMemo(() => {
+    const map = {};
+    const roots = [];
 
-    const comment = {
-      id: Date.now(),
-      username: user.username,
-      avatar: user.avatar_url || "/img/default-avatar.jpg",
-      date: formatDate(new Date()),
-      content: commentData.content,
+    comments.forEach((c) => {
+      map[c.id] = { ...c, children: [] };
+    });
+
+    comments.forEach((c) => {
+      if (c.parent_id && map[c.parent_id]) {
+        map[c.parent_id].children.push(map[c.id]);
+      } else {
+        roots.push(map[c.id]);
+      }
+    });
+
+    roots.sort((a, b) => b.likes_count - a.likes_count);
+
+    const sortChildren = (node) => {
+      if (node.children.length > 0) {
+        node.children.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
+        node.children.forEach(sortChildren);
+      }
     };
 
-    setComments([...comments, comment]);
-  };
+    roots.forEach(sortChildren);
 
-  const handleCommentCancel = () => {
-    // Логика отмены
-  };
+    return roots;
+  }, [comments]);
+
+  if (loading)
+    return <div className="comment-block">Загрузка комментариев...</div>;
 
   return (
     <div className="comment-block">
@@ -55,16 +93,26 @@ const CommentBlock = ({ comments: initialComments, publicationId }) => {
         <h2>Комментарии ({comments.length})</h2>
       </div>
 
-      {currentUser && (
-        <CommentInput
-          onSubmit={handleCommentSubmit}
-          onCancel={handleCommentCancel}
-        />
+      {currentUser ? (
+        <CommentInput onSubmit={handleCommentSubmit} />
+      ) : (
+        <div className="guest-message">
+          <p>Войдите, чтобы оставить комментарий</p>
+        </div>
       )}
 
       <div className="comments-list">
-        {comments.map((comment) => (
-          <Comment key={comment.id} comment={comment} />
+        {commentTree.map((node) => (
+          <Comment
+            key={node.id}
+            comment={node}
+            publicationId={publicationId}
+            onDelete={handleDeleteComment}
+            depth={0}
+            onReplySuccess={(newComment) =>
+              setComments((prev) => [...prev, newComment])
+            }
+          />
         ))}
       </div>
     </div>

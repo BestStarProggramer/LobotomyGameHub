@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import { query } from "./db.js";
 import authRouter from "./routes/auth.js";
 import gamesRouter from "./routes/games.js";
 import rawgRouter from "./routes/rawg.js";
@@ -11,9 +10,7 @@ import cookieParser from "cookie-parser";
 import gamesRoutes from "./routes/games.js";
 import publicationsRouter from "./routes/publications.js";
 import reviewsRouter from "./routes/reviews.js";
-import https from "https";
-import fs from "fs";
-import axios from "axios";
+import commentsRouter from "./routes/comments.js";
 
 const RAWG_BASE = "https://api.rawg.io/api";
 const RAWG_KEY = process.env.API_KEY;
@@ -43,6 +40,7 @@ app.use("/api/rawg", rawgRouter);
 app.use("/api/data", dataRouter);
 app.use("/api/health", healthRouter);
 app.use("/api/reviews", reviewsRouter);
+app.use("/api/comments", commentsRouter);
 app.use("/api/publications", publicationsRouter);
 app.use("/api/games", gamesRoutes);
 
