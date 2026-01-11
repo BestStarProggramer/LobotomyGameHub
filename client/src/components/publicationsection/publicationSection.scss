@@ -6,6 +6,7 @@
   width: 100%;
   padding: 30px;
   margin-bottom: 30px;
+  box-sizing: border-box;
 
   .publication-header {
     margin-bottom: 30px;
@@ -46,21 +47,34 @@
     }
 
     .author-info {
-      display: flex;
+      display: inline-flex;
       align-items: center;
       gap: 10px;
+      text-decoration: none;
+
+      background-color: #2a2533;
+      padding: 8px 15px;
+      border-radius: 8px;
+      transition: all 150ms ease;
+      border: 1px solid transparent;
+
+      &:hover {
+        background-color: #3a3240;
+        transform: translateX(3px);
+        border-color: #53257d;
+      }
 
       img {
         width: 30px;
         height: 30px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid #53257d;
       }
 
       span {
         color: white;
         font-size: 16px;
+        font-weight: bold;
       }
     }
   }
@@ -76,12 +90,10 @@
         margin: 25px 0 15px 0;
         font-size: 22px;
       }
-
       p {
         margin: 0 0 15px 0;
         color: white;
       }
-
       h1,
       h2,
       h4,
@@ -89,24 +101,26 @@
       h6 {
         color: white;
       }
-
       strong,
       b {
         color: white;
       }
-
       em,
       i {
         color: white;
       }
-
       ul,
       ol {
         color: white;
       }
-
       li {
         color: white;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
       }
     }
   }

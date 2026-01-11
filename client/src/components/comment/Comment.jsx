@@ -21,7 +21,7 @@ const Comment = ({
   const [isLiked, setIsLiked] = useState(comment.is_liked);
   const [isReplying, setIsReplying] = useState(false);
 
-  const { id, user, created_at, content, children } = comment;
+  const { id, user, created_at, content, children, parent_id } = comment;
 
   const dateStr = new Date(created_at).toLocaleString("ru-RU", {
     day: "numeric",
@@ -33,7 +33,6 @@ const Comment = ({
 
   const handleLike = async () => {
     if (!currentUser) return;
-
     setIsLiked(!isLiked);
     setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
@@ -42,7 +41,6 @@ const Comment = ({
     } catch (err) {
       setIsLiked(!isLiked);
       setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
-      console.error(err);
     }
   };
 
@@ -52,16 +50,24 @@ const Comment = ({
       await makeRequest.delete(`/comments/${id}`);
       onDelete(id);
     } catch (err) {
-      console.error(err);
       alert("Не удалось удалить комментарий");
     }
   };
 
   const handleReplySubmit = async (data) => {
     try {
+      const isMaxDepth = depth >= 2;
+
+      const targetParentId = isMaxDepth ? parent_id : id;
+
+      let finalContent = data.content;
+      if (isMaxDepth) {
+        finalContent = `@${user.username}, ${finalContent}`;
+      }
+
       const res = await makeRequest.post(`/comments/${publicationId}`, {
-        content: data.content,
-        parentId: id,
+        content: finalContent,
+        parentId: targetParentId,
       });
 
       const newComment = {
@@ -77,7 +83,10 @@ const Comment = ({
       onReplySuccess(newComment);
     } catch (err) {
       console.error(err);
-      alert("Ошибка при ответе");
+      alert(
+        "Ошибка при ответе: " +
+          (err.response?.data?.error || "Неизвестная ошибка")
+      );
     }
   };
 
@@ -86,7 +95,10 @@ const Comment = ({
   const canDelete = isOwn || isAdmin;
 
   return (
-    <div className={`comment-wrapper ${depth > 0 ? "is-reply" : ""}`}>
+    <div
+      className={`comment-wrapper ${depth > 0 ? "is-reply" : ""}`}
+      style={{ marginLeft: depth > 0 ? "30px" : "0" }}
+    >
       <div className="comment-card">
         <div className="comment-header">
           <Link to={`/profile/${user.id}`} className="author-info">

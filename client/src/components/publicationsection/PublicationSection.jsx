@@ -18,11 +18,7 @@ const PublicationSection = ({ publication }) => {
 
         <h1 className="publication-title">{title}</h1>
 
-        <Link
-          to={`/profile/${author.id || "#"}`}
-          className="author-info"
-          style={{ textDecoration: "none", width: "fit-content" }}
-        >
+        <Link to={`/profile/${author.id || "#"}`} className="author-info">
           <img src={author.avatar} alt={author.username} />
           <span>{author.username}</span>
         </Link>

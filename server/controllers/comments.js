@@ -51,16 +51,82 @@ export const getComments = async (req, res) => {
   }
 };
 
+const getCommentDepth = async (commentId) => {
+  if (!commentId) return 0;
+
+  const sql = `
+    WITH RECURSIVE comment_tree AS (
+      SELECT id, parent_id, 0 as depth
+      FROM comments
+      WHERE id = $1
+      UNION ALL
+      SELECT c.id, c.parent_id, ct.depth + 1
+      FROM comments c
+      JOIN comment_tree ct ON c.id = ct.parent_id
+    )
+    SELECT MAX(depth) as depth FROM comment_tree;
+  `;
+
+  const sqlUp = `
+    WITH RECURSIVE parents AS (
+      SELECT id, parent_id, 0 as level
+      FROM comments
+      WHERE id = $1
+      UNION ALL
+      SELECT c.id, c.parent_id, p.level + 1
+      FROM comments c
+      INNER JOIN parents p ON c.id = p.parent_id
+    )
+    SELECT MAX(level) as depth FROM parents;
+  `;
+
+  const res = await query(sqlUp, [commentId]);
+  return res.rows[0]?.depth || 0;
+};
+
 export const addComment = async (req, res) => {
   try {
     const { publicationId } = req.params;
-    const { content, parentId } = req.body;
+    let { content, parentId } = req.body;
     const userId = req.userInfo.id;
 
     if (!content || !content.trim()) {
       return res
         .status(400)
         .json({ error: "Комментарий не может быть пустым" });
+    }
+
+    if (parentId) {
+      const parentDataQ = `
+        WITH RECURSIVE parents AS (
+            SELECT id, parent_id, user_id, 0 as level
+            FROM comments
+            WHERE id = $1
+            UNION ALL
+            SELECT c.id, c.parent_id, c.user_id, p.level + 1
+            FROM comments c
+            INNER JOIN parents p ON c.id = p.parent_id
+        )
+        SELECT p.level, u.username, p.parent_id as real_parent_id
+        FROM parents p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.id = $1 -- Берем данные именно целевого родителя
+      `;
+
+      const parentRes = await query(parentDataQ, [parentId]);
+
+      if (parentRes.rows.length > 0) {
+        const parentDepth = parseInt(parentRes.rows[0].level, 10);
+
+        if (parentDepth >= 2) {
+          parentId = parentRes.rows[0].real_parent_id;
+
+          const tag = `@${parentRes.rows[0].username}, `;
+          if (!content.startsWith("@")) {
+            content = `${tag} ${content}`;
+          }
+        }
+      }
     }
 
     const q = `
