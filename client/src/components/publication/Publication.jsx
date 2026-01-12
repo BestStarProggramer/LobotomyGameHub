@@ -1,10 +1,21 @@
 import "./publication.scss";
 import { Link } from "react-router-dom";
 import CommentIcon from "@mui/icons-material/Comment";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 const Publication = ({ publication }) => {
-  const { id, type, title, author, date, commentsCount, imageUrl } =
-    publication;
+  const {
+    id,
+    type,
+    title,
+    author,
+    date,
+    commentsCount,
+    imageUrl,
+    views,
+    likesCount,
+  } = publication;
 
   return (
     <Link to={`/publications/${id}`} className="publication-link">
@@ -26,9 +37,19 @@ const Publication = ({ publication }) => {
           <h3 className="title">{title}</h3>
           <div className="footer">
             <span className="date">{date}</span>
-            <div className="comments">
-              <CommentIcon className="comment-icon" />
-              <span>{commentsCount}</span>
+            <div className="stats">
+              <div className="stat-item">
+                <VisibilityIcon className="icon-small" />
+                <span>{views}</span>
+              </div>
+              <div className="stat-item">
+                <FavoriteIcon className="icon-small" />
+                <span>{likesCount}</span>
+              </div>
+              <div className="stat-item">
+                <CommentIcon className="icon-small" />
+                <span>{commentsCount}</span>
+              </div>
             </div>
           </div>
         </div>

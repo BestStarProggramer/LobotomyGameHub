@@ -11,10 +11,10 @@ export const getComments = async (req, res) => {
         c.content, 
         c.created_at, 
         c.parent_id,
+        c.likes as likes_count, -- Используем поле из таблицы
         u.id as user_id, 
         u.username, 
         u.avatar_url,
-        (SELECT COUNT(*) FROM comment_likes cl WHERE cl.comment_id = c.id) as likes_count,
         CASE 
           WHEN $2::bigint IS NOT NULL THEN 
             EXISTS(SELECT 1 FROM comment_likes cl WHERE cl.comment_id = c.id AND cl.user_id = $2)
@@ -33,7 +33,7 @@ export const getComments = async (req, res) => {
       content: row.content,
       created_at: row.created_at,
       parent_id: row.parent_id,
-      likes_count: parseInt(row.likes_count, 10),
+      likes_count: parseInt(row.likes_count, 10) || 0,
       is_liked: row.is_liked,
       user: {
         id: row.user_id,
@@ -49,39 +49,6 @@ export const getComments = async (req, res) => {
       .status(500)
       .json({ error: "Ошибка сервера при получении комментариев" });
   }
-};
-
-const getCommentDepth = async (commentId) => {
-  if (!commentId) return 0;
-
-  const sql = `
-    WITH RECURSIVE comment_tree AS (
-      SELECT id, parent_id, 0 as depth
-      FROM comments
-      WHERE id = $1
-      UNION ALL
-      SELECT c.id, c.parent_id, ct.depth + 1
-      FROM comments c
-      JOIN comment_tree ct ON c.id = ct.parent_id
-    )
-    SELECT MAX(depth) as depth FROM comment_tree;
-  `;
-
-  const sqlUp = `
-    WITH RECURSIVE parents AS (
-      SELECT id, parent_id, 0 as level
-      FROM comments
-      WHERE id = $1
-      UNION ALL
-      SELECT c.id, c.parent_id, p.level + 1
-      FROM comments c
-      INNER JOIN parents p ON c.id = p.parent_id
-    )
-    SELECT MAX(level) as depth FROM parents;
-  `;
-
-  const res = await query(sqlUp, [commentId]);
-  return res.rows[0]?.depth || 0;
 };
 
 export const addComment = async (req, res) => {
@@ -110,7 +77,7 @@ export const addComment = async (req, res) => {
         SELECT p.level, u.username, p.parent_id as real_parent_id
         FROM parents p
         JOIN users u ON p.user_id = u.id
-        WHERE p.id = $1 -- Берем данные именно целевого родителя
+        WHERE p.id = $1
       `;
 
       const parentRes = await query(parentDataQ, [parentId]);
@@ -130,9 +97,9 @@ export const addComment = async (req, res) => {
     }
 
     const q = `
-      INSERT INTO comments (publication_id, user_id, content, parent_id, created_at)
-      VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id, created_at
+      INSERT INTO comments (publication_id, user_id, content, parent_id, created_at, likes)
+      VALUES ($1, $2, $3, $4, NOW(), 0)
+      RETURNING id, created_at, likes
     `;
 
     const result = await query(q, [
@@ -153,6 +120,7 @@ export const addComment = async (req, res) => {
       user: {
         id: userId,
         username: req.userInfo.username,
+        avatar: req.userInfo.avatar_url,
       },
     });
   } catch (err) {
@@ -207,30 +175,31 @@ export const toggleLike = async (req, res) => {
     const checkRes = await query(checkQ, [uId, cId]);
 
     let isLiked = false;
+    let likesCount = 0;
 
     if (checkRes.rows.length > 0) {
       await query(
         "DELETE FROM comment_likes WHERE user_id = $1 AND comment_id = $2",
         [uId, cId]
       );
+
+      const updateQ = `UPDATE comments SET likes = likes - 1 WHERE id = $1 RETURNING likes`;
+      const updateRes = await query(updateQ, [cId]);
+
+      likesCount = updateRes.rows[0].likes;
       isLiked = false;
     } else {
       await query(
-        `
-        INSERT INTO comment_likes (user_id, comment_id) 
-        VALUES ($1, $2) 
-        ON CONFLICT (user_id, comment_id) DO NOTHING
-      `,
+        `INSERT INTO comment_likes (user_id, comment_id) VALUES ($1, $2)`,
         [uId, cId]
       );
+
+      const updateQ = `UPDATE comments SET likes = likes + 1 WHERE id = $1 RETURNING likes`;
+      const updateRes = await query(updateQ, [cId]);
+
+      likesCount = updateRes.rows[0].likes;
       isLiked = true;
     }
-
-    const countRes = await query(
-      "SELECT COUNT(*) FROM comment_likes WHERE comment_id = $1",
-      [cId]
-    );
-    const likesCount = parseInt(countRes.rows[0].count, 10);
 
     return res.status(200).json({ likesCount, isLiked });
   } catch (err) {

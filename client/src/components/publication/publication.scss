@@ -90,18 +90,24 @@
           font-size: 12px;
         }
 
-        .comments {
+        .stats {
           display: flex;
           align-items: center;
-          gap: 4px;
-          color: #a0a0a0;
+          gap: 12px;
 
-          .comment-icon {
-            font-size: 16px;
-          }
+          .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #a0a0a0;
 
-          span {
-            font-size: 12px;
+            .icon-small {
+              font-size: 16px;
+            }
+
+            span {
+              font-size: 12px;
+            }
           }
         }
       }

@@ -123,45 +123,102 @@ body {
             }
           }
 
-          .stats-row {
+          .stats-container {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 25px;
             margin-top: 5px;
 
-            .stat-item {
+            .stats-row {
               display: flex;
-              align-items: center;
-              gap: 8px;
-              color: white;
-              background-color: rgba(0, 0, 0, 0.5);
-              backdrop-filter: blur(4px);
-              padding: 8px 16px;
-              border-radius: 8px;
-              user-select: none;
-              border: 1px solid rgba(255, 255, 255, 0.1);
+              gap: 15px;
 
-              .icon {
-                font-size: 20px;
-              }
+              .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: white;
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                padding: 8px 16px;
+                border-radius: 8px;
+                user-select: none;
+                border: 1px solid rgba(255, 255, 255, 0.1);
 
-              span {
-                font-size: 16px;
-                font-weight: bold;
-              }
-
-              &.like-btn {
-                cursor: pointer;
-                transition: all 0.2s;
-
-                &:hover {
-                  background-color: rgba(255, 77, 79, 0.2);
-                  border-color: #ff4d4f;
+                .icon {
+                  font-size: 20px;
                 }
 
-                &.active {
-                  color: #ff4d4f;
-                  background-color: rgba(255, 77, 79, 0.15);
-                  border-color: #ff4d4f;
+                span {
+                  font-size: 16px;
+                  font-weight: bold;
+                }
+
+                &.like-btn {
+                  cursor: pointer;
+                  transition: all 0.2s;
+
+                  &:hover {
+                    background-color: rgba(255, 77, 79, 0.2);
+                    border-color: #ff4d4f;
+                  }
+
+                  &.active {
+                    color: #ff4d4f;
+                    background-color: rgba(255, 77, 79, 0.15);
+                    border-color: #ff4d4f;
+                  }
+                }
+              }
+            }
+
+            .linked-game-section {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+
+              .linked-label {
+                color: #ccc;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                font-weight: 600;
+              }
+
+              .game-card-mini {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+                background-color: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(83, 37, 125, 0.5);
+                padding: 5px 15px 5px 5px;
+                border-radius: 25px;
+                transition: all 0.2s ease;
+                backdrop-filter: blur(5px);
+
+                img {
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 50%;
+                  object-fit: cover;
+                  border: 2px solid #53257d;
+                }
+
+                .game-title {
+                  color: white;
+                  font-weight: bold;
+                  font-size: 14px;
+                  white-space: nowrap;
+                  max-width: 200px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                }
+
+                &:hover {
+                  background-color: rgba(83, 37, 125, 0.4);
+                  border-color: #53257d;
+                  transform: translateY(-2px);
                 }
               }
             }

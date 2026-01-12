@@ -44,7 +44,10 @@ const PublicationPage = () => {
           try {
             await makeRequest.post(`/publications/${publicationId}/view`);
 
-            setViewsCount((prev) => prev + 1);
+            const viewRes = await makeRequest.post(
+              `/publications/${publicationId}/view`
+            );
+            setViewsCount(viewRes.data.views);
           } catch (e) {
             console.error("Не удалось обновить просмотры", e);
           }
@@ -96,7 +99,6 @@ const PublicationPage = () => {
 
     try {
       const res = await makeRequest.post(`/publications/${publicationId}/like`);
-
       setLikesCount(res.data.likesCount);
       setIsLiked(res.data.isLiked);
     } catch (err) {
@@ -164,24 +166,50 @@ const PublicationPage = () => {
                   </div>
                 </div>
 
-                <div className="stats-row">
-                  <div className="stat-item" title="Просмотры">
-                    <VisibilityIcon className="icon" />
-                    <span>{viewsCount}</span>
+                <div className="stats-container">
+                  <div className="stats-row">
+                    <div className="stat-item" title="Просмотры">
+                      <VisibilityIcon className="icon" />
+                      <span>{viewsCount}</span>
+                    </div>
+
+                    <div
+                      className={`stat-item like-btn ${
+                        isLiked ? "active" : ""
+                      }`}
+                      onClick={handleLike}
+                      title={isLiked ? "Убрать лайк" : "Лайкнуть"}
+                    >
+                      {isLiked ? (
+                        <FavoriteIcon className="icon" />
+                      ) : (
+                        <FavoriteBorderIcon className="icon" />
+                      )}
+                      <span>{likesCount}</span>
+                    </div>
                   </div>
 
-                  <div
-                    className={`stat-item like-btn ${isLiked ? "active" : ""}`}
-                    onClick={handleLike}
-                    title={isLiked ? "Убрать лайк" : "Лайкнуть"}
-                  >
-                    {isLiked ? (
-                      <FavoriteIcon className="icon" />
-                    ) : (
-                      <FavoriteBorderIcon className="icon" />
-                    )}
-                    <span>{likesCount}</span>
-                  </div>
+                  {publication.game && (
+                    <div className="linked-game-section">
+                      <span className="linked-label">
+                        {publication.type === "news"
+                          ? "Новость по игре:"
+                          : "Статья по игре:"}
+                      </span>
+                      <Link
+                        to={`/games/${publication.game.slug}`}
+                        className="game-card-mini"
+                      >
+                        <img
+                          src={publication.game.image}
+                          alt={publication.game.title}
+                        />
+                        <span className="game-title">
+                          {publication.game.title}
+                        </span>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </div>
 
