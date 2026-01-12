@@ -307,8 +307,8 @@ export const getGameDetailsWithSync = async (req, res) => {
       rating: 0,
       released: releaseDate,
       genres: rawgData.genres || [],
-      developers: rawgData?.developers || [],
-      publishers: rawgData?.publishers || [],
+      developers: game.developers || [],
+      publishers: game.publishers || [],
       isLocal: false,
     });
   } catch (err) {

@@ -1,4 +1,4 @@
-import { query } from "../db.js";
+import { pool, query } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { publishEmailNotification } from "../rabbitmq.js";
