@@ -186,6 +186,7 @@ CREATE TABLE IF NOT EXISTS publications (
   title VARCHAR(150) NOT NULL,
   content TEXT NOT NULL,
   views INTEGER DEFAULT 0,
+  likes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   CONSTRAINT fk_publications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -293,6 +294,7 @@ CREATE TABLE IF NOT EXISTS comments (
   publication_id BIGINT NOT NULL,
   parent_id BIGINT, -- Для вложенных комментариев
   content TEXT NOT NULL,
+  likes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
