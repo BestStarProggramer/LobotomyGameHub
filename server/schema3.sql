@@ -186,7 +186,6 @@ CREATE TABLE IF NOT EXISTS publications (
   title VARCHAR(150) NOT NULL,
   content TEXT NOT NULL,
   views INTEGER DEFAULT 0,
-  likes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
   CONSTRAINT fk_publications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -377,6 +376,15 @@ CREATE TABLE IF NOT EXISTS favorites_genres (
 
 CREATE INDEX IF NOT EXISTS idx_favorites_genres_user_id ON favorites_genres(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_genres_genre_id ON favorites_genres(genre_id);
+
+CREATE TABLE IF NOT EXISTS publication_likes (
+    user_id BIGINT NOT NULL,
+    publication_id BIGINT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    PRIMARY KEY (user_id, publication_id),
+    CONSTRAINT fk_pub_likes_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_pub_likes_pub FOREIGN KEY (publication_id) REFERENCES publications(id) ON DELETE CASCADE
+);
 
 -- ============================================================================
 -- ФУНКЦИИ И ТРИГГЕРЫ ДЛЯ АВТОМАТИЧЕСКОГО ОБНОВЛЕНИЯ РЕЙТИНГА ИГРЫ

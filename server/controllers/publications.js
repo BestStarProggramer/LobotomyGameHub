@@ -18,11 +18,13 @@ export const getPublications = async (req, res) => {
         p.content,
         p.image,
         p.created_at,
+        p.views,
         u.id AS author_id,
         u.username,
         u.avatar_url,
         g.title AS game_title,
-        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count
+        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count,
+        (SELECT COUNT(*) FROM publication_likes WHERE publication_id = p.id) AS likes_count
       FROM publications p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN games g ON p.game_id = g.id
@@ -51,6 +53,8 @@ export const getPublications = async (req, res) => {
       },
       date: new Date(row.created_at).toLocaleDateString("ru-RU"),
       commentsCount: Number(row.comments_count) || 0,
+      likesCount: Number(row.likes_count) || 0,
+      views: Number(row.views) || 0,
       imageUrl: row.image || "/img/game_poster.jpg",
       content: row.content,
       gameTitle: row.game_title,
@@ -58,6 +62,7 @@ export const getPublications = async (req, res) => {
 
     res.status(200).json(publications);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Ошибка сервера" });
   }
 };
@@ -65,6 +70,7 @@ export const getPublications = async (req, res) => {
 export const getPublicationById = async (req, res) => {
   try {
     const { id } = req.params;
+    const currentUserId = req.userInfo ? req.userInfo.id : null;
 
     const q = `
       SELECT 
@@ -73,19 +79,26 @@ export const getPublicationById = async (req, res) => {
         p.title,
         p.content,
         p.image,
+        p.views,
         p.created_at,
         u.id AS author_id,
         u.username,
         u.avatar_url,
         g.title AS game_title,
-        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count
+        (SELECT COUNT(*) FROM comments WHERE publication_id = p.id) AS comments_count,
+        (SELECT COUNT(*) FROM publication_likes WHERE publication_id = p.id) AS likes_count,
+        CASE 
+          WHEN $2::bigint IS NOT NULL THEN 
+            EXISTS(SELECT 1 FROM publication_likes pl WHERE pl.publication_id = p.id AND pl.user_id = $2)
+          ELSE FALSE 
+        END as is_liked
       FROM publications p
       LEFT JOIN users u ON p.user_id = u.id
       LEFT JOIN games g ON p.game_id = g.id
       WHERE p.id = $1
     `;
 
-    const result = await query(q, [id]);
+    const result = await query(q, [id, currentUserId]);
 
     if (!result.rows.length) {
       return res.status(404).json({ error: "Публикация не найдена" });
@@ -104,12 +117,80 @@ export const getPublicationById = async (req, res) => {
       },
       date: new Date(row.created_at).toLocaleDateString("ru-RU"),
       commentsCount: Number(row.comments_count) || 0,
+      views: Number(row.views) || 0,
+      likes: Number(row.likes_count) || 0,
+      isLiked: row.is_liked,
       imageUrl: row.image || "/img/game_poster.jpg",
       content: row.content,
       gameTitle: row.game_title,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Ошибка сервера" });
+  }
+};
+
+export const toggleLike = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userInfo.id;
+
+    const checkQ =
+      "SELECT 1 FROM publication_likes WHERE user_id = $1 AND publication_id = $2";
+    const checkRes = await query(checkQ, [userId, id]);
+
+    let isLiked = false;
+
+    if (checkRes.rows.length > 0) {
+      await query(
+        "DELETE FROM publication_likes WHERE user_id = $1 AND publication_id = $2",
+        [userId, id]
+      );
+      isLiked = false;
+    } else {
+      await query(
+        "INSERT INTO publication_likes (user_id, publication_id) VALUES ($1, $2)",
+        [userId, id]
+      );
+      isLiked = true;
+    }
+
+    const countRes = await query(
+      "SELECT COUNT(*) FROM publication_likes WHERE publication_id = $1",
+      [id]
+    );
+    const likesCount = parseInt(countRes.rows[0].count, 10);
+
+    await query("UPDATE publications SET likes = $1 WHERE id = $2", [
+      likesCount,
+      id,
+    ]);
+
+    return res.status(200).json({ likesCount, isLiked });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Ошибка при лайке" });
+  }
+};
+
+export const incrementView = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await query("UPDATE publications SET views = views + 1 WHERE id = $1", [
+      id,
+    ]);
+
+    const resCount = await query(
+      "SELECT views FROM publications WHERE id = $1",
+      [id]
+    );
+    const views = resCount.rows[0]?.views || 0;
+
+    return res.status(200).json({ views });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Ошибка при обновлении просмотров" });
   }
 };
 

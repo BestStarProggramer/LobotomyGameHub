@@ -43,7 +43,6 @@ const CommentBlock = ({ publicationId }) => {
       setComments((prev) => [...prev, newComment]);
     } catch (err) {
       console.error("Failed to post comment", err);
-
       alert(err.response?.data?.error || "Ошибка при отправке комментария");
     }
   };
@@ -68,8 +67,6 @@ const CommentBlock = ({ publicationId }) => {
       }
     });
 
-    roots.sort((a, b) => b.likes_count - a.likes_count);
-
     const sortChildren = (node) => {
       if (node.children.length > 0) {
         node.children.sort(
@@ -78,11 +75,24 @@ const CommentBlock = ({ publicationId }) => {
         node.children.forEach(sortChildren);
       }
     };
-
     roots.forEach(sortChildren);
 
-    return roots;
-  }, [comments]);
+    let myRootComments = [];
+    let otherRootComments = [];
+
+    if (currentUser) {
+      myRootComments = roots.filter((c) => c.user.id === currentUser.id);
+      otherRootComments = roots.filter((c) => c.user.id !== currentUser.id);
+    } else {
+      otherRootComments = roots;
+    }
+
+    otherRootComments.sort((a, b) => b.likes_count - a.likes_count);
+
+    myRootComments.sort((a, b) => b.likes_count - a.likes_count);
+
+    return [...myRootComments, ...otherRootComments];
+  }, [comments, currentUser]);
 
   if (loading)
     return <div className="comment-block">Загрузка комментариев...</div>;
