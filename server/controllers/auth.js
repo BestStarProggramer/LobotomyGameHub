@@ -219,32 +219,181 @@ export const getProfile = async (req, res) => {
   }
 };
 
-export const forgotPassword = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
-};
-
-export const resetPassword = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
-};
-
-export const verifyOldEmail = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
-};
-
-export const verifyOldEmailCode = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
-};
-
-export const changeEmail = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
-};
-
 export const updateProfile = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
+  const userId = req.userInfo.id;
+
+  const {
+    username,
+    email,
+    bio,
+    avatar_url: img,
+    oldPassword,
+    newPassword,
+  } = req.body;
+
+  let updateQuery = "UPDATE users SET";
+  const updateValues = [];
+  let queryParts = [];
+  let paramCount = 1;
+
+  if (username) {
+    queryParts.push(`username = $${paramCount++}`);
+    updateValues.push(username);
+  }
+
+  if (email) {
+    queryParts.push(`email = $${paramCount++}`);
+    updateValues.push(email);
+  }
+
+  if (bio !== undefined) {
+    queryParts.push(`bio = $${paramCount++}`);
+    updateValues.push(bio === "" ? null : bio);
+  }
+
+  if (img !== undefined) {
+    queryParts.push(`avatar_url = $${paramCount++}`);
+    updateValues.push(img === "" ? null : img);
+  }
+
+  if (newPassword && oldPassword) {
+    try {
+      const userResult = await query(
+        "SELECT password_hash FROM users WHERE id = $1",
+        [userId]
+      );
+      if (userResult.rows.length === 0) {
+        return res.status(404).json("Пользователь не найден.");
+      }
+      const user = userResult.rows[0];
+
+      const isPasswordCorrect = await bcrypt.compare(
+        oldPassword,
+        user.password_hash
+      );
+      if (!isPasswordCorrect) {
+        return res.status(401).json("Неверный старый пароль.");
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+      queryParts.push(`password_hash = $${paramCount++}`);
+      updateValues.push(newPasswordHash);
+    } catch (err) {
+      console.error("Ошибка при смене пароля:", err);
+      return res.status(500).json("Ошибка сервера при смене пароля.");
+    }
+  } else if (newPassword || oldPassword) {
+    return res
+      .status(400)
+      .json(
+        "Для смены пароля необходимо предоставить и старый, и новый пароли."
+      );
+  }
+
+  if (queryParts.length === 0) {
+    return res.status(400).json("Нет данных для обновления.");
+  }
+
+  updateQuery += " " + queryParts.join(", ") + ` WHERE id = $${paramCount}`;
+  updateValues.push(userId);
+
+  try {
+    const result = await query(updateQuery, updateValues);
+
+    if (result.rowCount === 0) {
+      return res
+        .status(404)
+        .json("Обновление не удалось: Пользователь не найден.");
+    }
+
+    const message = newPassword
+      ? "Профиль и пароль успешно обновлены. Рекомендуется повторный вход."
+      : "Профиль успешно обновлен.";
+
+    return res.status(200).json(message);
+  } catch (err) {
+    if (err.code === "23505") {
+      let field = "данных";
+      if (err.detail.includes("username")) field = "имени пользователя";
+      if (err.detail.includes("email")) field = "почты";
+      return res
+        .status(409)
+        .json(`Ошибка: указанные ${field} уже используются.`);
+    }
+    console.error("Ошибка при обновлении профиля:", err);
+    return res.status(500).json("Ошибка сервера при обновлении профиля.");
+  }
 };
 
 export const updateFavoriteGenres = async (req, res) => {
-  return res.status(501).json({ error: "Not implemented in this patch" });
+  const userId = req.userInfo.id;
+  const { favoriteGenres: genreNames } = req.body;
+
+  if (!Array.isArray(genreNames)) {
+    return res.status(400).json("Ожидается массив любимых жанров.");
+  }
+
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query("DELETE FROM favorites_genres WHERE user_id = $1", [
+      userId,
+    ]);
+
+    if (genreNames.length === 0) {
+      await client.query("COMMIT");
+      return res.status(200).json("Список любимых жанров очищен.");
+    }
+
+    const genreIdsResult = await client.query(
+      `
+            SELECT id
+            FROM genres
+            WHERE name = ANY($1::text[]);
+            `,
+      [genreNames]
+    );
+
+    const genreIds = genreIdsResult.rows.map((row) => row.id);
+
+    if (genreIds.length !== genreNames.length) {
+      await client.query("ROLLBACK");
+      return res
+        .status(400)
+        .json(
+          "Один или несколько указанных жанров не существуют в базе данных."
+        );
+    }
+
+    let insertQuery =
+      "INSERT INTO favorites_genres (user_id, genre_id) VALUES ";
+    const insertParams = [];
+    let valuePlaceholders = [];
+    let paramCount = 1;
+
+    for (const genreId of genreIds) {
+      valuePlaceholders.push(`($${paramCount++}, $${paramCount++})`);
+      insertParams.push(userId);
+      insertParams.push(genreId);
+    }
+
+    insertQuery += valuePlaceholders.join(", ");
+
+    await client.query(insertQuery, insertParams);
+
+    await client.query("COMMIT");
+    return res.status(200).json("Любимые жанры успешно обновлены.");
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error("Ошибка при обновлении жанров:", err);
+    return res.status(500).json("Ошибка сервера при обновлении жанров.");
+  } finally {
+    client.release();
+  }
 };
 
 export const getUserById = async (req, res) => {

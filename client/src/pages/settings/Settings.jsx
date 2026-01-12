@@ -93,7 +93,15 @@ const Settings = () => {
         updateCurrentUser(updatedUser);
       }
 
-      setSuccess(res.data || "Настройка успешно обновлена!");
+      if (res.data && typeof res.data === "object" && res.data.error) {
+        setError(res.data.error);
+      } else if (res.data && typeof res.data === "object" && res.data.message) {
+        setSuccess(res.data.message);
+      } else if (typeof res.data === "string") {
+        setSuccess(res.data);
+      } else {
+        setSuccess("Настройка успешно обновлена!");
+      }
 
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
       if (field === "avatar" && storedUser) {
@@ -101,8 +109,14 @@ const Settings = () => {
         localStorage.setItem("user", JSON.stringify(storedUser));
       }
     } catch (err) {
-      console.error("Ошибка обновления:", err.response?.data || err.message);
-      setError(err.response?.data || "Ошибка сервера при обновлении.");
+      console.error("Ошибка обновления:", err?.response?.data || err?.message);
+      const resp = err?.response?.data;
+      const errorMsg =
+        (resp && typeof resp === "object" && (resp.error || resp.message)) ||
+        (typeof resp === "string" && resp) ||
+        err?.message ||
+        "Ошибка сервера при обновлении.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
