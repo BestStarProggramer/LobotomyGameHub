@@ -1,0 +1,297 @@
+.page {
+  background-image: url("~/public/img/background.png");
+  background-size: cover;
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: 40px 0;
+  color: white;
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 32px;
+    }
+  }
+}
+
+.editor-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+
+  .top-section {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 30px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background-color: #130f14;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #2a2533;
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+          color: #a0a0a0;
+          font-size: 14px;
+        }
+
+        input[type="text"] {
+          background-color: #1c151e;
+          border: 1px solid #53257d;
+          color: white;
+          padding: 10px 15px;
+          border-radius: 6px;
+          font-size: 16px;
+          outline: none;
+
+          &:focus {
+            border-color: #6b2da8;
+          }
+        }
+      }
+
+      .type-switch {
+        display: flex;
+        gap: 0;
+        background-color: #1c151e;
+        border-radius: 6px;
+        width: fit-content;
+        border: 1px solid #53257d;
+        overflow: hidden;
+
+        button {
+          padding: 8px 20px;
+          border: none;
+          background: transparent;
+          color: #a0a0a0;
+          cursor: pointer;
+          font-weight: bold;
+          transition: all 0.2s;
+
+          &.active {
+            background-color: #53257d;
+            color: white;
+          }
+
+          &:hover:not(.active) {
+            background-color: rgba(83, 37, 125, 0.3);
+          }
+        }
+      }
+
+      .game-toggle-section {
+        .toggle-header {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-bottom: 10px;
+
+          span {
+            font-size: 14px;
+            color: #a0a0a0;
+          }
+
+          .toggle-btn {
+            background: #1c151e;
+            border: 1px solid #53257d;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            opacity: 0.5;
+
+            &.active {
+              background: #27ae60;
+              border-color: #27ae60;
+              opacity: 1;
+            }
+
+            &.inactive {
+              background: #c0392b;
+              border-color: #c0392b;
+              opacity: 1;
+            }
+          }
+        }
+
+        .game-search-box {
+          position: relative;
+
+          input {
+            width: 100%;
+            background-color: #1c151e;
+            border: 1px solid #53257d;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-sizing: border-box;
+          }
+
+          .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: #1c151e;
+            border: 1px solid #53257d;
+            border-top: none;
+            z-index: 10;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 0 0 6px 6px;
+
+            .item {
+              padding: 10px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              border-bottom: 1px solid #2a2533;
+
+              &:hover {
+                background-color: #2a2533;
+              }
+
+              img {
+                width: 30px;
+                height: 30px;
+                border-radius: 4px;
+                object-fit: cover;
+              }
+            }
+          }
+
+          .selected-game-badge {
+            margin-top: 10px;
+            background: rgba(83, 37, 125, 0.3);
+            border: 1px solid #53257d;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            button {
+              background: none;
+              border: none;
+              color: #ff4d4f;
+              cursor: pointer;
+              font-weight: bold;
+            }
+          }
+        }
+      }
+    }
+
+    .right-col {
+      background-color: #130f14;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #2a2533;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+
+      .cover-preview {
+        width: 100%;
+        height: 180px;
+        background-color: #1c151e;
+        border: 2px dashed #53257d;
+        border-radius: 8px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        position: relative;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        span {
+          color: #53257d;
+          font-size: 14px;
+        }
+      }
+
+      .file-input-btn {
+        background-color: #53257d;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 20px;
+        border: 0;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+
+        &:hover {
+          background-color: #6b2da8;
+        }
+      }
+    }
+  }
+
+  .editor-section {
+    background-color: #130f14;
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid #2a2533;
+
+    .ql-container {
+      min-height: 400px;
+      font-size: 16px;
+    }
+  }
+
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+
+    button {
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+      border: none;
+
+      &.save {
+        background-color: #53257d;
+        color: white;
+        &:hover {
+          background-color: #6b2da8;
+        }
+      }
+
+      &.cancel {
+        background-color: transparent;
+        border: 2px solid #a0a0a0;
+        color: white;
+        &:hover {
+          border-color: white;
+        }
+      }
+    }
+  }
+}
