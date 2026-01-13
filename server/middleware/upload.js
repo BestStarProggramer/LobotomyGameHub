@@ -6,7 +6,18 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadDir = path.resolve(__dirname, "../../client/public/upload");
+let uploadPath;
+if (process.env.NODE_ENV === "production" || process.env.DOCKER_ENV) {
+  uploadPath = path.join(process.cwd(), "uploads");
+} else {
+  uploadPath = path.resolve(process.cwd(), "../client/public/upload");
+}
+
+if (!fs.existsSync(path.dirname(uploadPath))) {
+  uploadPath = path.join(process.cwd(), "uploads");
+}
+
+const uploadDir = uploadPath;
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -17,8 +28,11 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
+    const originalName = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    cb(null, uniqueSuffix + path.extname(originalName));
   },
 });
 

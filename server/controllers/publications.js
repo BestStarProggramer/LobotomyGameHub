@@ -299,7 +299,15 @@ export const addPublication = async (req, res) => {
 
     const image = req.file ? `/upload/${req.file.filename}` : null;
     const validType = type === "news" ? "news" : "article";
-    const validGameId = game_id && !isNaN(game_id) ? Number(game_id) : null;
+    let validGameId = null;
+    if (
+      game_id &&
+      game_id !== "undefined" &&
+      game_id !== "null" &&
+      !isNaN(game_id)
+    ) {
+      validGameId = Number(game_id);
+    }
 
     const q = `
         INSERT INTO publications (user_id, game_id, type, title, content, image, created_at, likes, views)

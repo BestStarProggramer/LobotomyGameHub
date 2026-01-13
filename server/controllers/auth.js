@@ -20,42 +20,57 @@ const signToken = (userPayload) => {
 };
 
 export const verifyToken = (req, res, next) => {
-  try {
-    const token = req.cookies?.accessToken;
+  const token = req.cookies?.accessToken;
 
-    if (!token) {
-      console.log(
-        "[Auth Error] Токен отсутствует в куках (401). Пользователь не залогинен."
-      );
-      return res.status(401).json("Вы не авторизованы! Нет токена.");
+  if (!token) {
+    return res.status(401).json("Вы не авторизованы!");
+  }
+
+  jwt.verify(token, SECRET_KEY, async (err, decoded) => {
+    if (err) {
+      return res.status(403).json("Токен недействителен!");
     }
 
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-      if (err) {
-        console.error(
-          "[Auth Error] Токен недействителен (403). Ошибка JWT:",
-          err.message
-        );
-        return res.status(403).json("Токен недействителен или просрочен!");
+    try {
+      const q =
+        "SELECT id, username, email, role, avatar_url FROM users WHERE id = $1";
+      const { rows } = await query(q, [decoded.id]);
+
+      if (rows.length === 0) {
+        return res.status(401).json("Пользователь не найден");
       }
 
-      req.userInfo = decoded;
+      const currentUser = rows[0];
 
-      const payload = {
-        id: decoded.id,
-        username: decoded.username,
-        role: decoded.role,
+      req.userInfo = {
+        id: currentUser.id,
+        username: currentUser.username,
+        role: currentUser.role,
       };
 
-      const newToken = signToken(payload);
-      res.cookie("accessToken", newToken, cookieOptions);
+      const payload = {
+        id: currentUser.id,
+        username: currentUser.username,
+        role: currentUser.role,
+      };
+
+      const newToken = jwt.sign(payload, SECRET_KEY, {
+        expiresIn: process.env.JWT_EXPIRES || "30d",
+      });
+
+      res.cookie("accessToken", newToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
 
       next();
-    });
-  } catch (err) {
-    console.error("[verifyToken] unexpected error:", err);
-    return res.status(500).json("Ошибка сервера при проверке токена");
-  }
+    } catch (dbError) {
+      console.error("Ошибка в verifyToken middleware:", dbError);
+      return res.status(500).json("Ошибка сервера при проверке авторизации");
+    }
+  });
 };
 
 export const register = async (req, res) => {
@@ -203,6 +218,17 @@ export const getProfile = async (req, res) => {
 
     const userData = rows[0];
 
+    const genresQuery = `
+      SELECT g.name
+      FROM favorites_genres fg
+      JOIN genres g ON fg.genre_id = g.id
+      WHERE fg.user_id = $1
+      ORDER BY g.name
+    `;
+
+    const genresResult = await query(genresQuery, [userId]);
+    const favoriteGenres = genresResult.rows.map((row) => row.name);
+
     return res.status(200).json({
       id: userData.id,
       username: userData.username,
@@ -212,6 +238,7 @@ export const getProfile = async (req, res) => {
       avatar_url: userData.avatar_url,
       ratedGames: userData.ratedGames,
       registrationDate: userData.registrationDate,
+      favoriteGenres: favoriteGenres,
     });
   } catch (err) {
     console.error("[auth/getProfile] error:", err);
