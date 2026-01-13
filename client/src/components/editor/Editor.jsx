@@ -1,6 +1,7 @@
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from "react";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
+import { makeRequest } from "../../axios";
 
 const Editor = forwardRef(
   (
@@ -10,6 +11,7 @@ const Editor = forwardRef(
       onTextChange,
       onSelectionChange,
       placeholder = "Введите текст...",
+      publicationId = null,
     },
     ref
   ) => {
@@ -17,6 +19,7 @@ const Editor = forwardRef(
     const defaultValueRef = useRef(defaultValue);
     const onTextChangeRef = useRef(onTextChange);
     const onSelectionChangeRef = useRef(onSelectionChange);
+    const quillInstance = useRef(null);
 
     useLayoutEffect(() => {
       onTextChangeRef.current = onTextChange;
@@ -28,6 +31,42 @@ const Editor = forwardRef(
         ref.current.enable(!readOnly);
       }
     }, [ref, readOnly]);
+
+    const imageHandler = () => {
+      const input = document.createElement("input");
+      input.setAttribute("type", "file");
+      input.setAttribute("accept", "image/*");
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (file) {
+          const formData = new FormData();
+          formData.append("file", file);
+
+          if (publicationId) {
+            formData.append("publicationId", publicationId);
+          }
+
+          try {
+            const res = await makeRequest.post(
+              "/publications/upload-image",
+              formData
+            );
+
+            const url = res.data.url;
+            const quill = quillInstance.current;
+
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, "image", url);
+            quill.setSelection(range.index + 1);
+          } catch (err) {
+            console.error("Image upload failed", err);
+            alert("Ошибка при загрузке изображения");
+          }
+        }
+      };
+    };
 
     useEffect(() => {
       const container = containerRef.current;
@@ -54,26 +93,7 @@ const Editor = forwardRef(
           toolbar: {
             container: toolbarOptions,
             handlers: {
-              image: function () {
-                const input = document.createElement("input");
-                input.setAttribute("type", "file");
-                input.setAttribute("accept", "image/*");
-                input.click();
-
-                input.onchange = () => {
-                  const file = input.files[0];
-                  if (file) {
-                    // эту часть заменить на загрузку на сервер
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                      const range = quill.getSelection();
-                      quill.insertEmbed(range.index, "image", e.target.result);
-                      quill.setSelection(range.index + 1);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                };
-              },
+              image: imageHandler,
             },
           },
         },
@@ -87,9 +107,12 @@ const Editor = forwardRef(
       }
 
       ref.current = quill;
+      quillInstance.current = quill;
 
       if (defaultValueRef.current) {
-        quill.setContents(defaultValueRef.current);
+        quill.setContents(quill.clipboard.convert(defaultValueRef.current));
+      } else if (typeof defaultValueRef.current === "string") {
+        quill.clipboard.dangerouslyPasteHTML(defaultValueRef.current);
       }
 
       quill.on(Quill.events.TEXT_CHANGE, (...args) => {
@@ -105,9 +128,10 @@ const Editor = forwardRef(
 
       return () => {
         ref.current = null;
+        quillInstance.current = null;
         container.innerHTML = "";
       };
-    }, [ref, placeholder]);
+    }, [placeholder, publicationId]);
 
     return <div ref={containerRef}></div>;
   }

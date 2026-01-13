@@ -8,8 +8,41 @@ const __dirname = path.dirname(__filename);
 
 const CLIENT_PUBLIC_DIR = path.resolve(__dirname, "../../client/public");
 
+const processContentImages = (content, publicationId) => {
+  if (!content) return "";
+
+  const tempImgRegex = /src="\/upload\/publications\/temp\/([^"]+)"/g;
+
+  const targetRelDir = `/upload/publications/${publicationId}`;
+  const targetAbsDir = path.join(CLIENT_PUBLIC_DIR, targetRelDir);
+
+  if (!fs.existsSync(targetAbsDir)) {
+    fs.mkdirSync(targetAbsDir, { recursive: true });
+  }
+
+  const newContent = content.replace(tempImgRegex, (match, filename) => {
+    const tempAbsPath = path.join(
+      CLIENT_PUBLIC_DIR,
+      `/upload/publications/temp/${filename}`
+    );
+    const targetAbsPath = path.join(targetAbsDir, filename);
+
+    if (fs.existsSync(tempAbsPath)) {
+      try {
+        fs.renameSync(tempAbsPath, targetAbsPath);
+      } catch (e) {
+        console.error(`Error moving file ${filename}:`, e);
+      }
+    }
+
+    return `src="${targetRelDir}/${filename}"`;
+  });
+
+  return newContent;
+};
+
 const resolveContent = (contentData) => {
-  if (contentData && contentData.startsWith("/uploads/")) {
+  if (contentData && contentData.startsWith("/upload/")) {
     const filePath = path.join(CLIENT_PUBLIC_DIR, contentData);
     if (fs.existsSync(filePath)) {
       return fs.readFileSync(filePath, "utf-8");
@@ -18,6 +51,40 @@ const resolveContent = (contentData) => {
   }
 
   return contentData || "";
+};
+
+export const uploadPublicationImage = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const { publicationId } = req.body;
+
+    const folderName =
+      publicationId && publicationId !== "undefined" ? publicationId : "temp";
+
+    const relDir = `/upload/publications/${folderName}`;
+    const absDir = path.join(CLIENT_PUBLIC_DIR, relDir);
+
+    if (!fs.existsSync(absDir)) {
+      fs.mkdirSync(absDir, { recursive: true });
+    }
+
+    const ext = path.extname(req.file.originalname);
+    const fileName = `img_${Date.now()}_${Math.round(
+      Math.random() * 1e9
+    )}${ext}`;
+    const targetPath = path.join(absDir, fileName);
+
+    fs.renameSync(req.file.path, targetPath);
+
+    const fileUrl = `${relDir}/${fileName}`;
+    return res.status(200).json({ url: fileUrl });
+  } catch (err) {
+    console.error("Upload image error:", err);
+    return res.status(500).json({ error: "Ошибка загрузки изображения" });
+  }
 };
 
 export const getPublications = async (req, res) => {
@@ -159,7 +226,9 @@ export const addPublication = async (req, res) => {
     ]);
     const newId = result.rows[0].id;
 
-    const pubDirRel = `/uploads/publications/${newId}`;
+    const processedContent = processContentImages(content, newId);
+
+    const pubDirRel = `/upload/publications/${newId}`;
     const pubDirAbs = path.join(CLIENT_PUBLIC_DIR, pubDirRel);
 
     if (!fs.existsSync(pubDirAbs)) {
@@ -167,7 +236,7 @@ export const addPublication = async (req, res) => {
     }
 
     const contentPath = path.join(pubDirAbs, "content.html");
-    fs.writeFileSync(contentPath, content || "");
+    fs.writeFileSync(contentPath, processedContent || "");
     const dbContentPath = path
       .join(pubDirRel, "content.html")
       .replace(/\\/g, "/");
@@ -177,7 +246,6 @@ export const addPublication = async (req, res) => {
       const ext = path.extname(req.file.originalname);
       const newFileName = `cover${ext}`;
       const newPathAbs = path.join(pubDirAbs, newFileName);
-
       fs.renameSync(req.file.path, newPathAbs);
       dbImagePath = path.join(pubDirRel, newFileName).replace(/\\/g, "/");
     }
@@ -197,7 +265,7 @@ export const addPublication = async (req, res) => {
 export const updatePublication = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, type, game_id } = req.body;
+    let { title, content, type, game_id } = req.body;
     const { id: userId, role } = req.userInfo;
 
     const check = await query("SELECT * FROM publications WHERE id = $1", [id]);
@@ -209,11 +277,16 @@ export const updatePublication = async (req, res) => {
       return res.status(403).json({ error: "Нет прав" });
     }
 
-    const pubDirRel = `/uploads/publications/${id}`;
+    const processedContent = processContentImages(content, id);
+
+    const pubDirRel = `/upload/publications/${id}`;
     const pubDirAbs = path.join(CLIENT_PUBLIC_DIR, pubDirRel);
     if (!fs.existsSync(pubDirAbs)) fs.mkdirSync(pubDirAbs, { recursive: true });
 
-    fs.writeFileSync(path.join(pubDirAbs, "content.html"), content || "");
+    fs.writeFileSync(
+      path.join(pubDirAbs, "content.html"),
+      processedContent || ""
+    );
     const dbContentPath = path
       .join(pubDirRel, "content.html")
       .replace(/\\/g, "/");
@@ -225,7 +298,7 @@ export const updatePublication = async (req, res) => {
       const newPathAbs = path.join(pubDirAbs, newFileName);
       fs.renameSync(req.file.path, newPathAbs);
 
-      if (pub.image && pub.image.startsWith("/uploads/")) {
+      if (pub.image && pub.image.startsWith("/upload/")) {
         const oldPath = path.join(CLIENT_PUBLIC_DIR, pub.image);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
@@ -261,10 +334,7 @@ export const deletePublication = async (req, res) => {
       return res.status(403).json({ error: "Нет прав" });
     }
 
-    const pubDirAbs = path.join(
-      CLIENT_PUBLIC_DIR,
-      `uploads/publications/${id}`
-    );
+    const pubDirAbs = path.join(CLIENT_PUBLIC_DIR, `upload/publications/${id}`);
     if (fs.existsSync(pubDirAbs)) {
       fs.rmSync(pubDirAbs, { recursive: true, force: true });
     }

@@ -278,7 +278,7 @@ function PublicationsEdit() {
         </div>
 
         <div className="editor-section">
-          <Editor ref={editorRef} />
+          <Editor ref={editorRef} publicationId={publicationId} />
         </div>
 
         <div className="actions">

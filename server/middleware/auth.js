@@ -46,3 +46,21 @@ export const verifyToken = (req, res, next) => {
     return res.status(500).json("Ошибка сервера при проверке токена");
   }
 };
+
+export const checkAuth = (req, res, next) => {
+  const token = req.cookies?.accessToken;
+
+  if (!token) {
+    req.userInfo = null;
+    return next();
+  }
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) {
+      req.userInfo = null;
+    } else {
+      req.userInfo = decoded;
+    }
+    next();
+  });
+};
