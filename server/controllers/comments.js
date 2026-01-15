@@ -10,8 +10,10 @@ export const getComments = async (req, res) => {
         c.id, 
         c.content, 
         c.created_at, 
+        c.updated_at,
+        c.is_edited,
         c.parent_id,
-        c.likes as likes_count, -- Используем поле из таблицы
+        c.likes as likes_count,
         u.id as user_id, 
         u.username, 
         u.avatar_url,
@@ -32,6 +34,8 @@ export const getComments = async (req, res) => {
       id: row.id,
       content: row.content,
       created_at: row.created_at,
+      updated_at: row.updated_at,
+      is_edited: row.is_edited,
       parent_id: row.parent_id,
       likes_count: parseInt(row.likes_count, 10) || 0,
       is_liked: row.is_liked,
@@ -97,8 +101,8 @@ export const addComment = async (req, res) => {
     }
 
     const q = `
-      INSERT INTO comments (publication_id, user_id, content, parent_id, created_at, likes)
-      VALUES ($1, $2, $3, $4, NOW(), 0)
+      INSERT INTO comments (publication_id, user_id, content, parent_id, created_at, likes, is_edited)
+      VALUES ($1, $2, $3, $4, NOW(), 0, FALSE)
       RETURNING id, created_at, likes
     `;
 
@@ -114,6 +118,8 @@ export const addComment = async (req, res) => {
       id: newComment.id,
       content: content,
       created_at: newComment.created_at,
+      updated_at: newComment.created_at,
+      is_edited: false,
       parent_id: parentId || null,
       likes_count: 0,
       is_liked: false,
@@ -128,6 +134,46 @@ export const addComment = async (req, res) => {
     return res
       .status(500)
       .json({ error: "Ошибка сервера при добавлении комментария" });
+  }
+};
+
+export const updateComment = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.userInfo.id;
+
+    if (!content || !content.trim()) {
+      return res
+        .status(400)
+        .json({ error: "Комментарий не может быть пустым" });
+    }
+
+    const checkQ = "SELECT user_id FROM comments WHERE id = $1";
+    const checkRes = await query(checkQ, [commentId]);
+
+    if (checkRes.rows.length === 0) {
+      return res.status(404).json({ error: "Комментарий не найден" });
+    }
+
+    if (checkRes.rows[0].user_id !== userId) {
+      return res.status(403).json({ error: "Нет прав на редактирование" });
+    }
+
+    const updateQ = `
+      UPDATE comments 
+      SET content = $1, is_edited = TRUE, updated_at = NOW() 
+      WHERE id = $2 
+      RETURNING updated_at, is_edited
+    `;
+    const updateRes = await query(updateQ, [content.trim(), commentId]);
+
+    return res.status(200).json(updateRes.rows[0]);
+  } catch (err) {
+    console.error("Error updating comment:", err);
+    return res
+      .status(500)
+      .json({ error: "Ошибка сервера при обновлении комментария" });
   }
 };
 

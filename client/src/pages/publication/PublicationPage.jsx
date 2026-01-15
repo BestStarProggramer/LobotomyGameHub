@@ -44,10 +44,7 @@ const PublicationPage = () => {
           try {
             await makeRequest.post(`/publications/${publicationId}/view`);
 
-            const viewRes = await makeRequest.post(
-              `/publications/${publicationId}/view`
-            );
-            setViewsCount(viewRes.data.views);
+            setViewsCount((prev) => prev + 1);
           } catch (e) {
             console.error("Не удалось обновить просмотры", e);
           }
@@ -87,7 +84,7 @@ const PublicationPage = () => {
 
   const handleLike = async () => {
     if (!currentUser) {
-      alert("Войдите, чтобы оценить публикацию");
+      navigate("/login");
       return;
     }
 

@@ -594,3 +594,34 @@ BEGIN
     RAISE NOTICE '- Улучшенная структура таблиц';
     RAISE NOTICE '=========================================';
 END $$;
+
+DO $$
+BEGIN
+  -- Добавляем колонку parent_id если ее нет
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                WHERE table_name = 'comments' AND column_name = 'parent_id') THEN
+    ALTER TABLE comments ADD COLUMN parent_id BIGINT;
+    
+    -- Добавляем внешний ключ
+    ALTER TABLE comments ADD CONSTRAINT fk_comments_parent 
+      FOREIGN KEY (parent_id) REFERENCES comments(id) ON DELETE CASCADE;
+  END IF;
+  
+  -- Добавляем колонку likes если ее нет
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                WHERE table_name = 'comments' AND column_name = 'likes') THEN
+    ALTER TABLE comments ADD COLUMN likes INTEGER DEFAULT 0;
+  END IF;
+  
+  -- Добавляем колонку updated_at если ее нет
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                WHERE table_name = 'comments' AND column_name = 'updated_at') THEN
+    ALTER TABLE comments ADD COLUMN updated_at TIMESTAMPTZ DEFAULT now();
+  END IF;
+
+  -- NEW: Добавляем колонку is_edited
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                WHERE table_name = 'comments' AND column_name = 'is_edited') THEN
+    ALTER TABLE comments ADD COLUMN is_edited BOOLEAN DEFAULT FALSE;
+  END IF;
+END$$;

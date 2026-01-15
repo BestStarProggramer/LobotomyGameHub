@@ -67,21 +67,91 @@
         }
       }
 
-      .date {
-        color: #a0a0a0;
-        font-size: 12px;
+      .date-block {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+
+        .date {
+          color: #a0a0a0;
+          font-size: 12px;
+        }
+        .edited-label {
+          color: #6b2da8;
+          font-size: 11px;
+          font-style: italic;
+        }
       }
     }
 
     .comment-content {
       margin-bottom: 15px;
       padding: 0 5px;
+
       p {
         color: white;
         font-size: 15px;
         line-height: 1.5;
         margin: 0;
         white-space: pre-wrap;
+      }
+
+      .edit-area {
+        display: flex;
+        gap: 10px;
+
+        textarea {
+          flex: 1;
+          background-color: #2a2533;
+          border: 1px solid #53257d;
+          color: white;
+          border-radius: 5px;
+          padding: 10px;
+          font-family: inherit;
+          resize: vertical;
+          outline: none;
+          &:focus {
+            border-color: #6b2da8;
+          }
+        }
+
+        .edit-controls {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+
+          button {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+
+            &.save-btn {
+              background-color: #27ae60;
+              color: white;
+              &:hover {
+                background-color: #2ecc71;
+              }
+            }
+
+            &.cancel-btn {
+              background-color: #c0392b;
+              color: white;
+              &:hover {
+                background-color: #e74c3c;
+              }
+            }
+
+            svg {
+              font-size: 18px;
+            }
+          }
+        }
       }
     }
 
@@ -91,6 +161,7 @@
       gap: 20px;
       border-top: 1px solid #2a2533;
       padding-top: 10px;
+      min-height: 32px;
 
       .likes {
         display: flex;
@@ -141,15 +212,26 @@
           background-color: #2a2533;
           color: white;
         }
+      }
 
-        &.delete-btn {
-          margin-left: auto;
-          color: #ff4d4f;
-          border: 1px solid transparent;
+      .manage-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 5px;
 
+        .edit-btn {
+          color: white;
           &:hover {
-            background-color: rgba(255, 77, 79, 0.1);
-            border-color: #ff4d4f;
+            color: white;
+            background-color: #3498db;
+          }
+        }
+
+        .delete-btn {
+          color: #ff4d4f;
+          &:hover {
+            color: white;
+            background-color: #ff4d4f;
           }
         }
       }

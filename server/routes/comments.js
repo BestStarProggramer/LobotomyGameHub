@@ -3,6 +3,7 @@ import {
   getComments,
   addComment,
   deleteComment,
+  updateComment,
   toggleLike,
 } from "../controllers/comments.js";
 import { verifyToken } from "../middleware/auth.js";
@@ -23,9 +24,8 @@ router.get(
 );
 
 router.post("/:publicationId", verifyToken, addComment);
-
+router.put("/:commentId", verifyToken, updateComment); // NEW
 router.delete("/:commentId", verifyToken, deleteComment);
-
 router.post("/:commentId/like", verifyToken, toggleLike);
 
 export default router;

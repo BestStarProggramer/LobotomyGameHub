@@ -83,39 +83,74 @@
             font-size: 20px;
           }
         }
+
+        .rating-edit {
+          display: flex;
+          gap: 2px;
+          .star {
+            color: #555;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.1s;
+            &.active {
+              color: white;
+            }
+            &:hover {
+              transform: scale(1.1);
+            }
+          }
+        }
       }
     }
 
-    .date {
+    .date-section {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
 
-      p {
-        color: #a0a0a0;
-        font-size: 14px;
-        margin: 0;
+      .date-info {
+        text-align: right;
+        p {
+          color: #a0a0a0;
+          font-size: 14px;
+          margin: 0;
+        }
+        .edited-tag {
+          display: block;
+          color: #6b2da8;
+          font-size: 11px;
+          font-style: italic;
+        }
       }
 
-      .delete-btn {
-        background-color: transparent;
-        border: 1px solid #ff4d4f;
-        color: #ff4d4f;
-        border-radius: 6px;
-        padding: 6px 12px;
-        font-size: 14px;
-        cursor: pointer;
+      .actions {
         display: flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 150ms ease;
+        gap: 10px;
 
-        &:hover {
-          background-color: rgba(255, 77, 79, 0.1);
-        }
+        .icon-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 5px;
+          border-radius: 5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
 
-        &:active {
-          transform: translateY(1px);
+          &.edit-btn {
+            color: white;
+            &:hover {
+              background-color: rgba(52, 152, 219, 0.1);
+            }
+          }
+
+          &.delete-btn {
+            color: #ff4d4f;
+            &:hover {
+              background-color: rgba(255, 77, 79, 0.1);
+            }
+          }
         }
       }
     }
@@ -130,6 +165,59 @@
       color: white;
       font-size: 16px;
       line-height: 1.5;
+    }
+
+    .edit-area {
+      display: flex;
+      gap: 10px;
+
+      textarea {
+        flex: 1;
+        background-color: #2a2533;
+        border: 1px solid #53257d;
+        color: white;
+        border-radius: 8px;
+        padding: 10px;
+        font-family: inherit;
+        resize: vertical;
+        outline: none;
+        &:focus {
+          border-color: #6b2da8;
+        }
+      }
+
+      .edit-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+
+        button {
+          width: 35px;
+          height: 35px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+
+          &.save-btn {
+            background-color: #27ae60;
+            color: white;
+            &:hover {
+              background-color: #2ecc71;
+            }
+          }
+
+          &.cancel-btn {
+            background-color: #c0392b;
+            color: white;
+            &:hover {
+              background-color: #e74c3c;
+            }
+          }
+        }
+      }
     }
   }
 }

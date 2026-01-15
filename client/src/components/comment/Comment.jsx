@@ -1,12 +1,15 @@
 import "./comment.scss";
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import { makeRequest } from "../../axios";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import ReplyIcon from "@mui/icons-material/Reply";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 import CommentInput from "../commentinput/CommentInput";
 
 const Comment = ({
@@ -17,11 +20,19 @@ const Comment = ({
   depth = 0,
 }) => {
   const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [likesCount, setLikesCount] = useState(comment.likes_count);
   const [isLiked, setIsLiked] = useState(comment.is_liked);
   const [isReplying, setIsReplying] = useState(false);
 
-  const { id, user, created_at, content, children, parent_id } = comment;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [currentContent, setCurrentContent] = useState(comment.content);
+  const [isEdited, setIsEdited] = useState(comment.is_edited);
+  const [updatedAt, setUpdatedAt] = useState(comment.updated_at);
+
+  const { id, user, created_at, children, parent_id } = comment;
 
   const dateStr = new Date(created_at).toLocaleString("ru-RU", {
     day: "numeric",
@@ -31,8 +42,22 @@ const Comment = ({
     minute: "2-digit",
   });
 
+  const getEditedDate = () => {
+    if (!updatedAt) return null;
+    return new Date(updatedAt).toLocaleString("ru-RU", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const handleLike = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
 
     const prevLiked = isLiked;
     const prevCount = likesCount;
@@ -42,7 +67,6 @@ const Comment = ({
 
     try {
       const res = await makeRequest.post(`/comments/${id}/like`);
-
       setLikesCount(res.data.likesCount);
       setIsLiked(res.data.isLiked);
     } catch (err) {
@@ -52,7 +76,26 @@ const Comment = ({
     }
   };
 
+  const handleEdit = async () => {
+    if (!editContent.trim()) return;
+
+    try {
+      const res = await makeRequest.put(`/comments/${id}`, {
+        content: editContent,
+      });
+      setCurrentContent(editContent);
+      setIsEdited(res.data.is_edited);
+      setUpdatedAt(res.data.updated_at);
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+      alert("Не удалось сохранить изменения");
+    }
+  };
+
   const handleDelete = async () => {
+    if (!window.confirm("Удалить комментарий?")) return;
+
     try {
       await makeRequest.delete(`/comments/${id}`);
       onDelete(id);
@@ -98,6 +141,8 @@ const Comment = ({
 
   const isOwn = currentUser && currentUser.id === user.id;
   const isAdmin = currentUser?.role === "admin";
+
+  const canEdit = isOwn;
   const canDelete = isOwn || isAdmin;
 
   return (
@@ -111,11 +156,42 @@ const Comment = ({
             <img src={user.avatar} alt={user.username} />
             <span className="username">{user.username}</span>
           </Link>
-          <span className="date">{dateStr}</span>
+          <div className="date-block">
+            <span className="date">{dateStr}</span>
+            {isEdited && (
+              <span className="edited-label">
+                (Изменено: {getEditedDate()})
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="comment-content">
-          <p>{content}</p>
+          {isEditing ? (
+            <div className="edit-area">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={3}
+              />
+              <div className="edit-controls">
+                <button className="save-btn" onClick={handleEdit}>
+                  <CheckIcon />
+                </button>
+                <button
+                  className="cancel-btn"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditContent(currentContent);
+                  }}
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p>{currentContent}</p>
+          )}
         </div>
 
         <div className="comment-actions">
@@ -128,7 +204,7 @@ const Comment = ({
             <span>{likesCount}</span>
           </div>
 
-          {currentUser && (
+          {!isEditing && currentUser && (
             <button
               className="action-btn reply-btn"
               onClick={() => setIsReplying(!isReplying)}
@@ -138,12 +214,21 @@ const Comment = ({
             </button>
           )}
 
-          {canDelete && (
-            <button className="action-btn delete-btn" onClick={handleDelete}>
-              <DeleteIcon className="icon" />
-              Удалить
-            </button>
-          )}
+          <div className="manage-actions">
+            {canEdit && !isEditing && (
+              <button
+                className="action-btn edit-btn"
+                onClick={() => setIsEditing(true)}
+              >
+                <EditIcon className="icon" />
+              </button>
+            )}
+            {canDelete && !isEditing && (
+              <button className="action-btn delete-btn" onClick={handleDelete}>
+                <DeleteIcon className="icon" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
