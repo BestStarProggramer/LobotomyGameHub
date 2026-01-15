@@ -25,6 +25,7 @@ import Settings from "./pages/settings/Settings.jsx";
 import PublicationsWrite from "./pages/publications/Publications_write.jsx";
 import PublicationsEdit from "./pages/publications/Publications_edit.jsx";
 import UserReviews from "./pages/userreviews/UserReviews.jsx";
+import ScrollToTop from "./components/common/ScrollToTop.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -35,9 +36,13 @@ function App() {
   const Layout = () => {
     return (
       <QueryClientProvider client={queryClient}>
-        <div>
+        <div className="app-container">
           <Navbar />
-          <Outlet />
+          <main className="main-content">
+            <Outlet />
+          </main>
+
+          <ScrollToTop />
         </div>
       </QueryClientProvider>
     );
