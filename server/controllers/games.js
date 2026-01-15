@@ -259,7 +259,7 @@ export const getLocalGames = async (req, res) => {
       page = 1,
       page_size = 30,
       search: searchTerm,
-      ordering = "-created_at",
+      ordering = "-released",
       genres,
       dates,
       min_rating,
@@ -326,7 +326,7 @@ export const getLocalGames = async (req, res) => {
 
     const whereClause = whereConditions.join(" AND ");
 
-    let orderByClause = "g.created_at DESC";
+    let orderByClause = "g.release_date DESC";
     const field = ordering.startsWith("-") ? ordering.slice(1) : ordering;
     const direction = ordering.startsWith("-") ? "DESC" : "ASC";
 

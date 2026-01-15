@@ -100,14 +100,14 @@ const Games = () => {
           filters.orderDirection !== "desc";
 
         if (hasActiveFilters) {
-          let orderingParam = filters.orderBy;
-          if (filters.orderBy === "popularity") orderingParam = "-added";
-
-          if (
-            filters.orderDirection === "desc" &&
-            filters.orderBy !== "popularity"
-          ) {
-            orderingParam = `-${filters.orderBy}`;
+          let orderingParam;
+          if (filters.orderBy === "popularity") {
+            orderingParam = "-added";
+          } else {
+            const base =
+              filters.orderBy === "created" ? "released" : filters.orderBy;
+            orderingParam =
+              filters.orderDirection === "desc" ? `-${base}` : base;
           }
 
           let datesParam = null;
@@ -242,15 +242,23 @@ const Games = () => {
                   <Checkbox
                     checked={filters.localOnly}
                     onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        localOnly: e.target.checked,
-                        orderBy: e.target.checked
-                          ? prev.orderBy
-                          : prev.orderBy === "popularity"
-                          ? "released"
-                          : prev.orderBy,
-                      }))
+                      setFilters((prev) => {
+                        const newLocal = e.target.checked;
+                        let newOrderBy = prev.orderBy;
+
+                        if (
+                          !newLocal &&
+                          (prev.orderBy === "created" ||
+                            prev.orderBy === "popularity")
+                        ) {
+                          newOrderBy = "released";
+                        }
+                        return {
+                          ...prev,
+                          localOnly: newLocal,
+                          orderBy: newOrderBy,
+                        };
+                      })
                     }
                     sx={{
                       color: "#53257d",
@@ -273,7 +281,9 @@ const Games = () => {
                   >
                     <option value="name">Названию</option>
                     <option value="released">Дате выхода</option>
-                    <option value="created">Дате добавления</option>
+                    {filters.localOnly && (
+                      <option value="created">Дате добавления</option>
+                    )}
                     <option value="rating">Рейтингу</option>
                     {filters.localOnly && (
                       <option value="popularity">Популярности</option>
