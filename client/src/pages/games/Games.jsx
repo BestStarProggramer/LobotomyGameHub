@@ -40,6 +40,7 @@ const Games = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [filtersActivated, setFiltersActivated] = useState(false);
 
   const [filters, setFilters] = useState({
     localOnly: searchParams.get("localOnly") === "true",
@@ -92,6 +93,7 @@ const Games = () => {
         }
       } else {
         const hasActiveFilters =
+          filtersActivated ||
           searchTerm.trim() !== "" ||
           filters.selectedGenres.length > 0 ||
           filters.dateFrom ||
@@ -127,6 +129,7 @@ const Games = () => {
           }
 
           if (
+            filtersActivated ||
             filters.orderBy !== "released" ||
             filters.orderDirection !== "desc"
           ) {
@@ -165,8 +168,7 @@ const Games = () => {
 
   useEffect(() => {
     loadGames(1, true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
+  }, [filters, filtersActivated]);
 
   const handleSearch = () => {
     loadGames(1, true);
@@ -207,7 +209,12 @@ const Games = () => {
         <div className="games-page__search-bar-container">
           <div className="games-page__search">
             <button
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => {
+                if (!showFilters) {
+                  setFiltersActivated(true);
+                }
+                setShowFilters(!showFilters);
+              }}
               className={`filter-toggle-btn ${showFilters ? "active" : ""}`}
               title="Открыть фильтры"
             >
