@@ -1,123 +1,113 @@
 import "./home.scss";
-import MainGameCard from "../../components/maingamecard/MainGameCard";
-import GameBlock from "../../components/gameblock/GameBlock";
+import { useEffect, useState, useContext } from "react";
+import { Link } from "react-router-dom";
+import { makeRequest } from "../../axios";
+import { AuthContext } from "../../context/authContext";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
+import StarIcon from "@mui/icons-material/Star";
+import HorizontalScroller from "../../components/horizontalscroller/HorizontalScroller";
 
 const Home = () => {
-	// Заглушка для трендовой игры
-	const trendingGame = {
-		id: 1,
-		title: "Silent Hill f",
-		description:
-			"Родной город Хинако окутан туманом, что заставляет ее сражаться с гротескными монстрами и решать жуткие головоломки. Раскройте волнующую красоту, скрытую в ужасе.",
-		genres: ["Суравйвал хоррор", "Психологический хоррор"],
-		rating: 4.3,
-		imageUrl: "/img/game_poster.jpg",
-	};
+  const { currentUser } = useContext(AuthContext);
+  const [data, setData] = useState({
+    trending: null,
+    popular: [],
+    recent: [],
+    recommended: [],
+    userGenres: [],
+  });
+  const [loading, setLoading] = useState(true);
 
-	// Заглушки данных для списков
-	const recentlyAddedGames = [
-		{
-			id: 12,
-			title: "Elden Ring: Shadow",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 13,
-			title: "Stellar Blade",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 14,
-			title: "Final Fantasy VII Rebirth",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 15,
-			title: "Like a Dragon: Infinite Wealth",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 16,
-			title: "Persona 3 Reload",
-			imageUrl: "/img/game_poster.jpg",
-		},
-	];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await makeRequest.get("/games/home");
+        setData(res.data);
+      } catch (err) {
+        console.error("Failed to load home data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [currentUser]);
 
-	const popularGames = [
-		{
-			id: 2,
-			title: "Dying Light: The Beast",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 3,
-			title: "Borderlands 4",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 4,
-			title: "No, I'm not a Human",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 5,
-			title: "Hollow Knight: Silksong",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{ id: 6, title: "Ght", imageUrl: "/img/game_poster.jpg" },
-	];
+  if (loading) return <div className="home loading">Загрузка...</div>;
 
-	const recommendedGames = [
-		{
-			id: 7,
-			title: "Mесла chaos",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 8,
-			title: "WARSCREWDRIVER 42K",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 9,
-			title: "pakingo@RE",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 10,
-			title: "Длинное название",
-			imageUrl: "/img/game_poster.jpg",
-		},
-		{
-			id: 11,
-			title: "Cyberpunk 2077",
-			imageUrl: "/img/game_poster.jpg",
-		},
-	];
+  const recentLink = `/games?localOnly=true&orderBy=created&orderDirection=desc`;
+  const popularLink = `/games?localOnly=true&orderBy=popularity`;
 
-	return (
-		<div className="home">
-			<div className="container">
-				{/* Блок "Сейчас в тренде" */}
-				<section className="trending-section">
-					<h2>Сейчас в тренде</h2>
-					<MainGameCard game={trendingGame} />
-				</section>
+  let recommendedLink = `/games?localOnly=true&orderBy=rating&orderDirection=desc`;
+  if (data.userGenres && data.userGenres.length > 0) {
+    recommendedLink += `&genres=${data.userGenres.join(",")}`;
+  }
 
-				{/* Остальные блоки */}
-				<h2 className="section-title">
-					Недавно добавленные
-				</h2>
-				<GameBlock games={recentlyAddedGames} />
+  return (
+    <div className="home">
+      <div className="container">
+        {data.trending && (
+          <section className="trending-block">
+            <div className="block-title">
+              <WhatshotIcon className="icon-fire" />
+              <h1>В тренде</h1>
+            </div>
 
-				<h2 className="section-title">Популярные</h2>
-				<GameBlock games={popularGames} />
+            <div className="trending-card">
+              <div className="trending-banner">
+                <img
+                  src={data.trending.background_image || "/img/default.jpg"}
+                  alt={data.trending.title}
+                />
+                {data.trending.rating > 0 && (
+                  <div className="trending-rating">
+                    <span>{data.trending.rating}</span>
+                    <StarIcon />
+                  </div>
+                )}
+              </div>
 
-				<h2 className="section-title">Рекомендуемые</h2>
-				<GameBlock games={recommendedGames} />
-			</div>
-		</div>
-	);
+              <div className="trending-info">
+                <h2>{data.trending.title}</h2>
+                <p className="description">
+                  {data.trending.description || "Описание отсутствует."}
+                </p>
+
+                <div className="genres">
+                  {data.trending.genres?.map((g) => (
+                    <span key={g.id} className="genre-tag">
+                      {g.name}
+                    </span>
+                  ))}
+                </div>
+
+                <Link to={`/games/${data.trending.slug}`} className="open-btn">
+                  Открыть страницу игры
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <HorizontalScroller
+          games={data.recent}
+          title="Недавно добавленные"
+          linkTo={recentLink}
+        />
+
+        <HorizontalScroller
+          games={data.popular}
+          title="Популярные"
+          linkTo={popularLink}
+        />
+
+        <HorizontalScroller
+          games={data.recommended}
+          title="Рекомендуемые"
+          linkTo={recommendedLink}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default Home;

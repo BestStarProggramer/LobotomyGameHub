@@ -3,17 +3,15 @@ import {
   search,
   getLocalGames,
   getGameDetailsWithSync,
+  getHomeData,
 } from "../controllers/games.js";
+import { checkAuth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET /api/games/search?q=...&limit=10
+router.get("/home", checkAuth, getHomeData);
 router.get("/search", search);
-
-// GET /api/games/local?page=1&page_size=30&search=...
 router.get("/local", getLocalGames);
-
-// GET /api/games/details/:slug
 router.get("/details/:slug", getGameDetailsWithSync);
 
 export default router;

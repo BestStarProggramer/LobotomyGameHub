@@ -1,0 +1,108 @@
+.horizontal-scroller-section {
+  margin-top: 60px;
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 20px;
+
+    h2 {
+      color: white;
+      font-size: 32px;
+      margin: 0;
+      font-weight: bold;
+    }
+
+    .see-more-btn {
+      color: #53257d;
+      text-decoration: none;
+      font-weight: bold;
+      border: 1px solid #53257d;
+      padding: 8px 20px;
+      border-radius: 20px;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #53257d;
+        color: white;
+      }
+    }
+  }
+
+  .scroller-container {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 20px; /* Space for scrollbar */
+    scroll-behavior: smooth;
+
+    /* Custom Scrollbar */
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #1c151e;
+      border-radius: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #53257d;
+      border-radius: 4px;
+    }
+
+    .game-card-item {
+      flex: 0 0 200px; /* Fixed width for standard card */
+
+      a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .poster {
+        width: 100%;
+        height: 280px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 10px;
+        border: 2px solid #53257d;
+        transition: transform 0.2s, border-color 0.2s;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      &:hover .poster {
+        transform: translateY(-5px);
+        border-color: #6b2da8;
+      }
+
+      .game-title {
+        color: white;
+        font-size: 16px;
+        margin: 0 0 5px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .rating {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #a0a0a0;
+        font-size: 14px;
+
+        .star {
+          font-size: 16px;
+          color: white;
+        }
+      }
+    }
+  }
+}

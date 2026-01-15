@@ -36,170 +36,6 @@ export const search = async (req, res) => {
   }
 };
 
-export const getLocalGames = async (req, res) => {
-  try {
-    const {
-      page = 1,
-      page_size = 30,
-      search: searchTerm,
-      ordering = "-created_at",
-      genres,
-      dates,
-      min_rating,
-    } = req.query;
-
-    const pageNum = parseInt(page, 10);
-    const pageSize = Math.min(parseInt(page_size, 10), 50);
-    const offset = (pageNum - 1) * pageSize;
-
-    let sql = `
-      SELECT 
-        g.id, 
-        g.title, 
-        g.slug,
-        g.background_image,
-        g.rating,
-        g.release_date as released,
-        g.description,
-        g.created_at,
-        (
-          SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
-          FROM game_genres gg
-          JOIN genres gr ON gg.genre_id = gr.id
-          WHERE gg.game_id = g.id
-        ) as genres
-      FROM games g
-      WHERE 1=1
-    `;
-
-    const params = [];
-    let paramCount = 1;
-
-    if (searchTerm) {
-      sql += ` AND g.title ILIKE $${paramCount}`;
-      params.push(`%${searchTerm}%`);
-      paramCount++;
-    }
-
-    if (genres) {
-      const genreList = genres.split(",").map((g) => g.trim().toLowerCase());
-      if (genreList.length > 0) {
-        sql += ` AND EXISTS (
-          SELECT 1 FROM game_genres gg_f 
-          JOIN genres gr_f ON gg_f.genre_id = gr_f.id 
-          WHERE gg_f.game_id = g.id 
-          AND LOWER(gr_f.name) = ANY($${paramCount}::text[])
-        )`;
-        params.push(genreList);
-        paramCount++;
-      }
-    }
-
-    if (dates) {
-      const [start, end] = dates.split(",");
-      if (start && end) {
-        sql += ` AND g.release_date BETWEEN $${paramCount} AND $${
-          paramCount + 1
-        }`;
-        params.push(start, end);
-        paramCount += 2;
-      }
-    }
-
-    if (min_rating) {
-      const ratingVal = parseFloat(min_rating);
-      if (!isNaN(ratingVal)) {
-        sql += ` AND g.rating >= $${paramCount}`;
-        params.push(ratingVal);
-        paramCount++;
-      }
-    }
-
-    let orderBy = "g.created_at DESC";
-
-    const field = ordering.startsWith("-") ? ordering.slice(1) : ordering;
-    const direction = ordering.startsWith("-") ? "DESC" : "ASC";
-
-    if (field === "name" || field === "title") orderBy = `g.title ${direction}`;
-    else if (field === "rating") orderBy = `g.rating ${direction}`;
-    else if (field === "released") orderBy = `g.release_date ${direction}`;
-    else if (field === "created") orderBy = `g.created_at ${direction}`;
-
-    sql += ` ORDER BY ${orderBy} NULLS LAST`;
-    sql += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
-    params.push(pageSize, offset);
-
-    let countSql = `SELECT COUNT(*) as total FROM games g WHERE 1=1`;
-    const countParams = [];
-    let countPCount = 1;
-
-    if (searchTerm) {
-      countSql += ` AND g.title ILIKE $${countPCount}`;
-      countParams.push(`%${searchTerm}%`);
-      countPCount++;
-    }
-    if (genres) {
-      const genreList = genres.split(",").map((g) => g.trim().toLowerCase());
-      if (genreList.length > 0) {
-        countSql += ` AND EXISTS (
-          SELECT 1 FROM game_genres gg_f 
-          JOIN genres gr_f ON gg_f.genre_id = gr_f.id 
-          WHERE gg_f.game_id = g.id 
-          AND LOWER(gr_f.name) = ANY($${countPCount}::text[])
-        )`;
-        countParams.push(genreList);
-        countPCount++;
-      }
-    }
-    if (dates) {
-      const [start, end] = dates.split(",");
-      if (start && end) {
-        countSql += ` AND g.release_date BETWEEN $${countPCount} AND $${
-          countPCount + 1
-        }`;
-        countParams.push(start, end);
-        countPCount += 2;
-      }
-    }
-    if (min_rating) {
-      const ratingVal = parseFloat(min_rating);
-      if (!isNaN(ratingVal)) {
-        countSql += ` AND g.rating >= $${countPCount}`;
-        countParams.push(ratingVal);
-        countPCount++;
-      }
-    }
-
-    const { rows } = await query(sql, params);
-    const countResult = await query(countSql, countParams);
-    const totalCount = parseInt(countResult.rows[0].total, 10);
-
-    const results = rows.map((game) => ({
-      slug: game.slug || `game-${game.id}`,
-      title: game.title,
-      name: game.title,
-      background_image: game.background_image || null,
-      rating: parseFloat(game.rating) || 0,
-      released: game.released || null,
-      description: game.description || "",
-      genres: (game.genres || []).map((g) => ({ id: g.id, name: g.name })),
-    }));
-
-    return res.status(200).json({
-      count: totalCount,
-      next: pageNum * pageSize < totalCount ? pageNum + 1 : null,
-      previous: pageNum > 1 ? pageNum - 1 : null,
-      results: results,
-    });
-  } catch (err) {
-    console.error("Ошибка при получении локальных игр:", err);
-    return res.status(500).json({
-      error: "Ошибка сервера при получении игр",
-      details: err.message,
-    });
-  }
-};
-
 export const getGameDetailsWithSync = async (req, res) => {
   const { slug } = req.params;
 
@@ -322,5 +158,213 @@ export const getGameDetailsWithSync = async (req, res) => {
       error: "Не удалось получить или сохранить данные игры",
       details: err.message,
     });
+  }
+};
+
+const activityScoreJoin = `
+  LEFT JOIN reviews r_act ON g.id = r_act.game_id 
+  AND r_act.created_at >= NOW() - INTERVAL '24 HOURS'
+`;
+
+export const getHomeData = async (req, res) => {
+  try {
+    const userId = req.userInfo?.id;
+
+    const trendingSql = `
+      SELECT 
+        g.id, g.title, g.slug, g.background_image, g.rating, g.description,
+        (
+          SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
+          FROM game_genres gg
+          JOIN genres gr ON gg.genre_id = gr.id
+          WHERE gg.game_id = g.id
+        ) as genres,
+        COUNT(r_act.id) as activity_score
+      FROM games g
+      ${activityScoreJoin}
+      GROUP BY g.id
+      ORDER BY activity_score DESC, g.rating DESC
+      LIMIT 20
+    `;
+
+    const recentSql = `
+      SELECT id, title, slug, background_image, rating
+      FROM games
+      ORDER BY created_at DESC
+      LIMIT 20
+    `;
+
+    let recommendedSql = `
+      SELECT DISTINCT g.id, g.title, g.slug, g.background_image, g.rating
+      FROM games g
+    `;
+    const recParams = [];
+
+    if (userId) {
+      const genreRes = await query(
+        `SELECT g.name FROM favorites_genres fg JOIN genres g ON fg.genre_id = g.id WHERE fg.user_id = $1`,
+        [userId]
+      );
+      const genreNames = genreRes.rows.map((r) => r.name);
+
+      if (genreNames.length > 0) {
+        recommendedSql += `
+          JOIN game_genres gg ON g.id = gg.game_id
+          JOIN genres gr ON gg.genre_id = gr.id
+          WHERE gr.name = ANY($1::text[]) AND g.rating > 0
+        `;
+        recParams.push(genreNames);
+      } else {
+        recommendedSql += ` WHERE g.rating > 0 `;
+      }
+    } else {
+      recommendedSql += ` WHERE g.rating > 0 `;
+    }
+
+    recommendedSql += ` ORDER BY g.rating DESC LIMIT 20`;
+
+    const [trendingRes, recentRes, recRes] = await Promise.all([
+      query(trendingSql),
+      query(recentSql),
+      query(recommendedSql, recParams),
+    ]);
+
+    const trendingGame =
+      trendingRes.rows.length > 0 ? trendingRes.rows[0] : null;
+    const popularGames = trendingRes.rows;
+    const recentGames = recentRes.rows;
+    const recommendedGames = recRes.rows;
+
+    if (trendingGame && trendingGame.description) {
+      const text = trendingGame.description.replace(/<[^>]*>?/gm, "");
+      trendingGame.description =
+        text.length > 200 ? text.slice(0, 200) + "..." : text;
+    }
+
+    return res.status(200).json({
+      trending: trendingGame,
+      popular: popularGames,
+      recent: recentGames,
+      recommended: recommendedGames,
+      userGenres: recParams.length > 0 ? recParams[0] : [],
+    });
+  } catch (err) {
+    console.error("Error fetching home data:", err);
+    return res.status(500).json({ error: "Server error fetching home data" });
+  }
+};
+
+export const getLocalGames = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      page_size = 30,
+      search: searchTerm,
+      ordering = "-created_at",
+      genres,
+      dates,
+      min_rating,
+    } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const pageSize = Math.min(parseInt(page_size, 10), 50);
+    const offset = (pageNum - 1) * pageSize;
+
+    let sql = `
+      SELECT 
+        g.id, g.title, g.slug, g.background_image, g.rating, g.release_date as released,
+        g.description, g.created_at,
+        COUNT(r_act.id) as activity_score, -- For popularity sort
+        (
+          SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
+          FROM game_genres gg
+          JOIN genres gr ON gg.genre_id = gr.id
+          WHERE gg.game_id = g.id
+        ) as genres
+      FROM games g
+      LEFT JOIN reviews r_act ON g.id = r_act.game_id AND r_act.created_at >= NOW() - INTERVAL '24 HOURS'
+      WHERE 1=1
+    `;
+
+    const params = [];
+    let paramCount = 1;
+
+    if (searchTerm) {
+      sql += ` AND g.title ILIKE $${paramCount}`;
+      params.push(`%${searchTerm}%`);
+      paramCount++;
+    }
+    if (genres) {
+      const genreList = genres.split(",").map((g) => g.trim().toLowerCase());
+      if (genreList.length > 0) {
+        sql += ` AND EXISTS (
+            SELECT 1 FROM game_genres gg_f 
+            JOIN genres gr_f ON gg_f.genre_id = gr_f.id 
+            WHERE gg_f.game_id = g.id 
+            AND LOWER(gr_f.name) = ANY($${paramCount}::text[])
+          )`;
+        params.push(genreList);
+        paramCount++;
+      }
+    }
+    if (dates) {
+      const [start, end] = dates.split(",");
+      if (start && end) {
+        sql += ` AND g.release_date BETWEEN $${paramCount} AND $${
+          paramCount + 1
+        }`;
+        params.push(start, end);
+        paramCount += 2;
+      }
+    }
+    if (min_rating) {
+      const ratingVal = parseFloat(min_rating);
+      if (!isNaN(ratingVal)) {
+        sql += ` AND g.rating >= $${paramCount}`;
+        params.push(ratingVal);
+        paramCount++;
+      }
+    }
+
+    sql += ` GROUP BY g.id `;
+
+    let orderBy = "g.created_at DESC";
+    const field = ordering.startsWith("-") ? ordering.slice(1) : ordering;
+    const direction = ordering.startsWith("-") ? "DESC" : "ASC";
+
+    if (field === "name" || field === "title") orderBy = `g.title ${direction}`;
+    else if (field === "rating") orderBy = `g.rating ${direction}`;
+    else if (field === "released") orderBy = `g.release_date ${direction}`;
+    else if (field === "created") orderBy = `g.created_at ${direction}`;
+    else if (field === "popularity")
+      orderBy = `activity_score DESC, g.rating DESC`;
+
+    sql += ` ORDER BY ${orderBy} NULLS LAST`;
+    sql += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    params.push(pageSize, offset);
+
+    let countSql = `SELECT COUNT(*) as total FROM games g WHERE 1=1`;
+
+    const countParams = params.slice(0, paramCount - 1);
+
+    const { rows } = await query(sql, params);
+    const countResult = await query(countSql, countParams);
+    const totalCount = parseInt(countResult.rows[0].total, 10);
+
+    const results = rows.map((game) => ({
+      ...game,
+
+      rating: parseFloat(game.rating) || 0,
+    }));
+
+    return res.status(200).json({
+      count: totalCount,
+      next: pageNum * pageSize < totalCount ? pageNum + 1 : null,
+      previous: pageNum > 1 ? pageNum - 1 : null,
+      results: results,
+    });
+  } catch (err) {
+    console.error("Error getting local games:", err);
+    return res.status(500).json({ error: "Server error" });
   }
 };

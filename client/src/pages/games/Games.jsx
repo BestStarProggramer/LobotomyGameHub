@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { fetchGamesList } from "../../utils/rawg.js";
 import { fetchLocalGamesList } from "../../utils/localGames.js";
 import GamesGrid from "../../components/gamesgrid/GamesGrid";
@@ -31,21 +32,24 @@ const AVAILABLE_GENRES = [
 ];
 
 const Games = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [games, setGames] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [showFilters, setShowFilters] = useState(false);
 
   const [filters, setFilters] = useState({
-    localOnly: false,
-    selectedGenres: [],
+    localOnly: searchParams.get("localOnly") === "true",
+    selectedGenres: searchParams.get("genres")
+      ? searchParams.get("genres").split(",")
+      : [],
     dateFrom: "",
     dateTo: "",
-    orderBy: "released",
-    orderDirection: "desc",
+    orderBy: searchParams.get("orderBy") || "released",
+    orderDirection: searchParams.get("orderDirection") || "desc",
     minRating: "",
   });
 
@@ -61,7 +65,9 @@ const Games = () => {
           queryParams.search = searchTerm;
         }
 
-        if (
+        if (filters.orderBy === "popularity") {
+          queryParams.ordering = "popularity";
+        } else if (
           filters.orderBy !== "released" ||
           filters.orderDirection !== "desc"
         ) {
@@ -98,7 +104,12 @@ const Games = () => {
 
         if (hasActiveFilters) {
           let orderingParam = filters.orderBy;
-          if (filters.orderDirection === "desc") {
+          if (filters.orderBy === "popularity") orderingParam = "-added";
+
+          if (
+            filters.orderDirection === "desc" &&
+            filters.orderBy !== "popularity"
+          ) {
             orderingParam = `-${filters.orderBy}`;
           }
 
@@ -136,9 +147,7 @@ const Games = () => {
       }
 
       const fetcher = filters.localOnly ? fetchLocalGamesList : fetchGamesList;
-
       const data = await fetcher(pageNumber, 30, queryParams);
-
       const items = data.results ?? data.games ?? data;
 
       setGames((prev) => (reset ? items : [...prev, ...items]));
@@ -233,6 +242,12 @@ const Games = () => {
                       setFilters((prev) => ({
                         ...prev,
                         localOnly: e.target.checked,
+
+                        orderBy: e.target.checked
+                          ? prev.orderBy
+                          : prev.orderBy === "popularity"
+                          ? "released"
+                          : prev.orderBy,
                       }))
                     }
                     sx={{
@@ -256,25 +271,32 @@ const Games = () => {
                   >
                     <option value="name">Названию</option>
                     <option value="released">Дате выхода</option>
+                    <option value="created">Дате добавления</option>
                     <option value="rating">Рейтингу</option>
+
+                    {filters.localOnly && (
+                      <option value="popularity">Популярности</option>
+                    )}
                   </select>
                 </div>
 
-                <div className="control-group">
-                  <label>Порядок</label>
-                  <select
-                    value={filters.orderDirection}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        orderDirection: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="desc">По убыванию</option>
-                    <option value="asc">По возрастанию</option>
-                  </select>
-                </div>
+                {filters.orderBy !== "popularity" && (
+                  <div className="control-group">
+                    <label>Порядок</label>
+                    <select
+                      value={filters.orderDirection}
+                      onChange={(e) =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          orderDirection: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="desc">По убыванию</option>
+                      <option value="asc">По возрастанию</option>
+                    </select>
+                  </div>
+                )}
 
                 {filters.localOnly && (
                   <div className="control-group">
