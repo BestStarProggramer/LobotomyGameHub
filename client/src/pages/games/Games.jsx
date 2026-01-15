@@ -79,10 +79,7 @@ const Games = () => {
         }
 
         if (filters.selectedGenres.length > 0) {
-          let genresParam = filters.selectedGenres
-            .map((g) => g.toLowerCase().replace(/\s+/g, "-"))
-            .join(",");
-          queryParams.genres = genresParam;
+          queryParams.genres = filters.selectedGenres.join(",");
         }
 
         if (filters.dateFrom && filters.dateTo) {
@@ -151,7 +148,13 @@ const Games = () => {
       const items = data.results ?? data.games ?? data;
 
       setGames((prev) => (reset ? items : [...prev, ...items]));
-      setHasMore(items.length === 30);
+
+      if (data.count !== undefined) {
+        setHasMore(games.length + items.length < data.count);
+      } else {
+        setHasMore(items.length === 30);
+      }
+
       setPage(pageNumber);
     } catch (error) {
       console.error("Ошибка загрузки игр:", error);
@@ -242,7 +245,6 @@ const Games = () => {
                       setFilters((prev) => ({
                         ...prev,
                         localOnly: e.target.checked,
-
                         orderBy: e.target.checked
                           ? prev.orderBy
                           : prev.orderBy === "popularity"
@@ -273,7 +275,6 @@ const Games = () => {
                     <option value="released">Дате выхода</option>
                     <option value="created">Дате добавления</option>
                     <option value="rating">Рейтингу</option>
-
                     {filters.localOnly && (
                       <option value="popularity">Популярности</option>
                     )}

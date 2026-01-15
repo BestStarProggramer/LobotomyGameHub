@@ -253,7 +253,6 @@ export const getHomeData = async (req, res) => {
     return res.status(500).json({ error: "Server error fetching home data" });
   }
 };
-
 export const getLocalGames = async (req, res) => {
   try {
     const {
@@ -270,11 +269,81 @@ export const getLocalGames = async (req, res) => {
     const pageSize = Math.min(parseInt(page_size, 10), 50);
     const offset = (pageNum - 1) * pageSize;
 
-    let sql = `
+    const whereConditions = ["1=1"];
+    const params = [];
+    let paramCount = 1;
+
+    if (searchTerm) {
+      whereConditions.push(`g.title ILIKE $${paramCount}`);
+      params.push(`%${searchTerm}%`);
+      paramCount++;
+    }
+
+    if (genres) {
+      let genreList = [];
+      if (typeof genres === "string") {
+        genreList = genres
+          .split(",")
+          .map((g) => g.trim())
+          .filter((g) => g.length > 0);
+      } else if (Array.isArray(genres)) {
+        genreList = genres
+          .map((g) => String(g).trim())
+          .filter((g) => g.length > 0);
+      }
+
+      if (genreList.length > 0) {
+        whereConditions.push(`EXISTS (
+            SELECT 1 FROM game_genres gg_f 
+            JOIN genres gr_f ON gg_f.genre_id = gr_f.id 
+            WHERE gg_f.game_id = g.id 
+            AND LOWER(gr_f.name) = ANY(SELECT LOWER(unnest($${paramCount}::text[])))
+          )`);
+        params.push(genreList);
+        paramCount++;
+      }
+    }
+
+    if (dates) {
+      const [start, end] = dates.split(",");
+      if (start && end) {
+        whereConditions.push(
+          `g.release_date BETWEEN $${paramCount} AND $${paramCount + 1}`
+        );
+        params.push(start, end);
+        paramCount += 2;
+      }
+    }
+
+    if (min_rating) {
+      const ratingVal = parseFloat(min_rating);
+      if (!isNaN(ratingVal)) {
+        whereConditions.push(`g.rating >= $${paramCount}`);
+        params.push(ratingVal);
+        paramCount++;
+      }
+    }
+
+    const whereClause = whereConditions.join(" AND ");
+
+    let orderByClause = "g.created_at DESC";
+    const field = ordering.startsWith("-") ? ordering.slice(1) : ordering;
+    const direction = ordering.startsWith("-") ? "DESC" : "ASC";
+
+    if (field === "name" || field === "title")
+      orderByClause = `g.title ${direction}`;
+    else if (field === "rating") orderByClause = `g.rating ${direction}`;
+    else if (field === "released")
+      orderByClause = `g.release_date ${direction}`;
+    else if (field === "created") orderByClause = `g.created_at ${direction}`;
+    else if (field === "popularity")
+      orderByClause = `activity_score DESC, g.rating DESC`;
+
+    const dataSql = `
       SELECT 
         g.id, g.title, g.slug, g.background_image, g.rating, g.release_date as released,
         g.description, g.created_at,
-        COUNT(r_act.id) as activity_score, -- For popularity sort
+        COUNT(r_act.id) as activity_score,
         (
           SELECT json_agg(json_build_object('id', gr.id, 'name', gr.name))
           FROM game_genres gg
@@ -283,77 +352,28 @@ export const getLocalGames = async (req, res) => {
         ) as genres
       FROM games g
       LEFT JOIN reviews r_act ON g.id = r_act.game_id AND r_act.created_at >= NOW() - INTERVAL '24 HOURS'
-      WHERE 1=1
+      WHERE ${whereClause}
+      GROUP BY g.id
+      ORDER BY ${orderByClause} NULLS LAST
+      LIMIT $${paramCount} OFFSET $${paramCount + 1}
     `;
 
-    const params = [];
-    let paramCount = 1;
+    const countSql = `
+      SELECT COUNT(DISTINCT g.id) as total
+      FROM games g
+      WHERE ${whereClause}
+    `;
 
-    if (searchTerm) {
-      sql += ` AND g.title ILIKE $${paramCount}`;
-      params.push(`%${searchTerm}%`);
-      paramCount++;
-    }
-    if (genres) {
-      const genreList = genres.split(",").map((g) => g.trim().toLowerCase());
-      if (genreList.length > 0) {
-        sql += ` AND EXISTS (
-            SELECT 1 FROM game_genres gg_f 
-            JOIN genres gr_f ON gg_f.genre_id = gr_f.id 
-            WHERE gg_f.game_id = g.id 
-            AND LOWER(gr_f.name) = ANY($${paramCount}::text[])
-          )`;
-        params.push(genreList);
-        paramCount++;
-      }
-    }
-    if (dates) {
-      const [start, end] = dates.split(",");
-      if (start && end) {
-        sql += ` AND g.release_date BETWEEN $${paramCount} AND $${
-          paramCount + 1
-        }`;
-        params.push(start, end);
-        paramCount += 2;
-      }
-    }
-    if (min_rating) {
-      const ratingVal = parseFloat(min_rating);
-      if (!isNaN(ratingVal)) {
-        sql += ` AND g.rating >= $${paramCount}`;
-        params.push(ratingVal);
-        paramCount++;
-      }
-    }
+    const dataParams = [...params, pageSize, offset];
 
-    sql += ` GROUP BY g.id `;
+    const [dataRes, countRes] = await Promise.all([
+      query(dataSql, dataParams),
+      query(countSql, params),
+    ]);
 
-    let orderBy = "g.created_at DESC";
-    const field = ordering.startsWith("-") ? ordering.slice(1) : ordering;
-    const direction = ordering.startsWith("-") ? "DESC" : "ASC";
-
-    if (field === "name" || field === "title") orderBy = `g.title ${direction}`;
-    else if (field === "rating") orderBy = `g.rating ${direction}`;
-    else if (field === "released") orderBy = `g.release_date ${direction}`;
-    else if (field === "created") orderBy = `g.created_at ${direction}`;
-    else if (field === "popularity")
-      orderBy = `activity_score DESC, g.rating DESC`;
-
-    sql += ` ORDER BY ${orderBy} NULLS LAST`;
-    sql += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
-    params.push(pageSize, offset);
-
-    let countSql = `SELECT COUNT(*) as total FROM games g WHERE 1=1`;
-
-    const countParams = params.slice(0, paramCount - 1);
-
-    const { rows } = await query(sql, params);
-    const countResult = await query(countSql, countParams);
-    const totalCount = parseInt(countResult.rows[0].total, 10);
-
-    const results = rows.map((game) => ({
+    const totalCount = parseInt(countRes.rows[0]?.total || "0", 10);
+    const results = dataRes.rows.map((game) => ({
       ...game,
-
       rating: parseFloat(game.rating) || 0,
     }));
 
