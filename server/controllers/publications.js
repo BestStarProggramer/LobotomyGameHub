@@ -29,7 +29,8 @@ const processContentImages = (content, publicationId) => {
 
     if (fs.existsSync(tempAbsPath)) {
       try {
-        fs.renameSync(tempAbsPath, targetAbsPath);
+        fs.copyFileSync(tempAbsPath, targetAbsPath);
+        fs.unlinkSync(tempAbsPath);
       } catch (e) {
         console.error(`Error moving file ${filename}:`, e);
       }
@@ -77,7 +78,8 @@ export const uploadPublicationImage = async (req, res) => {
     )}${ext}`;
     const targetPath = path.join(absDir, fileName);
 
-    fs.renameSync(req.file.path, targetPath);
+    fs.copyFileSync(req.file.path, targetPath);
+    fs.unlinkSync(req.file.path);
 
     const fileUrl = `${relDir}/${fileName}`;
     return res.status(200).json({ url: fileUrl });
@@ -246,7 +248,8 @@ export const addPublication = async (req, res) => {
       const ext = path.extname(req.file.originalname);
       const newFileName = `cover${ext}`;
       const newPathAbs = path.join(pubDirAbs, newFileName);
-      fs.renameSync(req.file.path, newPathAbs);
+      fs.copyFileSync(req.file.path, newPathAbs);
+      fs.unlinkSync(req.file.path);
       dbImagePath = path.join(pubDirRel, newFileName).replace(/\\/g, "/");
     }
 
@@ -296,7 +299,8 @@ export const updatePublication = async (req, res) => {
       const ext = path.extname(req.file.originalname);
       const newFileName = `cover_${Date.now()}${ext}`;
       const newPathAbs = path.join(pubDirAbs, newFileName);
-      fs.renameSync(req.file.path, newPathAbs);
+      fs.copyFileSync(req.file.path, newPathAbs);
+      fs.unlinkSync(req.file.path);
 
       if (pub.image && pub.image.startsWith("/upload/")) {
         const oldPath = path.join(CLIENT_PUBLIC_DIR, pub.image);
