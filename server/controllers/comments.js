@@ -16,6 +16,7 @@ export const getComments = async (req, res) => {
         c.likes as likes_count,
         u.id as user_id, 
         u.username, 
+        u.role,
         u.avatar_url,
         CASE 
           WHEN $2::bigint IS NOT NULL THEN 
@@ -42,6 +43,7 @@ export const getComments = async (req, res) => {
       user: {
         id: row.user_id,
         username: row.username,
+        role: row.role,
         avatar: row.avatar_url || "/img/default-avatar.jpg",
       },
     }));
@@ -60,6 +62,7 @@ export const addComment = async (req, res) => {
     const { publicationId } = req.params;
     let { content, parentId } = req.body;
     const userId = req.userInfo.id;
+    const userRole = req.userInfo.role;
 
     if (!content || !content.trim()) {
       return res
@@ -126,6 +129,7 @@ export const addComment = async (req, res) => {
       user: {
         id: userId,
         username: req.userInfo.username,
+        role: userRole,
         avatar: req.userInfo.avatar_url,
       },
     });

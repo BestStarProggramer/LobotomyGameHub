@@ -141,6 +141,7 @@ export const getReviewsByGame = async (req, res) => {
       username: r.username,
       user_id: r.user_id,
       avatar: r.avatar_url,
+      role: r.role,
       rating: r.rating,
       content: r.content,
       created_at: r.created_at,
@@ -163,7 +164,7 @@ export const getAllReviews = async (req, res) => {
 
     const q = `
       SELECT r.id, r.rating, r.content, r.created_at, r.updated_at, r.is_edited,
-             u.id as user_id, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar_url,
+             u.id as user_id, u.role, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar_url,
              g.id as game_id, g.title as game_title
       FROM reviews r
       JOIN users u ON r.user_id = u.id
@@ -178,6 +179,7 @@ export const getAllReviews = async (req, res) => {
       username: r.username,
       user_id: r.user_id,
       avatar: r.avatar_url,
+      role: r.role,
       rating: r.rating,
       content: r.content,
       created_at: r.created_at,
@@ -206,7 +208,7 @@ export const getReviewsByUser = async (req, res) => {
       SELECT r.id, r.rating, r.content, r.created_at, r.updated_at, r.is_edited,
              g.id as game_id, g.title as game_title, g.slug as game_slug, 
              g.background_image as game_image,
-             u.id as user_id, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar
+             u.id as user_id, u.role, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar
       FROM reviews r
       JOIN games g ON r.game_id = g.id
       JOIN users u ON r.user_id = u.id
@@ -226,6 +228,7 @@ export const getReviewsByUser = async (req, res) => {
       is_edited: r.is_edited,
       user_id: r.user_id,
       username: r.username,
+      role: r.role,
       avatar: r.avatar,
 
       game: {

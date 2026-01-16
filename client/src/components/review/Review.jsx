@@ -37,9 +37,12 @@ const Review = ({ review, onDelete, hideDelete = false }) => {
   const canEdit = isOwn;
   const canDelete = isOwn || isAdmin;
   const roleConfig = getRoleConfig(review.role || "user");
-  const containerClass = `review ${roleConfig.className} ${
-    roleConfig.className ? "role-border" : ""
-  }`;
+
+  const authorClass = !isProfileView
+    ? `author ${roleConfig.className} ${
+        roleConfig.className ? "role-border" : ""
+      }`
+    : "author game-link";
 
   const getEditedDate = () => {
     if (!updatedAt) return null;
@@ -70,20 +73,18 @@ const Review = ({ review, onDelete, hideDelete = false }) => {
     <div className="review">
       <div className="upper">
         <div className="left_side">
-          {isProfileView ? (
-            <Link to={linkTarget} className="author game-link">
-              <img src={displayImage} alt={displayName} className="game-img" />
-              <span>{displayName}</span>
-            </Link>
-          ) : (
-            <Link to={linkTarget} className="author">
-              <img src={displayImage} alt="avatar" />
-              <span>{displayName}</span>
-              {!isProfileView && roleConfig.label && (
-                <span className="role-badge">{roleConfig.label}</span>
-              )}
-            </Link>
-          )}
+          <Link to={linkTarget} className={authorClass}>
+            <img
+              src={displayImage}
+              alt={displayName}
+              className={isProfileView ? "game-img" : ""}
+            />
+            <span>{displayName}</span>
+
+            {!isProfileView && roleConfig.label && (
+              <span className="role-badge">{roleConfig.label}</span>
+            )}
+          </Link>
 
           <div className="rating">
             {isEditing ? (

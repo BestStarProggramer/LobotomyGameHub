@@ -37,7 +37,8 @@ const Comment = ({
   const [updatedAt, setUpdatedAt] = useState(comment.updated_at);
 
   const { id, user, created_at, children, parent_id } = comment;
-  const containerClass = `comment-card ${roleConfig.className} ${
+
+  const authorClass = `author-info ${roleConfig.className} ${
     roleConfig.className ? "role-border" : ""
   }`;
 
@@ -163,7 +164,7 @@ const Comment = ({
     >
       <div className="comment-card">
         <div className="comment-header">
-          <Link to={`/profile/${user.id}`} className="author-info">
+          <Link to={`/profile/${user.id}`} className={authorClass}>
             <img src={user.avatar} alt={user.username} />
             <span className="username">{user.username}</span>
             {roleConfig.label && (

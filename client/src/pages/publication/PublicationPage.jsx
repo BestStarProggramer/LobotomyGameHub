@@ -168,6 +168,15 @@ const PublicationPage = () => {
                       alt={publication.author.username}
                     />
                     <span>{publication.author.username}</span>
+
+                    {authorRoleConfig.label && (
+                      <span
+                        className="role-badge"
+                        style={{ color: "white", borderColor: "white" }}
+                      >
+                        {authorRoleConfig.label}
+                      </span>
+                    )}
                   </Link>
 
                   <div className="date-badge">

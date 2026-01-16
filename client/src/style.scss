@@ -1,14 +1,17 @@
-:root {
-  --color-role-admin: #e67e22;
-  --color-role-moderator: #2980b9;
-  --color-role-staff: #27ae60;
-  --color-role-user: #53257d;
-}
+$color-admin: #e67e22;
+$color-moderator: #2980b9;
+$color-staff: #27ae60;
+$color-user: #53257d;
 
 @mixin role-styles($color) {
   &.role-border {
-    border-color: $color !important;
-    box-shadow: 0 0 10px rgba($color, 0.15);
+    border: 2px solid $color !important;
+    box-shadow: 0 0 10px rgba($color, 0.25);
+
+    &:hover {
+      border-color: lighten($color, 10%) !important;
+      background-color: rgba($color, 0.05) !important;
+    }
   }
 
   .role-badge {
@@ -19,15 +22,15 @@
 }
 
 .role-admin {
-  @include role-styles(var(--color-role-admin));
+  @include role-styles($color-admin);
 }
 
 .role-moderator {
-  @include role-styles(var(--color-role-moderator));
+  @include role-styles($color-moderator);
 }
 
 .role-staff {
-  @include role-styles(var(--color-role-staff));
+  @include role-styles($color-staff);
 }
 
 .role-badge {
