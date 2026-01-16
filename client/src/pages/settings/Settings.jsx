@@ -191,28 +191,30 @@ const Settings = () => {
       <div className="settings__container">
         <h1 className="settings__title">Настройки профиля</h1>
 
-        {currentUser && currentUser.role === "admin" && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginBottom: "20px",
-            }}
-          >
-            <button
-              className="settings__button settings__button--primary"
-              onClick={() => navigate("/admin")}
+        {currentUser &&
+          (currentUser.role === "admin" ||
+            currentUser?.role === "moderator") && (
+            <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                background: "#e67e22",
+                justifyContent: "center",
+                marginBottom: "20px",
               }}
             >
-              <AdminPanelSettingsIcon /> Админ панель
-            </button>
-          </div>
-        )}
+              <button
+                className="settings__button settings__button--primary"
+                onClick={() => navigate("/admin")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  background: "#e67e22",
+                }}
+              >
+                <AdminPanelSettingsIcon /> Админ панель
+              </button>
+            </div>
+          )}
 
         {loading && (
           <div className="settings__message settings__message--loading">

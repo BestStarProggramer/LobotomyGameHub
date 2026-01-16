@@ -1,11 +1,14 @@
 .admin-panel {
   padding: 40px;
-  background-color: #1a1621;
+  background-image: url("~/public/img/background.png");
   min-height: 100vh;
   color: white;
 
   .admin-container {
     max-width: 1100px;
+    background-color: #201d27;
+    border-radius: 16px;
+    padding: 30px 40px;
     margin: 0 auto;
 
     .admin-header {
@@ -200,6 +203,38 @@
           text-transform: uppercase;
         }
       }
+    }
+  }
+}
+
+.user-link-wrapper {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+    .username-text {
+      text-decoration: underline; // Подсказка пользователю, что текст кликабелен
+    }
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid #3d374a;
+    }
+
+    .username-text {
+      font-weight: 500;
     }
   }
 }

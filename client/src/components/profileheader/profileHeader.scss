@@ -9,6 +9,7 @@ body {
 $color-purple: #53257d;
 $color-gray: #a0a0a0;
 $color-staff-green: #27ae60;
+$color-moderator-blue: #2980b9;
 $color-admin-orange: #f39c12;
 
 .profile-header {
@@ -79,6 +80,11 @@ $color-admin-orange: #f39c12;
     &--admin {
       border: 2px solid $color-admin-orange;
       color: $color-admin-orange;
+    }
+
+    &--moderator {
+      border: 2px solid $color-moderator-blue;
+      color: $color-moderator-blue;
     }
   }
 

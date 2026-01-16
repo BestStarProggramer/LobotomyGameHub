@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS users (
   CONSTRAINT uq_users_username UNIQUE (username),
   CONSTRAINT uq_users_email UNIQUE (email)
 );
-
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'moderator';
+  ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'staff';
 -- Добавляем отсутствующие колонки в users если они есть
 DO $$
 BEGIN
@@ -44,8 +45,8 @@ BEGIN
   END IF;
   
 
-  ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'moderator';
-  ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'staff';
+  
+  
 
   -- Добавляем колонку rated_games если ее нет
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 

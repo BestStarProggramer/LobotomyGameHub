@@ -3,6 +3,7 @@ import { useEffect, useState, useContext } from "react";
 import { makeRequest } from "../../axios";
 import { AuthContext } from "../../context/authContext";
 import { ModalContext } from "../../context/modalContext";
+import { Link } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -102,13 +103,18 @@ const AdminPanel = () => {
               {filteredUsers.map((user) => (
                 <tr key={user.id}>
                   <td>
-                    <div className="user-info">
-                      <img
-                        src={user.avatar_url || "/img/default-avatar.jpg"}
-                        alt=""
-                      />
-                      <span>{user.username}</span>
-                    </div>
+                    <Link
+                      to={`/profile/${user.id}`}
+                      className="user-link-wrapper"
+                    >
+                      <div className="user-info">
+                        <img
+                          src={user.avatar_url || "/img/default-avatar.jpg"}
+                          alt={user.username}
+                        />
+                        <span className="username-text">{user.username}</span>
+                      </div>
+                    </Link>
                   </td>
                   <td>{user.email}</td>
                   <td>
