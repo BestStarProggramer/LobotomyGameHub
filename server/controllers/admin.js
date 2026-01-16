@@ -1,13 +1,29 @@
 import { query } from "../db.js";
 
+const ROLE_WEIGHTS = {
+  user: 1,
+  staff: 10,
+  moderator: 50,
+  admin: 100,
+};
+
 export const getAllUsers = async (req, res) => {
   try {
-    const q = `
+    const { search } = req.query;
+    let q = `
       SELECT id, username, email, role, created_at, avatar_url 
       FROM users 
-      ORDER BY id ASC
     `;
-    const { rows } = await query(q);
+    const params = [];
+
+    if (search) {
+      q += ` WHERE username ILIKE $1 OR email ILIKE $1 `;
+      params.push(`%${search}%`);
+    }
+
+    q += ` ORDER BY id ASC`;
+
+    const { rows } = await query(q, params);
     return res.status(200).json(rows);
   } catch (err) {
     console.error("Error fetching users:", err);
@@ -15,32 +31,80 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const toggleUserRole = async (req, res) => {
+export const updateUserRole = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, newRole } = req.body;
+    const requester = req.userInfo;
+
+    if (!ROLE_WEIGHTS[newRole]) {
+      return res.status(400).json({ error: "Недопустимая роль в системе" });
+    }
+
+    const userRes = await query("SELECT id, role FROM users WHERE id = $1", [
+      userId,
+    ]);
+    if (userRes.rows.length === 0)
+      return res.status(404).json("Пользователь не найден");
+
+    const targetUser = userRes.rows[0];
+
+    if (Number(requester.id) === Number(userId)) {
+      return res
+        .status(403)
+        .json({ error: "Вы не можете менять роль самому себе" });
+    }
+
+    if (ROLE_WEIGHTS[requester.role] <= ROLE_WEIGHTS[targetUser.role]) {
+      return res
+        .status(403)
+        .json({ error: "Недостаточно прав для изменения этого пользователя" });
+    }
+
+    if (ROLE_WEIGHTS[newRole] > ROLE_WEIGHTS[requester.role]) {
+      return res
+        .status(403)
+        .json({ error: "Вы не можете назначить роль выше вашей" });
+    }
+
+    await query(`UPDATE users SET role = $1::user_role WHERE id = $2`, [
+      newRole,
+      userId,
+    ]);
+
+    return res
+      .status(200)
+      .json({ message: "Роль успешно обновлена", role: newRole });
+  } catch (err) {
+    console.error("Admin Controller Error:", err);
+
+    return res.status(500).json({
+      error: "Ошибка БД при обновлении роли. Проверьте тип user_role.",
+    });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requester = req.userInfo;
 
     const userRes = await query("SELECT role FROM users WHERE id = $1", [
       userId,
     ]);
-    if (userRes.rows.length === 0) {
-      return res.status(404).json({ error: "Пользователь не найден" });
-    }
+    if (userRes.rows.length === 0)
+      return res.status(404).json("Пользователь не найден");
 
-    const currentRole = userRes.rows[0].role;
+    const targetRole = userRes.rows[0].role;
 
-    if (currentRole === "admin") {
+    if (ROLE_WEIGHTS[requester.role] <= ROLE_WEIGHTS[targetRole]) {
       return res
-        .status(400)
-        .json({ error: "Нельзя изменить роль администратора" });
+        .status(403)
+        .json({ error: "У вас нет прав на удаление этого пользователя" });
     }
 
-    const newRole = currentRole === "staff" ? "user" : "staff";
-
-    await query("UPDATE users SET role = $1 WHERE id = $2", [newRole, userId]);
-
-    return res.status(200).json({ message: "Роль обновлена", newRole });
+    await query("DELETE FROM users WHERE id = $1", [userId]);
+    return res.status(200).json("Пользователь удален");
   } catch (err) {
-    console.error("Error toggling role:", err);
-    return res.status(500).json({ error: "Ошибка сервера" });
+    return res.status(500).json(err);
   }
 };

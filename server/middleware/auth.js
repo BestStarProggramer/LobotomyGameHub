@@ -5,7 +5,6 @@ const JWT_EXPIRES = process.env.JWT_EXPIRES || "30d";
 
 const cookieOptions = {
   httpOnly: true,
-
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -26,19 +25,6 @@ export const verifyToken = (req, res, next) => {
       }
 
       req.userInfo = decoded;
-
-      const payload = {
-        id: decoded.id,
-        username: decoded.username,
-        role: decoded.role,
-      };
-
-      const newToken = jwt.sign(payload, SECRET_KEY, {
-        expiresIn: JWT_EXPIRES,
-      });
-
-      res.cookie("accessToken", newToken, cookieOptions);
-
       next();
     });
   } catch (err) {
@@ -49,12 +35,10 @@ export const verifyToken = (req, res, next) => {
 
 export const checkAuth = (req, res, next) => {
   const token = req.cookies?.accessToken;
-
   if (!token) {
     req.userInfo = null;
     return next();
   }
-
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
       req.userInfo = null;
@@ -63,4 +47,15 @@ export const checkAuth = (req, res, next) => {
     }
     next();
   });
+};
+
+export const verifyDashboardAccess = (req, res, next) => {
+  if (
+    req.userInfo &&
+    (req.userInfo.role === "admin" || req.userInfo.role === "moderator")
+  ) {
+    next();
+  } else {
+    return res.status(403).json({ error: "Доступ запрещен" });
+  }
 };

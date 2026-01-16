@@ -20,8 +20,13 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      ...inputs,
+    };
+
     try {
-      await login(inputs);
+      await login(payload);
       navigate("/");
     } catch (err) {
       if (err.response && err.response.data) {
@@ -40,10 +45,16 @@ const Login = () => {
         <div className="left">
           <div className="form-wrapper">
             <h1>Вход</h1>
-            <form>
+            <form onSubmit={handleLogin}>
               <div className="field">
-                <h2>Email</h2>
-                <input type="email" name="email" onChange={handleChange} />
+                <h2>Email или Логин</h2>
+
+                <input
+                  type="text"
+                  name="email"
+                  onChange={handleChange}
+                  autoFocus
+                />
               </div>
               <div className="field">
                 <h2>Пароль</h2>
@@ -63,20 +74,16 @@ const Login = () => {
                   <div className="error-message">
                     {typeof err === "string"
                       ? err
-                      : err.error || "Ошибка регистрации"}
+                      : err.error || "Ошибка входа"}
                   </div>
                 )}
-                <button
-                  className="button-link"
-                  onClick={handleLogin}
-                  type="button"
-                >
+
+                <button className="button-link" type="submit">
                   Войти
                 </button>
               </div>
             </form>
           </div>
-
           <div className="register-wrapper">
             <div className="register-inner">
               <span>Нет аккаунта?</span>
@@ -86,7 +93,6 @@ const Login = () => {
             </div>
           </div>
         </div>
-
         <div className="right">
           <Link to="/">
             <img src="/img/logo.png" alt="Лого сайта" />

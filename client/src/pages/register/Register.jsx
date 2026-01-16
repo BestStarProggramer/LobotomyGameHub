@@ -25,15 +25,14 @@ const Register = () => {
       await axios.post("http://localhost:8800/api/auth/register", inputs);
       navigate("/login");
     } catch (err) {
-      setErr(err.response?.data || "Что-то пошло не так");
+      setErr(err.response?.data?.error || "Что-то пошло не так");
     }
   };
 
   const handleCardSubmit = (e) => {
     e.preventDefault();
-
     setTimeout(() => {
-      setErr("Что-то пошло не так");
+      setErr("Ошибка эмуляции карты");
     }, 500);
   };
 
@@ -89,7 +88,7 @@ const Register = () => {
                 </div>
               </form>
             ) : (
-              <form>
+              <form onSubmit={handleClick}>
                 <div className="field">
                   <h2>Имя</h2>
                   <input type="text" name="username" onChange={handleChange} />
@@ -114,11 +113,7 @@ const Register = () => {
                         : err.error || "Ошибка регистрации"}
                     </div>
                   )}
-                  <button
-                    className="button-link"
-                    onClick={handleClick}
-                    type="button"
-                  >
+                  <button className="button-link" type="submit">
                     Зарегистрироваться
                   </button>
 

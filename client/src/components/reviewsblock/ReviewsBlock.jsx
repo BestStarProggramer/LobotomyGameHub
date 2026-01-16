@@ -11,6 +11,7 @@ import {
   useMemo,
 } from "react";
 import { AuthContext } from "../../context/authContext";
+import { ModalContext } from "../../context/modalContext";
 import { makeRequest } from "../../axios";
 
 const ReviewsBlock = ({
@@ -25,6 +26,7 @@ const ReviewsBlock = ({
 }) => {
   const [localReviews, setLocalReviews] = useState(reviews || []);
   const { currentUser } = useContext(AuthContext);
+  const { openModal } = useContext(ModalContext);
 
   const pageRef = useRef(0);
   const pageSize = initialLimit || 5;
@@ -121,15 +123,8 @@ const ReviewsBlock = ({
 
   const handleReviewSubmit = async (reviewData) => {
     const user = currentUserRef.current;
-    if (!user) {
-      console.error("Пользователь не авторизован");
-      return;
-    }
-
-    if (!gameId) {
-      console.error("gameId отсутствует");
-      return;
-    }
+    if (!user) return;
+    if (!gameId) return;
 
     try {
       const payload = {
@@ -156,27 +151,31 @@ const ReviewsBlock = ({
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
+  const handleDeleteReview = (reviewId) => {
     if (!gameId || !reviewId) return;
-    try {
-      await makeRequest.delete(`reviews/game/${gameId}/${reviewId}`);
-      setLocalReviews((prev) => prev.filter((r) => r.id !== reviewId));
-    } catch (err) {
-      console.error("Ошибка удаления отзыва:", err.response?.data || err);
-      alert("Не удалось удалить отзыв");
-    }
+
+    openModal(
+      "Удаление отзыва",
+      "Вы действительно хотите удалить этот отзыв?",
+      async () => {
+        try {
+          await makeRequest.delete(`reviews/game/${gameId}/${reviewId}`);
+          setLocalReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        } catch (err) {
+          console.error("Ошибка удаления отзыва:", err.response?.data || err);
+        }
+      }
+    );
   };
 
   const sortedReviews = useMemo(() => {
     if (!currentUser) return localReviews;
-
     const userReview = localReviews.find(
       (r) => Number(r.user_id) === Number(currentUser.id)
     );
     const otherReviews = localReviews.filter(
       (r) => Number(r.user_id) !== Number(currentUser.id)
     );
-
     return userReview ? [userReview, ...otherReviews] : localReviews;
   }, [localReviews, currentUser]);
 
@@ -189,9 +188,7 @@ const ReviewsBlock = ({
 
   const shouldShowReviewInputContainer = useMemo(() => {
     if (!currentUser) return true;
-
     if (!hasUserReview) return true;
-
     return false;
   }, [currentUser, hasUserReview]);
 
@@ -199,7 +196,6 @@ const ReviewsBlock = ({
     <div className="reviews_section">
       <div className="top">
         <h1>Отзывы</h1>
-
         {buttonText && buttonLink && (
           <Link to={buttonLink} className="button_reviews">
             <p>{buttonText}</p>
@@ -212,36 +208,9 @@ const ReviewsBlock = ({
           {!currentUser ? (
             <div className="guest-review-block">
               <div className="blur-overlay"></div>
-
               <div className="review-form-preview">
-                <textarea
-                  className="preview-textarea"
-                  placeholder="Напишите ваш отзыв..."
-                  rows="4"
-                  disabled
-                />
-
-                <div className="rating-section preview">
-                  <div className="stars">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span key={star} className="star preview">
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <span className="rating-text preview">Поставьте оценку</span>
-                </div>
-
-                <div className="review-actions preview">
-                  <button className="submit-btn preview" disabled>
-                    Отправить
-                  </button>
-                  <button className="cancel-btn preview" disabled>
-                    Отмена
-                  </button>
-                </div>
+                <textarea className="preview-textarea" rows="4" disabled />
               </div>
-
               <div className="guest-message">
                 <Link to="/login" className="login-button">
                   Войдите, чтобы оставить отзыв
@@ -261,7 +230,6 @@ const ReviewsBlock = ({
           currentUserId={currentUser?.id}
           hideDelete={false}
         />
-
         {infinite && hasMore && (
           <div ref={sentinelRef} className="loading-indicator">
             {loadingMore ? "Загрузка..." : "Прокрутите вниз для загрузки..."}

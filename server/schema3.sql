@@ -43,6 +43,10 @@ BEGIN
     ALTER TABLE users ADD COLUMN bio TEXT;
   END IF;
   
+
+  ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'moderator';
+  ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'staff';
+
   -- Добавляем колонку rated_games если ее нет
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                 WHERE table_name = 'users' AND column_name = 'rated_games') THEN

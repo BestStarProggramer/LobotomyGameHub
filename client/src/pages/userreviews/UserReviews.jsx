@@ -5,10 +5,13 @@ import axios from "axios";
 import ReviewsList from "../../components/reviewslist/ReviewsList";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { AuthContext } from "../../context/authContext";
+import { ModalContext } from "../../context/modalContext";
 
 const UserReviews = () => {
   const { UserId } = useParams();
   const { currentUser } = useContext(AuthContext);
+  const { openModal } = useContext(ModalContext);
+
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
@@ -30,11 +33,9 @@ const UserReviews = () => {
         );
         setUserName(res.data.username || "пользователя");
       } catch (err) {
-        console.error("Ошибка загрузки имени пользователя:", err);
         setUserName("пользователя");
       }
     };
-
     fetchUserName();
   }, [UserId]);
 
@@ -45,58 +46,45 @@ const UserReviews = () => {
         const res = await axios.get(
           `http://localhost:8800/api/reviews/user/${UserId}?limit=${PAGE_SIZE}&offset=${offset}`
         );
-
         const mappedReviews = res.data.map((r) => ({
           ...r,
           date: new Date(r.created_at).toLocaleDateString("ru-RU"),
           user_id: r.user_id || UserId,
         }));
-
-        if (mappedReviews.length < PAGE_SIZE) {
-          setHasMore(false);
-        }
-
+        if (mappedReviews.length < PAGE_SIZE) setHasMore(false);
         setReviews((prev) =>
           page === 1 ? mappedReviews : [...prev, ...mappedReviews]
         );
         setLoading(false);
       } catch (err) {
-        console.error("Error fetching user reviews:", err);
         setLoading(false);
       }
     };
-
     fetchReviews();
   }, [UserId, page]);
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!reviewId || !canDelete) {
-      console.log("Cannot delete: permission denied");
-      return;
-    }
+  const handleDeleteReview = (reviewId) => {
+    if (!reviewId || !canDelete) return;
 
-    try {
-      const reviewToDelete = reviews.find((r) => r.id === reviewId);
-      if (!reviewToDelete) {
-        alert("Отзыв не найден");
-        return;
-      }
+    openModal(
+      "Удаление отзыва",
+      "Вы действительно хотите удалить этот отзыв?",
+      async () => {
+        try {
+          const reviewToDelete = reviews.find((r) => r.id === reviewId);
+          if (!reviewToDelete) return;
 
-      await axios.delete(
-        `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
-        {
-          withCredentials: true,
+          await axios.delete(
+            `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
+            { withCredentials: true }
+          );
+
+          setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        } catch (err) {
+          console.error("Error deleting review:", err);
         }
-      );
-
-      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-    } catch (err) {
-      console.error("Error deleting review:", err.response?.data || err);
-      alert(
-        "Не удалось удалить отзыв: " +
-          (err.response?.data?.error || err.message)
-      );
-    }
+      }
+    );
   };
 
   return (
@@ -132,7 +120,6 @@ const UserReviews = () => {
                 </button>
               </div>
             )}
-
             {reviews.length === 0 && !loading && (
               <div className="no-data">Отзывов пока нет</div>
             )}

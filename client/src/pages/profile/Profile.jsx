@@ -2,12 +2,14 @@ import "./profile.scss";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
+import { ModalContext } from "../../context/modalContext";
 import ProfileHeader from "../../components/profileheader/ProfileHeader";
 import ReviewsList from "../../components/reviewslist/ReviewsList";
 import axios from "axios";
 
 const Profile = () => {
   const { currentUser } = useContext(AuthContext);
+  const { openModal } = useContext(ModalContext);
   const navigate = useNavigate();
   const { UserId } = useParams();
 
@@ -33,7 +35,6 @@ const Profile = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         const userRes = await axios.get(
           `http://localhost:8800/api/auth/user/${targetUserId}`
         );
@@ -43,10 +44,8 @@ const Profile = () => {
           const genresRes = await axios.get(
             `http://localhost:8800/api/auth/user/${targetUserId}/genres`
           );
-          const genres = genresRes.data;
-          setFavoriteGenres(genres || []);
+          setFavoriteGenres(genresRes.data || []);
         } catch (genresErr) {
-          console.log("Не удалось загрузить жанры:", genresErr);
           setFavoriteGenres([]);
         }
 
@@ -74,7 +73,7 @@ const Profile = () => {
         }));
         setReviews(mappedReviews);
       } catch (err) {
-        console.error("Error loading profile:", err.response?.data || err);
+        console.error("Error loading profile:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -84,43 +83,28 @@ const Profile = () => {
     fetchData();
   }, [targetUserId, navigate, UserId]);
 
-  useEffect(() => {
-    if (profileData) {
-      setProfileData((prev) => ({
-        ...prev,
-        favoriteGenres: favoriteGenres,
-      }));
-    }
-  }, [favoriteGenres]);
+  const handleDeleteReview = (reviewId) => {
+    if (!reviewId || !canDelete) return;
 
-  const handleDeleteReview = async (reviewId) => {
-    if (!reviewId || !canDelete) {
-      console.log("Cannot delete: no reviewId or permission denied");
-      return;
-    }
+    openModal(
+      "Удаление отзыва",
+      "Вы действительно хотите удалить этот отзыв?",
+      async () => {
+        try {
+          const reviewToDelete = reviews.find((r) => r.id === reviewId);
+          if (!reviewToDelete) return;
 
-    try {
-      const reviewToDelete = reviews.find((r) => r.id === reviewId);
-      if (!reviewToDelete) {
-        alert("Отзыв не найден");
-        return;
-      }
+          await axios.delete(
+            `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
+            { withCredentials: true }
+          );
 
-      await axios.delete(
-        `http://localhost:8800/api/reviews/game/${reviewToDelete.game?.id}/${reviewId}`,
-        {
-          withCredentials: true,
+          setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        } catch (err) {
+          console.error("Error deleting review:", err);
         }
-      );
-
-      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
-    } catch (err) {
-      console.error("Error deleting review:", err.response?.data || err);
-      alert(
-        "Не удалось удалить отзыв: " +
-          (err.response?.data?.error || err.message)
-      );
-    }
+      }
+    );
   };
 
   if (loading) return <div className="profile">Загрузка...</div>;
