@@ -79,7 +79,7 @@ const Review = ({ review, onDelete, hideDelete = false }) => {
               alt={displayName}
               className={isProfileView ? "game-img" : ""}
             />
-            <span>{displayName}</span>
+            <span className="display-name">{displayName}</span>
 
             {!isProfileView && roleConfig.label && (
               <span className="role-badge">{roleConfig.label}</span>

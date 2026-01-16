@@ -1,6 +1,6 @@
 export const ROLE_CONFIG = {
   admin: { label: "Admin", className: "role-admin" },
-  moderator: { label: "Mod", className: "role-moderator" },
+  moderator: { label: "Moderator", className: "role-moderator" },
   staff: { label: "Staff", className: "role-staff" },
   user: { label: "", className: "" },
 };

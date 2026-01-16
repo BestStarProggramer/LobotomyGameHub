@@ -167,7 +167,9 @@ const PublicationPage = () => {
                       src={publication.author.avatar}
                       alt={publication.author.username}
                     />
-                    <span>{publication.author.username}</span>
+                    <span className="username">
+                      {publication.author.username}
+                    </span>
                   </Link>
 
                   <div className="date-badge">
