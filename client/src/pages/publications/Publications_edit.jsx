@@ -19,6 +19,7 @@ function PublicationsEdit() {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState("news");
+  const [limitError, setLimitError] = useState("");
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -207,10 +208,30 @@ function PublicationsEdit() {
                 <div className="game-search-box">
                   <input
                     type="text"
+                    placeholder={
+                      selectedGames.length >= 4
+                        ? "Лимит игр исчерпан"
+                        : "Поиск игры для добавления..."
+                    }
                     value={gameSearch}
                     onChange={(e) => setGameSearch(e.target.value)}
-                    placeholder="Поиск игры..."
+                    disabled={selectedGames.length >= 4}
                   />
+                  {limitError && (
+                    <div
+                      style={{
+                        color: "#ff4d4f",
+                        fontSize: "13px",
+                        marginTop: "5px",
+                        padding: "5px",
+                        border: "1px solid #ff4d4f",
+                        borderRadius: "4px",
+                        background: "rgba(255, 77, 79, 0.1)",
+                      }}
+                    >
+                      {limitError}
+                    </div>
+                  )}
                   {showDropdown && (
                     <div className="dropdown">
                       {gameOptions.map((g) => (

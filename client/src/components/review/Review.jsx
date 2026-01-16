@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { useState, useContext } from "react";
 import { AuthContext } from "../../context/authContext";
 import { makeRequest } from "../../axios";
+import { getRoleConfig } from "../../utils/roles";
 
 const Review = ({ review, onDelete, hideDelete = false }) => {
   const { currentUser } = useContext(AuthContext);
@@ -35,6 +36,10 @@ const Review = ({ review, onDelete, hideDelete = false }) => {
 
   const canEdit = isOwn;
   const canDelete = isOwn || isAdmin;
+  const roleConfig = getRoleConfig(review.role || "user");
+  const containerClass = `review ${roleConfig.className} ${
+    roleConfig.className ? "role-border" : ""
+  }`;
 
   const getEditedDate = () => {
     if (!updatedAt) return null;
@@ -74,6 +79,9 @@ const Review = ({ review, onDelete, hideDelete = false }) => {
             <Link to={linkTarget} className="author">
               <img src={displayImage} alt="avatar" />
               <span>{displayName}</span>
+              {!isProfileView && roleConfig.label && (
+                <span className="role-badge">{roleConfig.label}</span>
+              )}
             </Link>
           )}
 

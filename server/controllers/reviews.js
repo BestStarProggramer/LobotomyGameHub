@@ -127,7 +127,7 @@ export const getReviewsByGame = async (req, res) => {
 
     const q = `
       SELECT r.id, r.rating, r.content, r.created_at, r.updated_at, r.is_edited,
-             u.id as user_id, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar_url
+             u.id as user_id, u.role, u.username, COALESCE(u.avatar_url, '/img/default-avatar.jpg') as avatar_url
       FROM reviews r
       JOIN users u ON r.user_id = u.id
       WHERE r.game_id = $1

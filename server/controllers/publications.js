@@ -202,6 +202,12 @@ export const addPublication = async (req, res) => {
         .filter((id) => id);
     }
 
+    if (gamesArray.length > 4) {
+      return res
+        .status(400)
+        .json({ error: "Максимальное количество игр в публикации: 4" });
+    }
+
     await client.query("BEGIN");
 
     const initialQ = `
@@ -288,6 +294,12 @@ export const updatePublication = async (req, res) => {
         .split(",")
         .map((id) => id.trim())
         .filter((id) => id);
+    }
+
+    if (gamesArray.length > 4) {
+      return res
+        .status(400)
+        .json({ error: "Максимальное количество игр в публикации: 4" });
     }
 
     const processedContent = processContentImages(content, id);

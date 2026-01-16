@@ -6,6 +6,7 @@ import PublicationSection from "../../components/publicationsection/PublicationS
 import CommentBlock from "../../components/commentblock/CommentBlock";
 import { AuthContext } from "../../context/authContext";
 import { ModalContext } from "../../context/modalContext";
+import { getRoleConfig } from "../../utils/roles";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -137,6 +138,12 @@ const PublicationPage = () => {
     );
   }
 
+  const authorRoleConfig = getRoleConfig(publication.author.role || "user");
+
+  const authorLinkClass = `author-link ${authorRoleConfig.className} ${
+    authorRoleConfig.className ? "role-border" : ""
+  }`;
+
   return (
     <div className="publication-page">
       <div className="banner">
@@ -154,7 +161,7 @@ const PublicationPage = () => {
                 <div className="meta-row">
                   <Link
                     to={`/profile/${publication.author.id}`}
-                    className="author-link"
+                    className={authorLinkClass}
                   >
                     <img
                       src={publication.author.avatar}

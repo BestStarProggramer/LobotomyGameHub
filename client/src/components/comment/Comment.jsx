@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import { makeRequest } from "../../axios";
 import { ModalContext } from "../../context/modalContext";
+import { getRoleConfig } from "../../utils/roles";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -23,6 +24,7 @@ const Comment = ({
   const { openModal } = useContext(ModalContext);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const roleConfig = getRoleConfig(comment.user.role);
 
   const [likesCount, setLikesCount] = useState(comment.likes_count);
   const [isLiked, setIsLiked] = useState(comment.is_liked);
@@ -35,6 +37,9 @@ const Comment = ({
   const [updatedAt, setUpdatedAt] = useState(comment.updated_at);
 
   const { id, user, created_at, children, parent_id } = comment;
+  const containerClass = `comment-card ${roleConfig.className} ${
+    roleConfig.className ? "role-border" : ""
+  }`;
 
   const dateStr = new Date(created_at).toLocaleString("ru-RU", {
     day: "numeric",
@@ -161,6 +166,9 @@ const Comment = ({
           <Link to={`/profile/${user.id}`} className="author-info">
             <img src={user.avatar} alt={user.username} />
             <span className="username">{user.username}</span>
+            {roleConfig.label && (
+              <span className="role-badge">{roleConfig.label}</span>
+            )}
           </Link>
           <div className="date-block">
             <span className="date">{dateStr}</span>

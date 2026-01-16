@@ -1,0 +1,44 @@
+:root {
+  --color-role-admin: #e67e22;
+  --color-role-moderator: #2980b9;
+  --color-role-staff: #27ae60;
+  --color-role-user: #53257d;
+}
+
+@mixin role-styles($color) {
+  &.role-border {
+    border-color: $color !important;
+    box-shadow: 0 0 10px rgba($color, 0.15);
+  }
+
+  .role-badge {
+    color: $color;
+    border: 1px solid $color;
+    background-color: rgba($color, 0.1);
+  }
+}
+
+.role-admin {
+  @include role-styles(var(--color-role-admin));
+}
+
+.role-moderator {
+  @include role-styles(var(--color-role-moderator));
+}
+
+.role-staff {
+  @include role-styles(var(--color-role-staff));
+}
+
+.role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+  user-select: none;
+  line-height: 1.4;
+}

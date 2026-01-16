@@ -7,6 +7,7 @@ import "./publications_create.scss";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import Alert from "@mui/material/Alert";
 
 function PublicationsWrite() {
   const editorRef = useRef(null);
@@ -16,6 +17,7 @@ function PublicationsWrite() {
 
   const [title, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState("news");
+  const [limitError, setLimitError] = useState("");
   const [file, setFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -58,8 +60,16 @@ function PublicationsWrite() {
   }, [gameSearch]);
 
   const addGame = (game) => {
+    if (selectedGames.length >= 4) {
+      setLimitError("Достигнут лимит: нельзя выбрать более 4 игр.");
+
+      setTimeout(() => setLimitError(""), 3000);
+      return;
+    }
+
     if (!selectedGames.find((g) => g.id === game.id)) {
       setSelectedGames([...selectedGames, game]);
+      setLimitError("");
     }
     setGameSearch("");
     setShowDropdown(false);
@@ -67,6 +77,7 @@ function PublicationsWrite() {
 
   const removeGame = (gameId) => {
     setSelectedGames(selectedGames.filter((g) => g.id !== gameId));
+    setLimitError("");
   };
 
   const handleFileChange = (e) => {
@@ -174,10 +185,30 @@ function PublicationsWrite() {
                 <div className="game-search-box">
                   <input
                     type="text"
-                    placeholder="Поиск игры для добавления..."
+                    placeholder={
+                      selectedGames.length >= 4
+                        ? "Лимит игр исчерпан"
+                        : "Поиск игры для добавления..."
+                    }
                     value={gameSearch}
                     onChange={(e) => setGameSearch(e.target.value)}
+                    disabled={selectedGames.length >= 4}
                   />
+                  {limitError && (
+                    <div
+                      style={{
+                        color: "#ff4d4f",
+                        fontSize: "13px",
+                        marginTop: "5px",
+                        padding: "5px",
+                        border: "1px solid #ff4d4f",
+                        borderRadius: "4px",
+                        background: "rgba(255, 77, 79, 0.1)",
+                      }}
+                    >
+                      {limitError}
+                    </div>
+                  )}
                   {showDropdown && (
                     <div className="dropdown">
                       {gameOptions.map((g) => (

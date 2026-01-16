@@ -4,6 +4,7 @@ import { makeRequest } from "../../axios";
 import { AuthContext } from "../../context/authContext";
 import { ModalContext } from "../../context/modalContext";
 import { Link } from "react-router-dom";
+import { getRoleConfig } from "../../utils/roles";
 import SearchIcon from "@mui/icons-material/Search";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -100,54 +101,64 @@ const AdminPanel = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <Link
-                      to={`/profile/${user.id}`}
-                      className="user-link-wrapper"
-                    >
-                      <div className="user-info">
-                        <img
-                          src={user.avatar_url || "/img/default-avatar.jpg"}
-                          alt={user.username}
-                        />
-                        <span className="username-text">{user.username}</span>
+              {filteredUsers.map((user) => {
+                const roleConfig = getRoleConfig(user.role);
+                // Apply border class to the Link wrapper inside the cell
+                const linkClass = `user-link-wrapper ${roleConfig.className} ${
+                  roleConfig.className ? "role-border" : ""
+                }`;
+
+                return (
+                  <tr key={user.id}>
+                    <td>
+                      <Link
+                        to={`/profile/${user.id}`}
+                        className="user-link-wrapper"
+                      >
+                        <div className="user-info">
+                          <img
+                            src={user.avatar_url || "/img/default-avatar.jpg"}
+                            alt={user.username}
+                          />
+                          <span className="username-text">{user.username}</span>
+                        </div>
+                      </Link>
+                    </td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`role-tag ${user.role}`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="actions">
+                        {roleWeights[currentUser.role] >
+                          roleWeights[user.role] && (
+                          <>
+                            <button
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsRoleModalOpen(true);
+                              }}
+                              className="edit-btn"
+                            >
+                              <EditIcon />
+                            </button>
+                            <button
+                              onClick={() =>
+                                confirmDelete(user.id, user.username)
+                              }
+                              className="delete-btn"
+                            >
+                              <DeleteIcon />
+                            </button>
+                          </>
+                        )}
                       </div>
-                    </Link>
-                  </td>
-                  <td>{user.email}</td>
-                  <td>
-                    <span className={`role-tag ${user.role}`}>{user.role}</span>
-                  </td>
-                  <td>
-                    <div className="actions">
-                      {roleWeights[currentUser.role] >
-                        roleWeights[user.role] && (
-                        <>
-                          <button
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsRoleModalOpen(true);
-                            }}
-                            className="edit-btn"
-                          >
-                            <EditIcon />
-                          </button>
-                          <button
-                            onClick={() =>
-                              confirmDelete(user.id, user.username)
-                            }
-                            className="delete-btn"
-                          >
-                            <DeleteIcon />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
