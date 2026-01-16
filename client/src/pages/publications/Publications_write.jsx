@@ -6,6 +6,7 @@ import { AuthContext } from "../../context/authContext";
 import "./publications_create.scss";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
 
 function PublicationsWrite() {
   const editorRef = useRef(null);
@@ -21,7 +22,8 @@ function PublicationsWrite() {
   const [isGameRelated, setIsGameRelated] = useState(false);
   const [gameSearch, setGameSearch] = useState("");
   const [gameOptions, setGameOptions] = useState([]);
-  const [selectedGame, setSelectedGame] = useState(null);
+
+  const [selectedGames, setSelectedGames] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function PublicationsWrite() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
-      if (gameSearch.length > 1 && !selectedGame) {
+      if (gameSearch.length > 1) {
         try {
           const res = await axios.get(
             `http://localhost:8800/api/games/search?q=${gameSearch}`,
@@ -53,20 +55,18 @@ function PublicationsWrite() {
     }, 500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [gameSearch, selectedGame]);
+  }, [gameSearch]);
 
-  const handleGameInputChange = (e) => {
-    setGameSearch(e.target.value);
-
-    if (selectedGame) {
-      setSelectedGame(null);
+  const addGame = (game) => {
+    if (!selectedGames.find((g) => g.id === game.id)) {
+      setSelectedGames([...selectedGames, game]);
     }
+    setGameSearch("");
+    setShowDropdown(false);
   };
 
-  const selectGame = (game) => {
-    setSelectedGame(game);
-    setGameSearch(game.title);
-    setShowDropdown(false);
+  const removeGame = (gameId) => {
+    setSelectedGames(selectedGames.filter((g) => g.id !== gameId));
   };
 
   const handleFileChange = (e) => {
@@ -83,16 +83,19 @@ function PublicationsWrite() {
     if (!title.trim()) return alert("Введите название");
     if (!contentHtml || contentHtml === "<p><br></p>")
       return alert("Введите текст");
-    if (isGameRelated && !selectedGame)
-      return alert("Вы отметили 'По игре', но не выбрали игру из списка");
+
+    if (isGameRelated && selectedGames.length === 0)
+      return alert("Вы отметили 'По игре', но не выбрали ни одной игры");
 
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", contentHtml);
     formData.append("type", activeTab);
 
-    if (isGameRelated && selectedGame) {
-      formData.append("game_id", selectedGame.id);
+    if (isGameRelated) {
+      selectedGames.forEach((g) => {
+        formData.append("game_ids", g.id);
+      });
     }
 
     if (file) {
@@ -148,12 +151,12 @@ function PublicationsWrite() {
 
             <div className="game-toggle-section">
               <div className="toggle-header">
-                <span>Публикация по игре?</span>
+                <span>По играм?</span>
                 <button
                   className={`toggle-btn ${!isGameRelated ? "inactive" : ""}`}
                   onClick={() => {
                     setIsGameRelated(false);
-                    setSelectedGame(null);
+                    setSelectedGames([]);
                     setGameSearch("");
                   }}
                 >
@@ -171,9 +174,9 @@ function PublicationsWrite() {
                 <div className="game-search-box">
                   <input
                     type="text"
-                    placeholder="Начните вводить название..."
+                    placeholder="Поиск игры для добавления..."
                     value={gameSearch}
-                    onChange={handleGameInputChange}
+                    onChange={(e) => setGameSearch(e.target.value)}
                   />
                   {showDropdown && (
                     <div className="dropdown">
@@ -181,31 +184,26 @@ function PublicationsWrite() {
                         <div
                           key={g.id}
                           className="item"
-                          onClick={() => selectGame(g)}
+                          onClick={() => addGame(g)}
                         >
                           {g.background_image && (
                             <img src={g.background_image} alt="" />
                           )}
                           <span>{g.title}</span>
+                          <AddIcon className="add-icon" />
                         </div>
                       ))}
                     </div>
                   )}
-                  {selectedGame && (
-                    <div className="selected-game-badge">
-                      <span>
-                        Выбрано: <strong>{selectedGame.title}</strong>
-                      </span>
-                      <button
-                        onClick={() => {
-                          setSelectedGame(null);
-                          setGameSearch("");
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
+
+                  <div className="selected-games-list">
+                    {selectedGames.map((game) => (
+                      <div key={game.id} className="selected-game-badge">
+                        <span>{game.title}</span>
+                        <button onClick={() => removeGame(game.id)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -15,6 +15,7 @@ const Publication = ({ publication }) => {
     imageUrl,
     views,
     likesCount,
+    games,
   } = publication;
 
   return (
@@ -35,6 +36,18 @@ const Publication = ({ publication }) => {
             </div>
           </div>
           <h3 className="title">{title}</h3>
+          {games && games.length > 0 && (
+            <div className="publication-games-tags">
+              {games.slice(0, 3).map((g) => (
+                <span key={g.id} className="game-tag">
+                  {g.title}
+                </span>
+              ))}
+              {games.length > 3 && (
+                <span className="game-tag">+{games.length - 3}</span>
+              )}
+            </div>
+          )}
           <div className="footer">
             <span className="date">{date}</span>
             <div className="stats">

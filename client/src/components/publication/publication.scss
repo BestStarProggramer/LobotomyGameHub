@@ -80,6 +80,23 @@
         overflow: hidden;
       }
 
+      .publication-games-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 12px;
+
+        .game-tag {
+          font-size: 11px;
+          background-color: rgba(83, 37, 125, 0.3);
+          border: 1px solid #53257d;
+          color: #ccc;
+          padding: 2px 8px;
+          border-radius: 4px;
+          white-space: nowrap;
+        }
+      }
+
       .footer {
         display: flex;
         justify-content: space-between;

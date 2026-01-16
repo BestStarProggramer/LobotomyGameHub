@@ -192,25 +192,27 @@ const PublicationPage = () => {
                     </div>
                   </div>
 
-                  {publication.game && (
+                  {publication.games && publication.games.length > 0 && (
                     <div className="linked-game-section">
                       <span className="linked-label">
                         {publication.type === "news"
-                          ? "Новость по игре:"
-                          : "Статья по игре:"}
+                          ? "Новости по:"
+                          : "Статья по:"}
                       </span>
-                      <Link
-                        to={`/games/${publication.game.slug}`}
-                        className="game-card-mini"
-                      >
-                        <img
-                          src={publication.game.image}
-                          alt={publication.game.title}
-                        />
-                        <span className="game-title">
-                          {publication.game.title}
-                        </span>
-                      </Link>
+                      <div className="games-list">
+                        {publication.games.map((game) => (
+                          <Link
+                            key={game.id}
+                            to={`/games/${game.slug}`}
+                            className="game-card-mini"
+                          >
+                            {game.image && (
+                              <img src={game.image} alt={game.title} />
+                            )}
+                            <span className="game-title">{game.title}</span>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

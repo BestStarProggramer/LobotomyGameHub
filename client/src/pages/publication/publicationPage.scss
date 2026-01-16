@@ -174,8 +174,15 @@ body {
 
             .linked-game-section {
               display: flex;
-              align-items: center;
-              gap: 10px;
+              align-items: flex-start;
+              flex-direction: column;
+              gap: 8px;
+
+              .games-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+              }
 
               .linked-label {
                 color: #ccc;

@@ -295,3 +295,57 @@
     }
   }
 }
+
+.game-toggle-section {
+  // ...
+  .game-search-box {
+    // ...
+    .dropdown {
+      // ...
+      .item {
+        .add-icon {
+          margin-left: auto;
+          color: #53257d;
+        }
+      }
+    }
+
+    .selected-games-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+
+      .selected-game-badge {
+        background: rgba(83, 37, 125, 0.3);
+        border: 1px solid #53257d;
+        padding: 5px 10px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+
+        span {
+          color: white;
+          font-weight: bold;
+        }
+
+        button {
+          background: none;
+          border: none;
+          color: #ff4d4f;
+          cursor: pointer;
+          font-weight: bold;
+          padding: 0;
+          font-size: 14px;
+          line-height: 1;
+
+          &:hover {
+            color: #ff7875;
+          }
+        }
+      }
+    }
+  }
+}

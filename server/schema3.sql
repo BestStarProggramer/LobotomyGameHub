@@ -431,3 +431,27 @@ BEGIN
   RAISE NOTICE 'Созданы типы, таблицы, индексы, функции и триггеры.';
   RAISE NOTICE '=========================================';
 END $$;
+
+CREATE TABLE IF NOT EXISTS publication_games (
+  publication_id BIGINT NOT NULL,
+  game_id BIGINT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  PRIMARY KEY (publication_id, game_id),
+  CONSTRAINT fk_pub_games_pub FOREIGN KEY (publication_id) REFERENCES publications(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pub_games_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_pub_games_pub_id ON publication_games(publication_id);
+CREATE INDEX IF NOT EXISTS idx_pub_games_game_id ON publication_games(game_id);
+
+-- Миграция данных: перенос старого game_id в новую таблицу
+INSERT INTO publication_games (publication_id, game_id)
+SELECT id, game_id
+FROM publications
+WHERE game_id IS NOT NULL
+ON CONFLICT DO NOTHING;
+
+-- Удаление старой колонки (раскомментировать, если уверены, что миграция прошла успешно)
+-- ALTER TABLE publications DROP COLUMN game_id;
+-- Пока оставим колонку для совместимости, но сделаем её nullable (она уже nullable),
+-- логика приложения будет игнорировать её в пользу новой таблицы.
