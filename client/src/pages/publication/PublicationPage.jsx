@@ -5,6 +5,7 @@ import { makeRequest } from "../../axios";
 import PublicationSection from "../../components/publicationsection/PublicationSection";
 import CommentBlock from "../../components/commentblock/CommentBlock";
 import { AuthContext } from "../../context/authContext";
+import { ModalContext } from "../../context/modalContext";
 
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -15,6 +16,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 
 const PublicationPage = () => {
   const { currentUser } = useContext(AuthContext);
+  const { openModal } = useContext(ModalContext);
   const { publicationId } = useParams();
   const navigate = useNavigate();
 
@@ -68,18 +70,22 @@ const PublicationPage = () => {
     navigate(`/publications/edit/${publicationId}`);
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Вы уверены, что хотите удалить эту публикацию?"))
-      return;
-    setIsDeleting(true);
-    try {
-      await makeRequest.delete(`/publications/${publicationId}`);
-      navigate("/publications");
-    } catch (err) {
-      console.error("Ошибка при удалении публикации:", err);
-      alert(err.response?.data?.error || "Не удалось удалить публикацию");
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    openModal(
+      "Удаление публикации",
+      "Вы действительно хотите удалить эту публикацию?",
+      async () => {
+        setIsDeleting(true);
+        try {
+          await makeRequest.delete(`/publications/${publicationId}`);
+          navigate("/publications");
+        } catch (err) {
+          console.error("Ошибка при удалении публикации:", err);
+          alert(err.response?.data?.error || "Не удалось удалить публикацию");
+          setIsDeleting(false);
+        }
+      }
+    );
   };
 
   const handleLike = async () => {

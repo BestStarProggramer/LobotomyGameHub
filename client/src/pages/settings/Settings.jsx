@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/authContext";
 import EditModal from "../../components/editmodal/EditModal";
 import GenresModal from "../../components/genresmodal/GenresModal";
 import { useNavigate } from "react-router-dom";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import axios from "axios";
 
 const Settings = () => {
@@ -189,6 +190,29 @@ const Settings = () => {
     <div className="settings">
       <div className="settings__container">
         <h1 className="settings__title">Настройки профиля</h1>
+
+        {currentUser && currentUser.role === "admin" && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: "20px",
+            }}
+          >
+            <button
+              className="settings__button settings__button--primary"
+              onClick={() => navigate("/admin")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                background: "#e67e22",
+              }}
+            >
+              <AdminPanelSettingsIcon /> Админ панель
+            </button>
+          </div>
+        )}
 
         {loading && (
           <div className="settings__message settings__message--loading">

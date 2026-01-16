@@ -1,0 +1,90 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+
+  .modal-box {
+    background-color: #1c151e;
+    border: 2px solid #53257d;
+    border-radius: 12px;
+    padding: 25px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    animation: popIn 0.2s ease-out;
+
+    .modal-header {
+      margin-bottom: 15px;
+      h3 {
+        color: white;
+        margin: 0;
+        font-size: 20px;
+      }
+    }
+
+    .modal-content {
+      margin-bottom: 25px;
+      p {
+        color: #a0a0a0;
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+
+      button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+        transition: all 0.2s;
+
+        &.btn-cancel {
+          background-color: transparent;
+          border: 1px solid #a0a0a0;
+          color: #a0a0a0;
+
+          &:hover {
+            border-color: white;
+            color: white;
+          }
+        }
+
+        &.btn-confirm {
+          background-color: #ff4d4f;
+          color: white;
+
+          &:hover {
+            background-color: #ff7875;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

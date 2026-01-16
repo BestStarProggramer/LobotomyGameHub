@@ -11,6 +11,7 @@ import gamesRoutes from "./routes/games.js";
 import publicationsRouter from "./routes/publications.js";
 import reviewsRouter from "./routes/reviews.js";
 import commentsRouter from "./routes/comments.js";
+import adminRouter from "./routes/admin.js";
 
 const RAWG_BASE = "https://api.rawg.io/api";
 const RAWG_KEY = process.env.API_KEY;
@@ -42,6 +43,7 @@ app.use("/api/health", healthRouter);
 app.use("/api/reviews", reviewsRouter);
 app.use("/api/comments", commentsRouter);
 app.use("/api/publications", publicationsRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/games", gamesRoutes);
 
 app.listen(PORT, () => {

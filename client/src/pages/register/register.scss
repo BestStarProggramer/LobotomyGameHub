@@ -34,6 +34,36 @@ body {
       .form-wrapper {
         padding-left: 20px;
         padding-right: 20px;
+        .hint-text {
+          color: #a0a0a0;
+          font-size: 14px;
+          margin-bottom: 15px;
+        }
+
+        .row-fields {
+          display: flex;
+          gap: 15px;
+          .field {
+            flex: 1;
+          }
+        }
+
+        .switch-method {
+          margin-top: 15px;
+          text-align: center;
+
+          .text-btn {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            &:hover {
+              color: white;
+            }
+          }
+        }
         h1 {
           color: white;
           margin-bottom: 20px;

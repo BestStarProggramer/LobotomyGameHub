@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import { makeRequest } from "../../axios";
+import { ModalContext } from "../../context/modalContext";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -19,6 +20,7 @@ const Comment = ({
   onReplySuccess,
   depth = 0,
 }) => {
+  const { openModal } = useContext(ModalContext);
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -93,15 +95,19 @@ const Comment = ({
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm("Удалить комментарий?")) return;
-
-    try {
-      await makeRequest.delete(`/comments/${id}`);
-      onDelete(id);
-    } catch (err) {
-      alert("Не удалось удалить комментарий");
-    }
+  const handleDelete = () => {
+    openModal(
+      "Удаление комментария",
+      "Вы действительно хотите удалить этот комментарий?",
+      async () => {
+        try {
+          await makeRequest.delete(`/comments/${id}`);
+          onDelete(id);
+        } catch (err) {
+          alert("Не удалось удалить комментарий");
+        }
+      }
+    );
   };
 
   const handleReplySubmit = async (data) => {

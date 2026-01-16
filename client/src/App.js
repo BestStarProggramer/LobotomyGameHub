@@ -26,6 +26,7 @@ import PublicationsWrite from "./pages/publications/Publications_write.jsx";
 import PublicationsEdit from "./pages/publications/Publications_edit.jsx";
 import UserReviews from "./pages/userreviews/UserReviews.jsx";
 import ScrollToTop from "./components/common/ScrollToTop.jsx";
+import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -103,6 +104,11 @@ function App() {
         {
           path: "/settings/",
           element: <Settings />,
+        },
+
+        {
+          path: "/admin",
+          element: <AdminPanel />,
         },
 
         {
