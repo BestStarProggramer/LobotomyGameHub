@@ -27,6 +27,7 @@ import PublicationsEdit from "./pages/publications/Publications_edit.jsx";
 import UserReviews from "./pages/userreviews/UserReviews.jsx";
 import ScrollToTop from "./components/common/ScrollToTop.jsx";
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
+import AutoLogout from "./components/common/AutoLogout.jsx";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function App() {
@@ -50,12 +51,6 @@ function App() {
   };
 
   const ProtectedRoute = ({ children }) => {
-    // По идее сайт можно просматривать если не авторизован, но этот кусок кода может понадобиться,
-    // так что оставлю его пока в закомментированном виде
-
-    // if (!currentUser) {
-    //   return <Login />;
-    // }
     return children;
   };
 
@@ -146,11 +141,19 @@ function App() {
 
     {
       path: "/login",
-      element: <Login />,
+      element: (
+        <AutoLogout>
+          <Login />
+        </AutoLogout>
+      ),
     },
     {
       path: "/register",
-      element: <Register />,
+      element: (
+        <AutoLogout>
+          <Register />
+        </AutoLogout>
+      ),
     },
   ]);
 

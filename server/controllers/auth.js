@@ -2,6 +2,15 @@ import { pool, query } from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { publishEmailNotification } from "../rabbitmq.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Helper to determine where to save on the server (aligned with upload middleware)
+const CLIENT_PUBLIC_DIR = path.resolve(__dirname, "../../client/public");
 
 const SECRET_KEY = process.env.JWT_SECRET || "your_jwt_secret_key";
 const JWT_EXPIRES = process.env.JWT_EXPIRES || "30d";
@@ -143,14 +152,14 @@ export const login = async (req, res) => {
 
     const { rows } = await query(q, [identity]);
     if (rows.length === 0) {
-      return res.status(401).json({ error: "Неверный логин или пароль" });
+      return res.status(401).json({ error: "Неверный email или пароль" });
     }
 
     const user = rows[0];
 
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
-      return res.status(401).json({ error: "Неверный логин или пароль" });
+      return res.status(401).json({ error: "Неверный email или пароль" });
     }
 
     const payload = {
@@ -249,14 +258,7 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const userId = req.userInfo.id;
 
-  const {
-    username,
-    email,
-    bio,
-    avatar_url: img,
-    oldPassword,
-    newPassword,
-  } = req.body;
+  const { username, email, bio, oldPassword, newPassword } = req.body;
 
   let updateQuery = "UPDATE users SET";
   const updateValues = [];
@@ -278,9 +280,38 @@ export const updateProfile = async (req, res) => {
     updateValues.push(bio === "" ? null : bio);
   }
 
-  if (img !== undefined) {
-    queryParts.push(`avatar_url = $${paramCount++}`);
-    updateValues.push(img === "" ? null : img);
+  let newAvatarUrl = null;
+  if (req.file) {
+    try {
+      const avatarDirRel = "/upload/avatars";
+      const avatarDirAbs = path.join(CLIENT_PUBLIC_DIR, avatarDirRel);
+
+      if (!fs.existsSync(avatarDirAbs)) {
+        fs.mkdirSync(avatarDirAbs, { recursive: true });
+      }
+
+      const files = fs.readdirSync(avatarDirAbs);
+      const userAvatarPrefix = `avatar_id${userId}.`;
+      for (const file of files) {
+        if (file.startsWith(userAvatarPrefix)) {
+          fs.unlinkSync(path.join(avatarDirAbs, file));
+        }
+      }
+
+      const ext = path.extname(req.file.originalname);
+      const newFilename = `avatar_id${userId}${ext}`;
+      const targetPath = path.join(avatarDirAbs, newFilename);
+
+      fs.renameSync(req.file.path, targetPath);
+
+      newAvatarUrl = `${avatarDirRel}/${newFilename}`;
+
+      queryParts.push(`avatar_url = $${paramCount++}`);
+      updateValues.push(newAvatarUrl);
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      return res.status(500).json("Ошибка при сохранении аватара.");
+    }
   }
 
   if (newPassword && oldPassword) {
@@ -339,7 +370,7 @@ export const updateProfile = async (req, res) => {
       ? "Профиль и пароль успешно обновлены. Рекомендуется повторный вход."
       : "Профиль успешно обновлен.";
 
-    return res.status(200).json(message);
+    return res.status(200).json({ message, avatar_url: newAvatarUrl });
   } catch (err) {
     if (err.code === "23505") {
       let field = "данных";

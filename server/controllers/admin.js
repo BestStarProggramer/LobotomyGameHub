@@ -1,4 +1,11 @@
 import { query } from "../db.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const CLIENT_PUBLIC_DIR = path.resolve(__dirname, "../../client/public");
 
 const ROLE_WEIGHTS = {
   user: 1,
@@ -100,6 +107,21 @@ export const deleteUser = async (req, res) => {
       return res
         .status(403)
         .json({ error: "У вас нет прав на удаление этого пользователя" });
+    }
+
+    try {
+      const avatarDir = path.join(CLIENT_PUBLIC_DIR, "upload/avatars");
+      if (fs.existsSync(avatarDir)) {
+        const files = fs.readdirSync(avatarDir);
+        const userAvatarPrefix = `avatar_id${userId}.`;
+        for (const file of files) {
+          if (file.startsWith(userAvatarPrefix)) {
+            fs.unlinkSync(path.join(avatarDir, file));
+          }
+        }
+      }
+    } catch (fsErr) {
+      console.warn(`Could not delete avatar for user ${userId}:`, fsErr);
     }
 
     await query("DELETE FROM users WHERE id = $1", [userId]);

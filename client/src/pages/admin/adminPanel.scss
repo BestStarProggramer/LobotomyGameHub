@@ -44,10 +44,15 @@
 
     table {
       width: 100%;
-      border-collapse: collapse;
-      background: #231f2b;
-      border-radius: 12px;
-      overflow: hidden;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+      background: transparent;
+
+      thead {
+        tr {
+          background: #231f2b;
+        }
+      }
 
       th {
         text-align: left;
@@ -56,21 +61,72 @@
         color: #aaa;
         font-size: 13px;
         text-transform: uppercase;
-      }
-      td {
-        padding: 15px;
-        border-bottom: 1px solid #2d2836;
+
+        &:first-child {
+          border-top-left-radius: 8px;
+          border-bottom-left-radius: 8px;
+        }
+        &:last-child {
+          border-top-right-radius: 8px;
+          border-bottom-right-radius: 8px;
+        }
       }
 
-      .user-info {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        img {
-          width: 35px;
-          height: 35px;
-          border-radius: 50%;
-          object-fit: cover;
+      td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #2d2836;
+        background-color: #231f2b; // Row background
+
+        &:first-child {
+          border-top-left-radius: 8px;
+          border-bottom-left-radius: 8px;
+        }
+        &:last-child {
+          border-top-right-radius: 8px;
+          border-bottom-right-radius: 8px;
+        }
+      }
+
+      .user-link-wrapper {
+        text-decoration: none;
+        color: inherit;
+        display: inline-block;
+
+        background-color: #2a2533;
+        padding: 8px 15px;
+        border-radius: 8px;
+        transition: all 150ms ease;
+        border: 1px solid transparent;
+
+        &:hover {
+          background-color: #3a3240;
+          transform: translateX(3px);
+          border-color: #53257d;
+
+          .username-text {
+            color: white;
+          }
+        }
+
+        .user-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #3d374a;
+          }
+
+          .username-text {
+            font-weight: bold;
+            font-size: 15px;
+            color: white;
+            transition: color 0.2s;
+          }
         }
       }
 
@@ -148,6 +204,7 @@
       h3 {
         margin: 0;
         font-size: 18px;
+        color: white;
       }
       .close-icon {
         cursor: pointer;
@@ -203,38 +260,6 @@
           text-transform: uppercase;
         }
       }
-    }
-  }
-}
-
-.user-link-wrapper {
-  text-decoration: none;
-  color: inherit;
-  display: inline-block;
-  transition: opacity 0.2s;
-
-  &:hover {
-    opacity: 0.8;
-    .username-text {
-      text-decoration: underline; // Подсказка пользователю, что текст кликабелен
-    }
-  }
-
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    img {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1px solid #3d374a;
-    }
-
-    .username-text {
-      font-weight: 500;
     }
   }
 }

@@ -47,7 +47,7 @@ const Login = () => {
             <h1>Вход</h1>
             <form onSubmit={handleLogin}>
               <div className="field">
-                <h2>Email или Логин</h2>
+                <h2>Email</h2>
 
                 <input
                   type="text"

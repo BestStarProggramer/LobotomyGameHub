@@ -63,35 +63,42 @@ const Settings = () => {
     setError(null);
     setSuccess(null);
 
-    let payload = {};
     let url = "http://localhost:8800/api/auth/profile";
+    let payload;
+    let headers = {};
 
     if (field === "favoriteGenres") {
-      payload.favoriteGenres = value;
       url = "http://localhost:8800/api/auth/profile/genres";
+      payload = { favoriteGenres: value };
     } else if (field === "avatar") {
-      payload.avatar_url = value;
+      payload = new FormData();
+      payload.append("avatar", value);
+      headers["Content-Type"] = "multipart/form-data";
     } else {
-      payload[field] = value;
+      payload = { [field]: value };
     }
 
     try {
-      const res = await axios.put(url, payload, { withCredentials: true });
+      const res = await axios.put(url, payload, {
+        withCredentials: true,
+        headers: headers,
+      });
 
-      setUserData((prev) => ({ ...prev, [field]: value }));
-
-      if (updateCurrentUser) {
-        const updatedUser = { ...currentUser };
-
-        if (field === "username") {
-          updatedUser.username = value;
-        } else if (field === "avatar") {
-          updatedUser.avatar_url = value;
-        } else if (field === "bio") {
-          updatedUser.bio = value;
+      if (field === "avatar") {
+        const newAvatarUrl = res.data.avatar_url;
+        setUserData((prev) => ({ ...prev, avatar: newAvatarUrl }));
+        if (updateCurrentUser) {
+          const updatedUser = { ...currentUser, avatar_url: newAvatarUrl };
+          updateCurrentUser(updatedUser);
         }
-
-        updateCurrentUser(updatedUser);
+      } else {
+        setUserData((prev) => ({ ...prev, [field]: value }));
+        if (updateCurrentUser) {
+          const updatedUser = { ...currentUser };
+          if (field === "username") updatedUser.username = value;
+          else if (field === "bio") updatedUser.bio = value;
+          updateCurrentUser(updatedUser);
+        }
       }
 
       if (res.data && typeof res.data === "object" && res.data.error) {
@@ -102,12 +109,6 @@ const Settings = () => {
         setSuccess(res.data);
       } else {
         setSuccess("Настройка успешно обновлена!");
-      }
-
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (field === "avatar" && storedUser) {
-        storedUser.avatar_url = value;
-        localStorage.setItem("user", JSON.stringify(storedUser));
       }
     } catch (err) {
       console.error("Ошибка обновления:", err?.response?.data || err?.message);
@@ -146,7 +147,7 @@ const Settings = () => {
     fileInputRef.current?.click();
   };
 
-  const handleAvatarChange = async (e) => {
+  const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -160,15 +161,7 @@ const Settings = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result;
-      handleUpdateProfile("avatar", base64String);
-    };
-    reader.onerror = () => {
-      setError("Ошибка при чтении файла");
-    };
-    reader.readAsDataURL(file);
+    handleUpdateProfile("avatar", file);
   };
 
   const renderGenreTags = () => {
@@ -190,31 +183,6 @@ const Settings = () => {
     <div className="settings">
       <div className="settings__container">
         <h1 className="settings__title">Настройки профиля</h1>
-
-        {currentUser &&
-          (currentUser.role === "admin" ||
-            currentUser?.role === "moderator") && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                marginBottom: "20px",
-              }}
-            >
-              <button
-                className="settings__button settings__button--primary"
-                onClick={() => navigate("/admin")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  background: "#e67e22",
-                }}
-              >
-                <AdminPanelSettingsIcon /> Админ панель
-              </button>
-            </div>
-          )}
 
         {loading && (
           <div className="settings__message settings__message--loading">
@@ -298,7 +266,7 @@ const Settings = () => {
           </div>
 
           <div className="settings__section">
-            <h2 className="settings__section-title">Безопасность</h2>
+            <h2 className="settings__section-title">Безопасность и Доступ</h2>
             <div className="settings__security">
               <button
                 className="settings__button settings__button--danger"
@@ -314,6 +282,22 @@ const Settings = () => {
               >
                 Сменить email
               </button>
+
+              {currentUser &&
+                (currentUser.role === "admin" ||
+                  currentUser?.role === "moderator") && (
+                  <button
+                    className="settings__button settings__button--primary"
+                    onClick={() => navigate("/admin")}
+                    style={{
+                      background: "#e67e22",
+                      marginLeft: "auto",
+                    }}
+                  >
+                    <AdminPanelSettingsIcon style={{ marginRight: "5px" }} />{" "}
+                    Админ панель
+                  </button>
+                )}
             </div>
           </div>
         </div>
