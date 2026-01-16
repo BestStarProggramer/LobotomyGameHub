@@ -42,6 +42,7 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
+      - ./client:/client 
     depends_on:
       postgres:
         condition: service_healthy
