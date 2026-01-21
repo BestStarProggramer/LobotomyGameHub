@@ -1,3 +1,4 @@
+//запуск cида командой docker-compose exec -e PGHOST=postgres backend node seed.js
 import dotenv from "dotenv";
 import pg from "pg";
 import { fakerRU } from "@faker-js/faker";
@@ -30,10 +31,12 @@ const seed = async () => {
   let client;
   try {
     client = await pool.connect();
-    console.log(" Подключение успешно.");
+    console.log("🚀 Подключение успешно.");
     await client.query("BEGIN");
 
-    // --- ДИАГНОСТИКА ---
+    // --- ДИАГНОСТИКА И АДАПТАЦИЯ ---
+    // Проверяем наличие колонок, чтобы не падать на старых схемах,
+    // но предпочитаем новые названия (avatar_url, image)
     const userColumnsRes = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'users'`);
     const userCols = userColumnsRes.rows.map(r => r.column_name);
     let passwordField = userCols.includes("password_hash") ? "password_hash" : "password";
@@ -45,11 +48,13 @@ const seed = async () => {
     
     const pubColumnsRes = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'publications'`);
     const pubCols = pubColumnsRes.rows.map(r => r.column_name);
-    let pubImageField = pubCols.includes("image_url") ? "image_url" : "image";
-    if (!pubCols.includes(pubImageField) && pubCols.includes("cover_image")) pubImageField = "cover_image";
+    // Предпочитаем 'image', так как контроллер ищет именно его
+    let pubImageField = "image";
+    if (!pubCols.includes("image") && pubCols.includes("image_url")) pubImageField = "image_url";
+    if (!pubCols.includes("image") && !pubCols.includes("image_url") && pubCols.includes("cover_image")) pubImageField = "cover_image";
     
     // 1. Создание пользователей
-    console.log(`Creating users...`);
+    console.log(`👤 Creating users...`);
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(CONFIG.PASSWORD, salt);
     
@@ -75,7 +80,7 @@ const seed = async () => {
     
     const existingUsers = await client.query("SELECT id FROM users");
     const allUserIds = existingUsers.rows.map(r => r.id);
-    console.log(`Users count: ${allUserIds.length}`);
+    console.log(`✅ Users count: ${allUserIds.length}`);
 
     // 2. Игры
     const gamesRes = await client.query("SELECT id FROM games");
@@ -83,18 +88,17 @@ const seed = async () => {
     console.log(`🎮 Games found: ${gameIds.length}`);
 
     // 3. Генерация ПУБЛИКАЦИЙ
-    console.log(`Generating ${CONFIG.PUBLICATIONS_COUNT} publications...`);
+    console.log(`📝 Generating ${CONFIG.PUBLICATIONS_COUNT} publications...`);
     for (let i = 0; i < CONFIG.PUBLICATIONS_COUNT; i++) {
         const userId = sample(allUserIds);
         const gameId = gameIds.length > 0 && Math.random() > 0.3 ? sample(gameIds) : null;
         const title = faker.lorem.sentence({ min: 3, max: 8 });
-        const type = Math.random() > 0.5 ? 'news' : 'article'; // Заполняем поле type
+        const type = Math.random() > 0.5 ? 'news' : 'article';
         const content = `
           <p>${faker.lorem.paragraph()}</p>
           <h3>${faker.lorem.sentence()}</h3>
           <p>${faker.lorem.paragraph()}</p>
         `;
-        // Используем picsum.photos для валидных картинок
         const imageUrl = `https://picsum.photos/seed/${randomInt(1, 1000)}/800/400`; 
         const createdAt = faker.date.past({ years: 0.5 });
         const views = randomInt(50, 5000);
@@ -102,24 +106,39 @@ const seed = async () => {
 
         try {
             await client.query("SAVEPOINT sp_pub");
-            await client.query(
+            
+            // Вставляем публикацию. Важно: для совместимости вставляем game_id и в старую колонку
+            const res = await client.query(
                 `INSERT INTO publications (title, content, user_id, game_id, ${pubImageField}, type, views, likes, created_at)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                 RETURNING id`,
                 [title, content, userId, gameId, imageUrl, type, views, likes, createdAt]
             );
+            const newPubId = res.rows[0].id;
+
+            // NEW: Заполняем таблицу связи publication_games
+            if (gameId) {
+                await client.query(
+                   `INSERT INTO publication_games (publication_id, game_id)
+                    VALUES ($1, $2)
+                    ON CONFLICT DO NOTHING`,
+                   [newPubId, gameId]
+                );
+            }
+
             await client.query("RELEASE SAVEPOINT sp_pub");
         } catch (e) {
             await client.query("ROLLBACK TO SAVEPOINT sp_pub");
-            console.error(` Pub insert failed: ${e.message}`);
+            console.error(`❌ Pub insert failed: ${e.message}`);
         }
     }
 
-    // 4. Комментарии (к новым публикациям)
+    // 4. Комментарии
     const publicationsRes = await client.query("SELECT id FROM publications");
     const pubIds = publicationsRes.rows.map(r => r.id);
     
     if (pubIds.length > 0) {
-      console.log(`Generating comments for ${pubIds.length} publications...`);
+      console.log(`💬 Generating comments for ${pubIds.length} publications...`);
       const commentsColsRes = await client.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'comments'`);
       const comCols = commentsColsRes.rows.map(r => r.column_name);
       let comLikesField = comCols.includes("likes_count") ? "likes_count" : "likes";
@@ -134,27 +153,26 @@ const seed = async () => {
 
             try {
                 await client.query("SAVEPOINT sp_com");
-                const commentRes = await client.query(
+                await client.query(
                     `INSERT INTO comments (user_id, publication_id, content, ${comLikesField}, created_at)
-                     VALUES ($1, $2, $3, $4, $5)
-                     RETURNING id`,
+                     VALUES ($1, $2, $3, $4, $5)`,
                     [userId, pubId, content, likesCount, createdAt]
                 );
                 await client.query("RELEASE SAVEPOINT sp_com");
             } catch(e) {
                  await client.query("ROLLBACK TO SAVEPOINT sp_com");
-                 console.error(`Comment failed: ${e.message}`);
+                 console.error(`❌ Comment failed: ${e.message}`);
             }
         }
       }
     }
 
     await client.query("COMMIT");
-    console.log("Done!");
+    console.log("✅ Done!");
 
   } catch (err) {
     if (client) await client.query("ROLLBACK");
-    console.error("GLOBAL ERROR:", err);
+    console.error("🔥 GLOBAL ERROR:", err);
   } finally {
     if (client) client.release();
     await pool.end();
