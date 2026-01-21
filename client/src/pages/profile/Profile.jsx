@@ -35,18 +35,22 @@ const Profile = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+
         const userRes = await axios.get(
           `http://localhost:8800/api/auth/user/${targetUserId}`
         );
         const userData = userRes.data;
 
+        let fetchedGenres = [];
         try {
           const genresRes = await axios.get(
             `http://localhost:8800/api/auth/user/${targetUserId}/genres`
           );
-          setFavoriteGenres(genresRes.data || []);
+          fetchedGenres = genresRes.data || [];
+          setFavoriteGenres(fetchedGenres);
         } catch (genresErr) {
-          setFavoriteGenres([]);
+          console.error("Не удалось загрузить жанры", genresErr);
+          fetchedGenres = [];
         }
 
         const mappedUserData = {
@@ -57,7 +61,7 @@ const Profile = () => {
           bio: userData.bio || "",
           registrationDate: userData.registrationDate || "Неизвестно",
           ratedGames: userData.ratedGames || 0,
-          favoriteGenres: favoriteGenres,
+          favoriteGenres: fetchedGenres,
         };
 
         setProfileData(mappedUserData);
